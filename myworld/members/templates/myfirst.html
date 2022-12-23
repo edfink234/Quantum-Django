@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html>
+
+<link rel="stylesheet" href="{% static 'myfirst.css' %}">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quantum Django</title>
+</head>
+<body>
+ 
+  <h1> Hello! </h1>
+<br/> <br/>
+<script language="javascript">
+const fs = require("fs");
+
+
+</script>
+  {% autoescape off %}
+  {{ plot_div }} <br/>
+  <table style="border:1px solid black;margin-left:auto;
+margin-right:auto; text-align: center"; border="1"; padding: 30px;>
+{{ points.0 }}
+<tr>
+<td><b>x</b></td>
+<td><b>y</b></td>
+</tr>
+{% for x,y in points %}
+<tr>
+<td>{{ x }}</td>
+<td>{{ y }}</td>
+</tr>
+{% endfor %}
+</table>
+<br/>
+<textarea id="chat-log" cols="100" rows="20" readonly></textarea><br>
+
+ <br/>
+  {% endautoescape %}
+  <button onclick="myFunction()">Click me!</button>
+  <br/>
+<button onclick="work()">Start!</button>
+ </br>
+  <h3>What chat room would you like to enter?</h3><br>
+    <input id="room-name-input" type="text" size="100"><br>
+    <input id="room-name-submit" type="button" value="Enter">
+
+<script language="javascript">
+    document.querySelector('#room-name-input').focus();
+        document.querySelector('#room-name-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#room-name-submit').click();
+            }
+        };
+
+        document.querySelector('#room-name-submit').onclick = function(e) {
+            var roomName = document.querySelector('#room-name-input').value;
+            window.location.pathname = '/members/' + roomName + '/';
+        };
+</script>
+
+</body>
+<script src="{% static 'myfirst.jss' %}" type="text/javascript"></script>
+<div id="sine-graph">
+</html>

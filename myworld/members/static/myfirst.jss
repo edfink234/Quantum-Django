@@ -8,6 +8,10 @@ function myFunction() {
   }*/
 //document.querySelector('#chat-log').value = "";
 }
+
+
+
+
 alert("work now!");
 
 function getRandomIntInclusive(min, max) {

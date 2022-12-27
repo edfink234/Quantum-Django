@@ -6,6 +6,7 @@
 
 <head>
   <meta charset="utf-8">
+      <link rel="shortcut icon" href="#" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quantum Django</title>
 </head>
@@ -13,19 +14,10 @@
  
   <h1> Hello! </h1>
 <br/> <br/>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script>
-    d3.text("file:///Users/edwardfinkelstein/Downloads/ionnumber-nn-master-data-model_data/data/model_data/0_data_decrystallized_noIon.csv", function(text) {
-      var data = d3.csvParseRows(text).map(function(row) {
-        return row.map(function(value) {
-          return +value;
-        });
-      });
-      console.log(data);
-    });
-</script>
+
 
   {% autoescape off %}
+  {{ fig_div }} <br/>
   {{ plot_div }} <br/>
   <table style="border:1px solid black;margin-left:auto;
 margin-right:auto; text-align: center"; border="1"; padding: 30px;>
@@ -53,6 +45,26 @@ margin-right:auto; text-align: center"; border="1"; padding: 30px;>
   <h3>What chat room would you like to enter?</h3><br>
     <input id="room-name-input" type="text" size="100"><br>
     <input id="room-name-submit" type="button" value="Enter">
+
+        <br/>
+        <br/>
+        <br/>
+        
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+
+    const loadData = () => {
+        return d3.csv("../employees").then((data) => {
+            console.log(data);
+           /* for (var i = 0; i < data.length; i++) {
+                    console.log(data[i].Name);
+                    console.log(data[i].Age);
+                }*/
+        }                                     )
+    };
+
+    loadData();
+</script>
 
 <script language="javascript">
     document.querySelector('#room-name-input').focus();

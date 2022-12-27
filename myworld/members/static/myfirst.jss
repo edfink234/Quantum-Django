@@ -8,7 +8,7 @@ function myFunction() {
   }*/
 //document.querySelector('#chat-log').value = "";
 }
-alert("work!");
+alert("work now!");
 
 function getRandomIntInclusive(min, max) {
     min = Math.ceil(min)

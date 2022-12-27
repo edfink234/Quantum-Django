@@ -13,11 +13,18 @@
  
   <h1> Hello! </h1>
 <br/> <br/>
-<script language="javascript">
-const fs = require("fs");
-
-
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+    d3.text("file:///Users/edwardfinkelstein/Downloads/ionnumber-nn-master-data-model_data/data/model_data/0_data_decrystallized_noIon.csv", function(text) {
+      var data = d3.csvParseRows(text).map(function(row) {
+        return row.map(function(value) {
+          return +value;
+        });
+      });
+      console.log(data);
+    });
 </script>
+
   {% autoescape off %}
   {{ plot_div }} <br/>
   <table style="border:1px solid black;margin-left:auto;
@@ -63,5 +70,6 @@ margin-right:auto; text-align: center"; border="1"; padding: 30px;>
 
 </body>
 <script src="{% static 'myfirst.jss' %}" type="text/javascript"></script>
+
 <div id="sine-graph">
 </html>

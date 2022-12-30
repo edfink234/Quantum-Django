@@ -38,10 +38,14 @@ margin-right:auto; text-align: center"; border="1"; padding: 30px;>
 
  <br/>
   {% endautoescape %}
+  <button onclick="Clear()">Clear!</button>
+  </br>
   <button onclick="myFunction()">Click me!</button>
-  <br/>
-<button onclick="work()">Start!</button>
+  </br>
+<button onclick="Stop()">Stop!</button>
  </br>
+ <button onclick="Start()">Start!</button>
+
   <h3>What chat room would you like to enter?</h3><br>
     <input id="room-name-input" type="text" size="100"><br>
     <input id="room-name-submit" type="button" value="Enter">
@@ -51,28 +55,72 @@ margin-right:auto; text-align: center"; border="1"; padding: 30px;>
         <br/>
         
 
-<textarea id="csv-log" cols="300" rows="20" readonly></textarea><br>
+<textarea id="csv-log" cols="100" rows="20" readonly></textarea><br>
         
 <form id="myForm">
-  <input type="file" id="csvFile" accept=".csv" />
-  <br />
-  <input type="submit" value="Submit" />
+<input type="file" id="csvFile" accept=".csv" />
+<br />
+<input type="submit" value="Submit" />
 </form>
 <script>
-  const myForm = document.getElementById("myForm");
-  const csvFile = document.getElementById("csvFile");
-  myForm.addEventListener("submit", function (e) {
-     e.preventDefault();
-     const input = csvFile.files[0];
-     const reader = new FileReader();
-     reader.onload = function (e) {
-        const text = e.target.result;
-        document.querySelector('#csv-log').value = text;
-     };
-     reader.readAsText(input);
-  });
-</script>
+const myForm = document.getElementById("myForm");
+const csvFile = document.getElementById("csvFile");
+myForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const input = csvFile.files[0];
+    const reader = new FileReader();
+    var text;
+    reader.onload = function (e)
+    {
+        var count = 0;
+        var text = e.target.result.split("\n");
+        var numLines = text.length;
 
+        var chatSocket = new WebSocket(
+                    'ws://'
+                    + window.location.host
+                    + '/ws/members/'
+                );
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+            };
+
+        chatSocket.onmessage = function(e) {
+               const data = JSON.parse(e.data);
+                //alert(data.message[0]);
+                    var my_plot = {
+                    z : data.message,
+                    type: 'heatmap'
+                   // opacity: 0.8,
+                };
+                Plotly.newPlot('heat-map', [my_plot]);
+                    
+                };
+
+        var myfunc = setInterval(function()
+        {
+            line = text[count++ % numLines].split(",").splice(2);
+            for (let i = 0; i<line.length; i++)
+            {
+                //document.querySelector('#csv-log').value += parseFloat(line[i]) + '\n';
+                line[i] = parseFloat(line[i]);
+                
+            }
+            newArr = [];
+            while(line.length) newArr.push(line.splice(0,11));
+               
+
+            chatSocket.send(JSON.stringify({
+                        'text_data': newArr
+                    }));
+        }, 500);
+
+    };
+        reader.readAsText(input);
+});
+</script>
+<div id="heat-map"> </div>
 
 <script language="javascript">
     document.querySelector('#room-name-input').focus();
@@ -90,6 +138,5 @@ margin-right:auto; text-align: center"; border="1"; padding: 30px;>
 
 </body>
 <script src="{% static 'myfirst.jss' %}" type="text/javascript"></script>
-
-<div id="sine-graph">
+<div id="sine-graph"> </div>
 </html>

@@ -6,10 +6,19 @@ import plotly.express as px
 import csv
 
 
+
 # Create your views here.
 # https://www.codingwithricky.com/2019/08/28/easy-django-plotly/
 from django.shortcuts import render
 from django.http import HttpResponse
+
+def data_room(request):
+    import pandas as pd
+    df = pd.read_csv("members/0_data_decrystallized_noIon.csv", header = None)
+    df = df.iloc[:,2:]
+    df_html = df.to_html()
+    context = {'loaded_data': df_html}
+    return render(request, r"mysecond.html", context)
 
 def index(request):
     from random import randint

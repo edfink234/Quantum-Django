@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Page Title</title>
+        <title>HTML Data</title>
     </head>
     <body>
-        {{ loaded_data | safe }} <br/>
+        {% autoescape off %}
+        {{ loaded_data }} <br/>
+        {% endautoescape %}
+        <script id = "loaded_data">
+            
+            var value = JSON.parse(document.getElementById('loaded_data').textContent);
+            console.log(value[0]);
+        </script>
+        
+        
     </body>
+    <div id="sine-graph"> </div>
+    
 </html>
     
     

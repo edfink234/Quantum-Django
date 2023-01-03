@@ -79,7 +79,7 @@ class PlotlyConsumer(WebsocketConsumer):
             self.room_group_name, {"type": "chat_message", "message": message}
         )
         
-        #self.send(text_data=json.dumps({"message": message}))
+#        self.send(text_data=json.dumps({"message": message}))
 
 
     # Receive message from room group
@@ -88,7 +88,7 @@ class PlotlyConsumer(WebsocketConsumer):
         message = event["message"]
 
         # Send message to WebSocket
-#        self.send(text_data=json.dumps({"message": message}))
+        self.send(text_data=json.dumps({"message": message}))
     
 class TestData(WebsocketConsumer):
     def connect(self):

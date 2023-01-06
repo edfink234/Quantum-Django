@@ -1,21 +1,81 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="utf-8">
+            <link rel="shortcut icon" href="#" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <title>HTML Data</title>
+
     </head>
     <body>
         {% autoescape off %}
-        {{ loaded_data }} <br/>
+<!--        {{ loaded_data }} <br/>-->
         {% endautoescape %}
-        <script id = "loaded_data">
+        <input type="hidden" id="myVar" name="variable" value="{{ string_loaded_data }}" readonly>
+        <script type="text/javascript">
             
-            var value = JSON.parse(document.getElementById('loaded_data').textContent);
-            console.log(value[0]);
+            var myVar = document.getElementById("myVar").value;
+            console.log(typeof myVar);
+            lines = myVar.split("\n");
+            console.log(lines.length);
+            for (let i = 0; i<10; i++)
+            {
+                console.log(lines[i][0]);
+            }
+            
+            
+            var count = 0;
+            var text = myVar.split("\n");
+            var numLines = text.length;
+            window.addEventListener('load', function()
+                           {
+                var chatSocket = new WebSocket(
+                            'ws://'
+                            + window.location.host
+                            + '/ws/members/data/data/'
+                        );
+
+                chatSocket.onclose = function(e) {
+                    console.error('Chat socket closed unexpectedly');
+                    };
+
+                chatSocket.onmessage = function(e) {
+                       const data = JSON.parse(e.data);
+                        //alert(data.message[0]);
+                            var my_plot = {
+                            z : data.message,
+                            type: 'heatmap'
+                           // opacity: 0.8,
+                        };
+                        Plotly.newPlot('heat-map', [my_plot]);
+                        };
+
+                var myfunc = setInterval(function()
+                {
+                    oldline = text[count++ % numLines].split(" ");
+                    for (let i = 0; i<oldline.length; i++)
+                    {
+                        //document.querySelector('#csv-log').value += parseFloat(line[i]) + '\n';
+                        oldline[i] = parseFloat(oldline[i]);
+                        
+                    }
+                    line = oldline.filter( value => !Number.isNaN(value) );
+                    newArr = [];
+                    while(line.length) newArr.push(line.splice(0,11));
+                       
+                    chatSocket.send(JSON.stringify({
+                                'text_data': newArr
+                            }));
+                }, 500);
+            });
+            
         </script>
         
         
     </body>
-    <div id="sine-graph"> </div>
+    <div id="heat-map"> </div>
     
 </html>
     

@@ -3,7 +3,7 @@ from plotly.offline import plot
 from plotly.graph_objs import Scatter
 from plotly.graph_objects import Heatmap
 import plotly.express as px
-import csv
+import csv, json
 
 
 
@@ -16,8 +16,8 @@ def data_room(request):
     import pandas as pd
     df = pd.read_csv("members/0_data_decrystallized_noIon.csv", header = None)
     df = df.iloc[:,2:]
-    df_html = df.to_html()
-    context = {'loaded_data': df_html}
+    df_html = df#.to_html()
+    context = {'loaded_data': df_html, 'string_loaded_data': df.to_string(header=None, index = False)}
     return render(request, r"mysecond.html", context)
 
 def index(request):

@@ -46,8 +46,10 @@
                         //alert(data.message[0]);
                             var my_plot = {
                             z : data.message,
-                            type: 'heatmap'
+                            type: 'heatmap',
                            // opacity: 0.8,
+                           zmin: 407,
+                           zmax: 1518
                         };
                         Plotly.newPlot('heat-map', [my_plot]);
                         };
@@ -68,7 +70,7 @@
                     chatSocket.send(JSON.stringify({
                                 'text_data': newArr
                             }));
-                }, 500);
+                }, 0);
             });
             
         </script>

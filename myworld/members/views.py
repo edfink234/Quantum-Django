@@ -12,6 +12,38 @@ import csv, json
 from django.shortcuts import render
 from django.http import HttpResponse
 
+'''
+0_data_decrystallized_noIon.csv
+===============================
+Min: 407
+Max: 1094
+
+1_data_crystallized_oneIon.csv
+==============================
+Min: 417
+Max: 1518
+
+2_data_crystallized_two_ions.csv
+================================
+Min: 420
+Max: 1497
+
+3_data_decrystallized_hot.csv
+=============================
+Min: 412
+Max: 1253
+
+4_data_decrystallized_cloud.csv
+===============================
+Min: 415
+Max: 1349
+
+All
+===
+Min: 407
+Max: 1518
+'''
+
 def data_room(request):
     import pandas as pd
     df = pd.read_csv("members/0_data_decrystallized_noIon.csv", header = None)

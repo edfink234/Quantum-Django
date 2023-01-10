@@ -15,41 +15,44 @@ from django.http import HttpResponse
 '''
 0_data_decrystallized_noIon.csv
 ===============================
-Min: 407
-Max: 1094
+Min: 407, 0.0
+Max: 1094, 5.7
 
 1_data_crystallized_oneIon.csv
 ==============================
-Min: 417
-Max: 1518
+Min: 417, 36.3
+Max: 1518, 61.8
 
 2_data_crystallized_two_ions.csv
 ================================
-Min: 420
-Max: 1497
+Min: 420, 63.5
+Max: 1497, 92.7
 
 3_data_decrystallized_hot.csv
 =============================
-Min: 412
-Max: 1253
+Min: 412, 27.0
+Max: 1253, 77.7
 
 4_data_decrystallized_cloud.csv
 ===============================
-Min: 415
-Max: 1349
+Min: 415, 191.2
+Max: 1349, 227.7
 
 All
 ===
-Min: 407
-Max: 1518
+Min: 407, 0.0
+Max: 1518, 227.7
 '''
+
+
 
 def data_room(request):
     import pandas as pd
-    df = pd.read_csv("members/0_data_decrystallized_noIon.csv", header = None)
-    df = df.iloc[:,2:]
-    df_html = df#.to_html()
-    context = {'loaded_data': df_html, 'string_loaded_data': df.to_string(header=None, index = False)}
+    full_df = pd.read_csv("members/0_data_decrystallized_noIon.csv", header = None)
+    df = full_df.iloc[:,1:]
+#    df_col = full_df.iloc[:,1]
+#    df_html = df#.to_html()
+    context = {'loaded_data': full_df, 'string_loaded_data': df.to_string(header=None, index = False)}
     return render(request, r"mysecond.html", context)
 
 def index(request):

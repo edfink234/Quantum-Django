@@ -8,4 +8,5 @@ websocket_urlpatterns = [
     re_path(r"ws/members/$", consumers.PlotlyConsumer.as_asgi()),
     re_path(r"ws/members/$", consumers.TestData.as_asgi()),
     re_path(r"ws/members/data/data/$", consumers.TestDataAutomatic.as_asgi()),
+    re_path(r"ws/members/Motor_Control/Motor_Control$", consumers.PlotlyConsumer.as_asgi()),
 ]

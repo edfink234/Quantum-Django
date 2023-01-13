@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    
+    <link rel="stylesheet" href="{% static 'myfirst.css' %}">
+    <head>
+        <meta charset="utf-8">
+            <link rel="shortcut icon" href="#" />
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                <title>Detection</title>
+                
+    </head>
+    
+    <body>
+        {% autoescape off %}
+        {{ fig_div }} <br/>
+        {{ plot_div }} <br/>
+        <table style="border:1px solid black;margin-left:auto;
+      margin-right:auto; text-align: center"; border="1"; padding: 50px; margin:  20px 20px;>
+<!--      {{ points.0 }}-->
+      <tr>
+      <td><b>x</b></td>
+      <td><b>y</b></td>
+      </tr>
+      {% for x,y in points %}
+      <tr>
+      <td>{{ x }}</td>
+      <td>{{ y }}</td>
+      </tr>
+      {% endfor %}
+      </table>
+      <br/>
+      {% endautoescape %}
+    </body>
+</html>

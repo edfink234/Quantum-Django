@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    
+    
+    <link rel="stylesheet" href="{% static 'myfirst.css' %}">
+        <head>
+            <meta charset="utf-8">
+                <link rel="shortcut icon" href="#" />
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+                        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                        <title>Motor Control</title>
+                        
+                    </head>
+        
+        <body>
+            {% autoescape off %}
+            <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br>
+            <br/>
+            
+            {% endautoescape %}
+            <button onclick="Clear()">Clear!</button>
+            </br>
+            <button onclick="myFunction()">Click me!</button>
+            </br>
+          <button onclick="Stop()">Stop!</button>
+           </br>
+           <button onclick="Start()">Start!</button>
+    </body>
+    <script src="{% static 'myfirst.jss' %}" type="text/javascript"></script>
+    <div id="sine-graph"> </div>
+</html>

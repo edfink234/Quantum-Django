@@ -56,6 +56,9 @@ def data_room(request):
     return render(request, r"mysecond.html", context)
 
 def index(request):
+    return render(request, r"myfirst.html")
+
+def Detection(request):
     from random import randint
     
     x_data = sorted((randint(1,10) for i in range(10)))
@@ -65,6 +68,10 @@ def index(request):
                         opacity=0.8, marker_color='green')],
                output_type='div')
     points = list(zip(x_data,y_data))
+    return render(request, r"Detection.html", context={'plot_div': plot_div,
+    "points": points})
+
+def Bertha_Channels(request):
     with open("members/0_data_decrystallized_noIon.csv") as f:
         reader = csv.reader(f)
         row1 = next(reader)
@@ -73,9 +80,10 @@ def index(request):
     x = np.array(row1).reshape((11,11))
     fig_div = plot([Heatmap(z = x, type = 'heatmap')],
                output_type='div')
-    
-    return render(request, r"myfirst.html", context={'plot_div': plot_div,
-    "points": points, 'fig_div' : fig_div})
+    return render(request, r"Bertha_Channels.html", context={'fig_div' : fig_div})
+
+def Motor_Control(request):
+    return render(request, r"Motor_Control.html")
 
 def room(request, room_name):
     return render(request, r"room.html", {"room_name": room_name})

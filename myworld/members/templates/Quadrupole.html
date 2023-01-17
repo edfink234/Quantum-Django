@@ -12,7 +12,74 @@
                 
             </head>
     <body>
+        <div class="container-fluid pt-1 pl-1" style="height:50px">
+          <div class="d-flex align-items-center flex-wrap">
+            <button class="btn btn-primary" onclick="openNav()">
+              &#9776
+            </button>
+
+            <div class="d-flex">
+              <h3 class="pl-1 d-flex px-2">Quadrupole</h3>
+            </div>
+            <div class="d-flex container justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                      QFDR
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    Branching
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                      Autocalibration
+                    </div>
+                  </div>
+                </div>
+              </div>
+            
+
+              <div class="d-flex alert-success p-1 rounded border border-primary">
+                <p class="text-white"></p>Autocalibration</p>
+              </div>
+
+              <div class="d-flex alert-success p-1 rounded border border-primary">
+                Status: Executing Seq1
+              </div>
+            </div>
+
+          </div>
+        </div>
         
+        <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="{% url 'Detection' %}">Detection</a>
+        <a href="{% url 'Quadrupole' %}">Quadrupole</a>
+        <a href="{% url 'Raman' %}">Raman</a>
+        <nobr><a href="{% url 'Motor_Control' %}">Motor Control</a></nobr>
+        <nobr><a href="{% url 'Static_Control' %}">Static Control</a></nobr>
+        <nobr><a href="{% url 'Bertha_Channels' %}">Bertha Channels</a></nobr>
+        <nobr><a href="{% url 'index' %}">Home</a></nobr>
+        </div>
+        <script>
+        function openNav() {
+          document.getElementById("mySidenav").style.width = "250px";
+        }
+
+        function closeNav() {
+          document.getElementById("mySidenav").style.width = "0";
+        }
+        </script>
         <h3>What chat room would you like to enter?</h3><br>
           <input id="room-name-input" type="text" size="100"><br>
           <input id="room-name-submit" type="button" value="Enter">

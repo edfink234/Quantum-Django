@@ -5,10 +5,87 @@
         <meta charset="utf-8">
             <link rel="shortcut icon" href="#" />
             <meta name="viewport" content="width=device-width, initial-scale=1">
-                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-                <title>HTML Data</title>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                    <title>Static Control</title>
                 
             </head>
+    
     <body>
+        
+        <textarea id="csv-log" cols="100" rows="20" readonly></textarea><br>
+                
+        <form id="myForm">
+        <input type="file" id="csvFile" accept=".csv" />
+        <br />
+        <input type="submit" value="Submit" />
+        </form>
+        <script>
+        const myForm = document.getElementById("myForm");
+        const csvFile = document.getElementById("csvFile");
+        myForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            const input = csvFile.files[0];
+            const reader = new FileReader();
+            var text;
+            reader.onload = function (e)
+            {
+                var count = 0;
+                var text = e.target.result.split("\n");
+                var numLines = text.length;
+
+                var chatSocket = new WebSocket(
+                            'ws://'
+                            + window.location.host
+                            + '/ws/members/'
+                        );
+
+                chatSocket.onclose = function(e) {
+                    console.error('Chat socket closed unexpectedly');
+                    };
+
+                chatSocket.onmessage = function(e) {
+                       const data = JSON.parse(e.data);
+                        //alert(data.message[0]);
+                            var my_plot = {
+                            z : data.message,
+                            type: 'heatmap',
+                            opacity: 0.8,
+                           zmin: 407,
+                           zmax: 1518,
+                           
+                        };
+                        Plotly.newPlot('heat-map', [my_plot]);
+                            
+                        };
+
+                var myfunc = setInterval(function()
+                {
+                    line = text[count++ % numLines].split(",").splice(2);
+                    document.querySelector('#csv-log').value = "";
+                    for (let i = 0; i<line.length; i++)
+                    {
+                        document.querySelector('#csv-log').value += parseFloat(line[i]) + '\t';
+                        if ((i+1)%11==0 && i >= 10)
+                        {
+                            document.querySelector('#csv-log').value += '\n';
+                        }
+                        line[i] = parseFloat(line[i]);
+                        
+                    }
+                    newArr = [];
+                    while(line.length) newArr.push(line.splice(0,11));
+                       
+
+                    chatSocket.send(JSON.stringify({
+                                'text_data': newArr
+                            }));
+                }, 500);
+
+            };
+                reader.readAsText(input);
+        });
+        </script>
+        <div id="heat-map"> </div>
     </body>
 </html>

@@ -68,20 +68,13 @@
   </div>
 </div>
 
-<div class="container-fluid pt-1 pl-1">
-    
-    
-  <img src={% static "Camera_Dummy.jpg" %} alt="Camera Dummy">
-  <img src= {% static "Pmt_Dummy.jpg" %} alt="Pmt Dummy">
-</div>
-
 <div id="mySidenav" class="sidenav">
 <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
 <a href="{% url 'Detection' %}">Detection</a>
-<a href="#">Quadrupole</a>
-<a href="#">Raman</a>
+<a href="{% url 'Quadrupole' %}">Quadrupole</a>
+<a href="{% url 'Raman' %}">Raman</a>
 <nobr><a href="{% url 'Motor_Control' %}">Motor Control</a></nobr>
-<nobr><a href="#">Static Control</a></nobr>
+<nobr><a href="{% url 'Static_Control' %}">Static Control</a></nobr>
 <nobr><a href="{% url 'Bertha_Channels' %}">Bertha Channels</a></nobr>
 </div>
 
@@ -101,48 +94,28 @@ function closeNav() {
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
-  {% autoescape off %}
-<br/>
-<br/>
-<a href="{% url 'data' %}" type="button" style="background-color: navy; color: white; padding: 5px 10px;" >Open Data</a>
- <br/>
- <br/>
-  {% endautoescape %}
 
-  <h3>What chat room would you like to enter?</h3><br>
-    <input id="room-name-input" type="text" size="100"><br>
-    <input id="room-name-submit" type="button" value="Enter">
-
-        <br/>
-        <br/>
-        <br/>
-        
-
-<textarea id="csv-log" cols="100" rows="20" readonly></textarea><br>
-        
-<form id="myForm">
-<input type="file" id="csvFile" accept=".csv" />
-<br />
-<input type="submit" value="Submit" />
-</form>
-<script>
-const myForm = document.getElementById("myForm");
-const csvFile = document.getElementById("csvFile");
-myForm.addEventListener("submit", function (e) {
-    e.preventDefault();
-    const input = csvFile.files[0];
-    const reader = new FileReader();
-    var text;
-    reader.onload = function (e)
-    {
-        var count = 0;
-        var text = e.target.result.split("\n");
-        var numLines = text.length;
-
+{% autoescape off %}
+<input type="hidden" id="myVar" name="variable" value="{{ string_loaded_data }}" readonly>
+<script type="text/javascript">
+    
+    var myVar = document.getElementById("myVar").value;
+    console.log(typeof myVar);
+    
+    var count = 0;
+    var lowEnd = 0;
+    var highEnd = 0;
+    const interval = 100;
+    var lineVals = [];
+    var text = myVar.split("\n");
+    var numLines = text.length;
+    
+    window.addEventListener('load', function()
+                   {
         var chatSocket = new WebSocket(
                     'ws://'
                     + window.location.host
-                    + '/ws/members/'
+                    + '/ws/members/data/data/'
                 );
 
         chatSocket.onclose = function(e) {
@@ -150,54 +123,104 @@ myForm.addEventListener("submit", function (e) {
             };
 
         chatSocket.onmessage = function(e) {
-               const data = JSON.parse(e.data);
-                //alert(data.message[0]);
-                    var my_plot = {
-                    z : data.message,
-                    type: 'heatmap'
-                   // opacity: 0.8,
-                };
-                Plotly.newPlot('heat-map', [my_plot]);
-                    
-                };
+            const data = JSON.parse(e.data);
+            //alert(data.message[0]);
+            lineVals.push(data.message[1]);
+            if (lineVals.length > interval)
+            {
+                lineVals.splice(0,1);
+            }
+            var my_plot =
+            {
+                z : data.message[0],
+                type: 'heatmap',
+                // opacity: 0.8,
+                zmin: 407,
+                zmax: 1518,
+                showlegend: false,
+                showlegend: false,
+                xaxis: {visible: false},
+                showscale: false,
+                //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
+            };
+            
+            var list = [];
+            for (var i = lowEnd; i <= highEnd; i++) {
+                list.push(i);
+            }
+            
+            var next_plot =
+            {
+                x: list,
+                y: lineVals,
+                type: 'scatter',
+                xaxis: 'x2',
+                yaxis: 'y2',
+            };
+            
+            var layout = {
+              xaxis: {domain: [0, 0.3], "visible": false},
+              yaxis: {"visible": false},
+              yaxis2: {anchor: 'x2', range: [ 0, 5.7 ]},
+              xaxis2: {domain: [0.35, 1], range: list},
+
+              grid: {rows: 1, columns: 2, pattern: 'independent'},
+              
+              
+              margin: {
+                  l: 40,
+                  r: 40,
+                  b: -10,
+                  t: 50,
+                  pad: 4
+                }
+            };
+            
+            console.log( data.message[1])
+            Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
+            if (highEnd < 99)
+            {
+                highEnd++;
+            }
+            else
+            {
+                lowEnd++;
+                highEnd++;
+            }
+            
+        };
 
         var myfunc = setInterval(function()
         {
-            line = text[count++ % numLines].split(",").splice(2);
-            for (let i = 0; i<line.length; i++)
+            oldline = text[count++ % numLines].split(" ");
+            for (let i = 0; i<oldline.length; i++)
             {
                 //document.querySelector('#csv-log').value += parseFloat(line[i]) + '\n';
-                line[i] = parseFloat(line[i]);
+                oldline[i] = parseFloat(oldline[i]);
                 
             }
+            line = oldline.filter( value => !Number.isNaN(value) );
             newArr = [];
+            val = line[0];
+            line.splice(0,1);
             while(line.length) newArr.push(line.splice(0,11));
                
-
             chatSocket.send(JSON.stringify({
-                        'text_data': newArr
+                        'text_data': [newArr,val]
                     }));
-        }, 500);
-
-    };
-        reader.readAsText(input);
-});
+        }, 125);
+        
+    });
+    
 </script>
-<div id="heat-map"> </div>
-
-<script language="javascript">
-    document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
-
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/members/' + roomName + '/';
-        };
-</script>
+  <div id="heat-map-line-graph-show"></div>
+<!---->
+<!--<br/>-->
+<!--<br/>-->
+<!--<a href="{% url 'data' %}" type="button" style="background-color: navy; color: white; padding: 5px 10px;" >Open Data</a>-->
+<!-- <br/>-->
+<!-- <br/>-->
+  {% endautoescape %}
 
 </body>
 </html>

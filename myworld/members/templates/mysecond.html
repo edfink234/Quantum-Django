@@ -54,7 +54,14 @@
                         zmin: 407,
                         zmax: 1518
                     };
-                    Plotly.newPlot('heat-map', [my_plot]);
+                    
+                    var layout = {
+                      width: 570,
+                      height: 500,
+                      autosize: true,
+                    };
+                    
+                    Plotly.newPlot('heat-map', [my_plot], layout);
                     
                     var list = [];
                     for (var i = lowEnd; i <= highEnd; i++) {
@@ -76,8 +83,9 @@
                     },
                       xaxis: {
                           range: list
-                      }
-                      
+                      },
+                      width: 1000,
+                      height: 500,
                     };
                     
                     console.log( data.message[1])

@@ -56,7 +56,11 @@ def data_room(request):
     return render(request, r"mysecond.html", context)
 
 def index(request):
-    return render(request, r"myfirst.html")
+    import pandas as pd
+    full_df = pd.read_csv("members/0_data_decrystallized_noIon.csv", header = None)
+    df = full_df.iloc[:,1:]
+    context = {'loaded_data': full_df, 'string_loaded_data': df.to_string(header=None, index = False)}
+    return render(request, r"myfirst.html", context)
 
 def Detection(request):
     from random import randint
@@ -82,9 +86,18 @@ def Bertha_Channels(request):
                output_type='div')
     return render(request, r"Bertha_Channels.html", context={'fig_div' : fig_div})
 
+def Quadrupole(request):
+    return render(request, r"Quadrupole.html")
+
 def Motor_Control(request):
     return render(request, r"Motor_Control.html")
 
 def room(request, room_name):
     return render(request, r"room.html", {"room_name": room_name})
     #return render(request, r"room.html")
+
+def Raman(request):
+    return render(request, r"Raman.html")
+
+def Static_Control(request):
+    return render(request, r"Static_Control.html")

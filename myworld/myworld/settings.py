@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'members.custom_middleware.CheckUser'
 ]
 
 ROOT_URLCONF = 'myworld.urls'
@@ -58,7 +59,7 @@ ROOT_URLCONF = 'myworld.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -137,3 +138,7 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# django_project/settings.py
+LOGIN_REDIRECT_URL = "/members/"
+LOGOUT_REDIRECT_URL = "/accounts/login/"

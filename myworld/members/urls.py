@@ -10,4 +10,5 @@ path("Motor_Control/Motor_Control/", views.Motor_Control, name = "Motor_Control"
 path("Quadrupole/Quadrupole/", views.Quadrupole, name = "Quadrupole"),
 path("Raman/Raman/", views.Raman, name = "Raman"),
 path("Static_Control/Static_Control/", views.Static_Control, name = "Static_Control"),
+#path("Bertha_Channels/Bertha_Channels/ajax_info.txt", )
 ]

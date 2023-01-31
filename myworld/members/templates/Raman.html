@@ -87,10 +87,29 @@
         <br/>
         <br/><br/><br/>
         <div class="container-fluid pt-1 pl-1">
+
+        <script>
+            var chatSocket = new WebSocket(
+                        'ws://'
+                        + window.location.host
+                       + '/ws/members/Raman/Raman/'
+                    );
+              console.log("connected")
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+                };
+        
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log("hi")
+                console.log(data)
+                };
             
-            
-          <img src={% static "Camera_Dummy.jpg" %} alt="Camera Dummy">
-          <img src= {% static "Pmt_Dummy.jpg" %} alt="Pmt Dummy">
+        </script>
+        
+        
+        <img src={% static "Camera_Dummy.jpg" %} alt="Camera Dummy">
+        <img src= {% static "Pmt_Dummy.jpg" %} alt="Pmt Dummy">
         </div>
     </body>
 </html>

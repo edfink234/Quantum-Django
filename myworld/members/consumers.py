@@ -4,6 +4,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 from random import randint
 
+channel_names = []
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -163,3 +164,48 @@ class TestDataAutomatic(WebsocketConsumer):
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({"message": message}))
+
+class ZMQChannels(WebsocketConsumer):
+    count = 0
+    def connect(self):
+        channel_names.append(self.channel_name)
+        print("self.channel_name =",self.channel_name)
+        self.room_name = self.scope["url_route"]["kwargs"]
+        print(self.room_name)
+        
+        self.room_group_name = "ZMQ"
+        print(self.room_group_name)
+        # Join room group
+        async_to_sync(self.channel_layer.group_add)(
+            self.room_group_name, self.channel_name
+        )
+        
+        self.groups.append(self.room_group_name)
+        
+        self.accept()
+    def disconnect(self, close_code):
+        # Leave room group
+        
+        async_to_sync(self.channel_layer.group_discard)(
+            self.room_group_name, self.channel_name
+        )
+        #pass
+
+    def receive(self, text_data):
+        point_data_json = json.loads(text_data)
+        message = point_data_json["text_data"]
+        # Send message to room group
+        print(message)
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name, {"type": "chat_message", "message": message}
+        )
+        
+        #self.send(text_data=json.dumps({"message": message}))
+
+    def chat_message(self, event):
+        print(event)
+#        message = event["message"]+"!"*ZMQChannels.count
+#        print("message =",message)
+#        # Send message to WebSocket
+        self.send(text_data=json.dumps({"event": event}))
+        ZMQChannels.count+=1

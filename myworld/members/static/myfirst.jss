@@ -143,7 +143,7 @@ function Start()
        
         for (let i = 0; i < 5; i++)
         {
-          temp1 = getRandomIntInclusive(1,10);
+            temp1 = getRandomIntInclusive(1,10);
             temp2 = getRandomIntInclusive(1,10);
             x.push(temp1);
             y.push(temp2);

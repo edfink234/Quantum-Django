@@ -4,13 +4,17 @@ from plotly.graph_objs import Scatter
 from plotly.graph_objects import Heatmap
 import plotly.express as px
 import csv, json
-
-
-
+from multiprocessing import Process
+#import zmq
+from itertools import cycle #cycle through data
+from time import sleep
 # Create your views here.
 # https://www.codingwithricky.com/2019/08/28/easy-django-plotly/
 from django.shortcuts import render
 from django.http import HttpResponse
+#https://stackoverflow.com/questions/58832526/is-it-possible-to-use-zeromq-sockets-in-a-django-channels-consumer
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 '''
 0_data_decrystallized_noIon.csv
@@ -44,7 +48,32 @@ Min: 407, 0.0
 Max: 1518, 227.7
 '''
 
+loaded = False
+num = 0
 
+def ZMQCamera():
+    channel_layer = get_channel_layer()
+    print(channel_layer)
+#    from . import consumer
+#    context = zmq.Context()
+#    socket = context.socket(zmq.REQ)
+#    socket.connect(f"ws://127.0.0.1:8000/")
+    
+    #TODO: connect to client 1 time via socket.bind, get message, and send it below instead of "announcement_text". Then commit to Git!!!
+    #
+    for request in cycle(range(10)):
+        async_to_sync(channel_layer.group_send)(
+            "ZMQ",
+            {"type": "chat_message", "text": "announcement_text"},
+        )
+        sleep(1)
+        
+#        print("Sending request %s …" % request)
+#        socket.send_string("Hello")
+#
+#        #  Get the reply.
+#        message = socket.recv()
+#        print("Received reply %s [ %s ]" % (request, message))
 
 def data_room(request):
     import pandas as pd
@@ -76,6 +105,14 @@ def Detection(request):
     "points": points})
 
 def Bertha_Channels(request):
+    import subprocess
+    global loaded, num
+    print("again")
+    if not loaded:
+        subprocess.Popen(["python3", "/Users/edwardfinkelstein/serverZMQ.py", f"{num}"])
+        subprocess.Popen(["python3", "/Users/edwardfinkelstein/clientZMQ.py", f"{num}"])
+        num+=1
+#        loaded = True
     with open("members/0_data_decrystallized_noIon.csv") as f:
         reader = csv.reader(f)
         row1 = next(reader)
@@ -84,7 +121,7 @@ def Bertha_Channels(request):
     x = np.array(row1).reshape((11,11))
     fig_div = plot([Heatmap(z = x, type = 'heatmap')],
                output_type='div')
-    return render(request, r"Bertha_Channels.html", context={'fig_div' : fig_div})
+    return render(request, r"Bertha_Channels.html", context={'fig_div' : fig_div, "string_loaded_data" : num})
 
 def Quadrupole(request):
     return render(request, r"Quadrupole.html")
@@ -97,6 +134,8 @@ def room(request, room_name):
     #return render(request, r"room.html")
 
 def Raman(request):
+    p = Process(target=ZMQCamera)
+    p.start()
     return render(request, r"Raman.html")
 
 def Static_Control(request):

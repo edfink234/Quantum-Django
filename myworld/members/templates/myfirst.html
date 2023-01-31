@@ -116,106 +116,106 @@ function closeNav() {
         var numLines = text.length;
         
         window.addEventListener('load', function()
-                                {
+        {
             var chatSocket = new WebSocket(
-                                           'ws://'
-                                           + window.location.host
-                                           + '/ws/members/data/data/'
-                                           );
+            'ws://'
+            + window.location.host
+            + '/ws/members/data/data/'
+            );
+
+            chatSocket.onclose = function(e) {
+               console.error('Chat socket closed unexpectedly');
+            };
+
+            chatSocket.onmessage = function(e) {
+               const data = JSON.parse(e.data);
+               //alert(data.message[0]);
+               lineVals.push(data.message[1]);
+               if (lineVals.length > interval)
+               {
+                   lineVals.splice(0,1);
+               }
+               var my_plot =
+               {
+                   z : data.message[0],
+                   type: 'heatmap',
+                   // opacity: 0.8,
+                   zmin: 407,
+                   zmax: 1518,
+                   showlegend: false,
+                   showlegend: false,
+                   xaxis: {visible: false},
+                   showscale: false,
+                   //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
+               };
+               
+               var list = [];
+               for (var i = lowEnd; i <= highEnd; i++) {
+                   list.push(i);
+               }
+               
+               var next_plot =
+               {
+                   x: list,
+                   y: lineVals,
+                   type: 'scatter',
+                   xaxis: 'x2',
+                   yaxis: 'y2',
+               };
+               
+               var layout = {
+                   xaxis: {domain: [0, 0.3], "visible": false},
+                   yaxis: {"visible": false},
+                   yaxis2: {anchor: 'x2', range: [ 0, 5.7 ]},
+                   xaxis2: {domain: [0.35, 1], range: list},
+                   
+                   grid: {rows: 1, columns: 2, pattern: 'independent'},
+                   
+                   
+                   margin: {
+                       l: 40,
+                       r: 40,
+                       b: -10,
+                       t: 50,
+                       pad: 4
+                   }
+               };
+               
+               console.log( data.message[1])
+               Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
+               if (highEnd < 99)
+               {
+                   highEnd++;
+               }
+               else
+               {
+                   lowEnd++;
+                   highEnd++;
+               }
+               
+            };
+
+            var myfunc = setInterval(function()
+            {
+               oldline = text[count++ % numLines].split(" ");
+               for (let i = 0; i<oldline.length; i++)
+               {
+                   //document.querySelector('#csv-log').value += parseFloat(line[i]) + '\n';
+                   oldline[i] = parseFloat(oldline[i]);
+                   
+               }
+               line = oldline.filter( value => !Number.isNaN(value) );
+               newArr = [];
+               val = line[0];
+               line.splice(0,1);
+               while(line.length) newArr.push(line.splice(0,11));
+               
+               chatSocket.send(JSON.stringify({
+                   'text_data': [newArr,val]
+               }));
+            }, 125);
                                            
-                                           chatSocket.onclose = function(e) {
-                                               console.error('Chat socket closed unexpectedly');
-                                           };
-                                           
-                                           chatSocket.onmessage = function(e) {
-                                               const data = JSON.parse(e.data);
-                                               //alert(data.message[0]);
-                                               lineVals.push(data.message[1]);
-                                               if (lineVals.length > interval)
-                                               {
-                                                   lineVals.splice(0,1);
-                                               }
-                                               var my_plot =
-                                               {
-                                                   z : data.message[0],
-                                                   type: 'heatmap',
-                                                   // opacity: 0.8,
-                                                   zmin: 407,
-                                                   zmax: 1518,
-                                                   showlegend: false,
-                                                   showlegend: false,
-                                                   xaxis: {visible: false},
-                                                   showscale: false,
-                                                   //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
-                                               };
-                                               
-                                               var list = [];
-                                               for (var i = lowEnd; i <= highEnd; i++) {
-                                                   list.push(i);
-                                               }
-                                               
-                                               var next_plot =
-                                               {
-                                                   x: list,
-                                                   y: lineVals,
-                                                   type: 'scatter',
-                                                   xaxis: 'x2',
-                                                   yaxis: 'y2',
-                                               };
-                                               
-                                               var layout = {
-                                                   xaxis: {domain: [0, 0.3], "visible": false},
-                                                   yaxis: {"visible": false},
-                                                   yaxis2: {anchor: 'x2', range: [ 0, 5.7 ]},
-                                                   xaxis2: {domain: [0.35, 1], range: list},
-                                                   
-                                                   grid: {rows: 1, columns: 2, pattern: 'independent'},
-                                                   
-                                                   
-                                                   margin: {
-                                                       l: 40,
-                                                       r: 40,
-                                                       b: -10,
-                                                       t: 50,
-                                                       pad: 4
-                                                   }
-                                               };
-                                               
-                                               console.log( data.message[1])
-                                               Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
-                                               if (highEnd < 99)
-                                               {
-                                                   highEnd++;
-                                               }
-                                               else
-                                               {
-                                                   lowEnd++;
-                                                   highEnd++;
-                                               }
-                                               
-                                           };
-                                           
-                                           var myfunc = setInterval(function()
-                                                                    {
-                                               oldline = text[count++ % numLines].split(" ");
-                                               for (let i = 0; i<oldline.length; i++)
-                                               {
-                                                   //document.querySelector('#csv-log').value += parseFloat(line[i]) + '\n';
-                                                   oldline[i] = parseFloat(oldline[i]);
-                                                   
-                                               }
-                                               line = oldline.filter( value => !Number.isNaN(value) );
-                                               newArr = [];
-                                               val = line[0];
-                                               line.splice(0,1);
-                                               while(line.length) newArr.push(line.splice(0,11));
-                                               
-                                               chatSocket.send(JSON.stringify({
-                                                   'text_data': [newArr,val]
-                                               }));
-                                           }, 125);
-                                           
-        });
+            });
         
     </script>
     <div id="heat-map-line-graph-show"></div>

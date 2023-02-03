@@ -118,7 +118,60 @@ def serverZMQ():
     finally:
 #        print("ZMQ died")
         ZMQ_server_context.term()
+
+
+def TrueClientZMQ():
+    ZMQ_client_context = zmq.Context()
+    print("Connecting to hello world server…")
+    client_socket = ZMQ_client_context.socket(zmq.PUB)
+    print("🥹")
+    client_socket.bind("tcp://*:7539")
+    print("😓")
+    try:
+        for request in cycle(range(100)):
+            print("Sending request %s …" % request)
+            client_socket.send_multipart([b"CAMERA", request])
+            sleep(1)
+            #  Get the reply.
+    finally:
+        ZMQ_client_context.term()
+      
+def TrueServerZMQ():
+    global ZMQ_server_loaded, ZMQ_server_context, socket
+    try:
+        if not ZMQ_server_loaded:
+            ZMQ_server_context = zmq.Context()
+            socket = ZMQ_server_context.socket(zmq.SUB)
+            print("🤯")
+            sleep(1)
+            socket.connect("tcp://localhost:7539")
+            print("here")
+            ZMQ_server_loaded = True
+            socket.setsockopt(zmq.SUBSCRIBE, b"CAMERA")
+    #
+        print("🥳")
+        channel_layer = get_channel_layer()
+        print("Here is the ",channel_layer)
         
+        #TODO: connect to client 1 time via socket.bind, get message, and send it below instead of "announcement_text". Then commit to Git!!!
+        #
+        for request in cycle(range(100)):
+            message = socket.recv()
+            print("server got", message)
+            sleep(1)
+            async_to_sync(channel_layer.group_send)(
+                "ZMQ",
+                {"type": "chat.message", "text": request},
+            )
+    #        await channel_layer.group_send("ZMQ",
+    #            {"type": "chat.message", "text": request},
+    #        )
+    except:
+        sys.exit()
+    finally:
+#        print("ZMQ died")
+        socket.disconnect("tcp://localhost:7539")
+        ZMQ_server_context.term()
     
 def data_room(request):
     import pandas as pd
@@ -179,16 +232,19 @@ def room(request, room_name):
 
 def Raman(request):
     global ZMQ_client_loaded
-    p1 = Process(target=serverZMQ)
-    
+#    p1 = Process(target=serverZMQ)
+    p1 = Process(target=TrueClientZMQ)
+    p1.start()
 #    subprocess.Popen(["python3", "serverZMQtest.py"])
     if not ZMQ_client_loaded:
 #        subprocess.Popen(["python3", "clientZMQtest.py"])
-        p = Process(target=clientZMQ)
+#        p = Process(target=clientZMQ)
+        p = Process(target = TrueServerZMQ)
         ZMQ_client_loaded = True
+        
         p.start()
 #        subprocess.Popen(["python3", "serverZMQtest.py"])
-    p1.start()
+#    p1.start()
     return render(request, r"Raman.html")
 
 def Static_Control(request):

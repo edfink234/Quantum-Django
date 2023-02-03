@@ -190,22 +190,27 @@ class ZMQChannels(WebsocketConsumer):
             self.room_group_name, self.channel_name
         )
         #pass
+    
+#    def update(self, message):
+#        print("please call!!!")
 
-    def receive(self, text_data):
-        point_data_json = json.loads(text_data)
-        message = point_data_json["text_data"]
-        # Send message to room group
-        print(message)
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "chat_message", "message": message}
-        )
+#    def receive(self, text_data):
+#        point_data_json = json.loads(text_data)
+#        print("!!!",point_data_json)
+#        message = point_data_json["text_data"]
+#        # Send message to room group
+#        print(message)
+#        async_to_sync(self.channel_layer.group_send)(
+#            self.room_group_name, {"type": "chat_message", "message": message}
+#        )
         
         #self.send(text_data=json.dumps({"message": message}))
 
     def chat_message(self, event):
-        print(event)
+        print(event,"!!!")
 #        message = event["message"]+"!"*ZMQChannels.count
 #        print("message =",message)
 #        # Send message to WebSocket
+        print("Message here", event["text"])
         self.send(text_data=json.dumps({"event": event}))
         ZMQChannels.count+=1

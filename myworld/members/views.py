@@ -15,6 +15,10 @@ from django.http import HttpResponse
 #https://stackoverflow.com/questions/58832526/is-it-possible-to-use-zeromq-sockets-in-a-django-channels-consumer
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import zmq
+import subprocess
+import sys
+import os
 
 '''
 0_data_decrystallized_noIon.csv
@@ -49,32 +53,73 @@ Max: 1518, 227.7
 '''
 
 loaded = False
+
+ZMQ_server_loaded = False
+ZMQ_client_loaded = False
+ZMQ_server_context = None
+socket = None
+
 num = 0
 
-def ZMQCamera():
-    channel_layer = get_channel_layer()
-    print(channel_layer)
-#    from . import consumer
-#    context = zmq.Context()
-#    socket = context.socket(zmq.REQ)
-#    socket.connect(f"ws://127.0.0.1:8000/")
-    
-    #TODO: connect to client 1 time via socket.bind, get message, and send it below instead of "announcement_text". Then commit to Git!!!
-    #
-    for request in cycle(range(10)):
-        async_to_sync(channel_layer.group_send)(
-            "ZMQ",
-            {"type": "chat_message", "text": "announcement_text"},
-        )
-        sleep(1)
-        
-#        print("Sending request %s …" % request)
-#        socket.send_string("Hello")
-#
-#        #  Get the reply.
-#        message = socket.recv()
-#        print("Received reply %s [ %s ]" % (request, message))
+#kill -9 `ps -ef | grep python | awk '{print $2}' | xargs`
+#TODO: Change REQ to pub/sub as in Melzer Christian's example
 
+def clientZMQ():
+    ZMQ_client_context = zmq.Context()
+    print("Connecting to hello world server…")
+    client_socket = ZMQ_client_context.socket(zmq.REQ)
+    print("🥹")
+    client_socket.connect("tcp://localhost:5555")
+    print("😓")
+    try:
+        for request in cycle(range(100)):
+            print("Sending request %s …" % request)
+            client_socket.send_string("Hello "+str(request))
+            sleep(1)
+            #  Get the reply.
+            message = client_socket.recv()
+            print("Received reply %s [ %s ]" % (request, message))
+    finally:
+        client_socket.disconnect("tcp://localhost:5555")
+        ZMQ_client_context.term()
+      
+def serverZMQ():
+    global ZMQ_server_loaded, ZMQ_server_context, socket
+    try:
+        if not ZMQ_server_loaded:
+            ZMQ_server_context = zmq.Context()
+            socket = ZMQ_server_context.socket(zmq.REP)
+            print("🤯")
+            sleep(1)
+            socket.bind("tcp://*:5555")
+            print("here")
+            ZMQ_server_loaded = True
+    #
+        print("🥳")
+        channel_layer = get_channel_layer()
+        print("Here is the ",channel_layer)
+        
+        #TODO: connect to client 1 time via socket.bind, get message, and send it below instead of "announcement_text". Then commit to Git!!!
+        #
+        for request in cycle(range(100)):
+            message = socket.recv()
+            print("server got", message)
+            socket.send_string("World")
+            sleep(1)
+            async_to_sync(channel_layer.group_send)(
+                "ZMQ",
+                {"type": "chat.message", "text": request},
+            )
+    #        await channel_layer.group_send("ZMQ",
+    #            {"type": "chat.message", "text": request},
+    #        )
+    except:
+        sys.exit()
+    finally:
+#        print("ZMQ died")
+        ZMQ_server_context.term()
+        
+    
 def data_room(request):
     import pandas as pd
     full_df = pd.read_csv("members/0_data_decrystallized_noIon.csv", header = None)
@@ -105,12 +150,11 @@ def Detection(request):
     "points": points})
 
 def Bertha_Channels(request):
-    import subprocess
     global loaded, num
     print("again")
     if not loaded:
-        subprocess.Popen(["python3", "/Users/edwardfinkelstein/serverZMQ.py", f"{num}"])
-        subprocess.Popen(["python3", "/Users/edwardfinkelstein/clientZMQ.py", f"{num}"])
+        subprocess.Popen(["python3", "serverZMQ.py", f"{num}"])
+        subprocess.Popen(["python3", "clientZMQ.py", f"{num}"])
         num+=1
 #        loaded = True
     with open("members/0_data_decrystallized_noIon.csv") as f:
@@ -134,9 +178,19 @@ def room(request, room_name):
     #return render(request, r"room.html")
 
 def Raman(request):
-    p = Process(target=ZMQCamera)
-    p.start()
+    global ZMQ_client_loaded
+    p1 = Process(target=serverZMQ)
+    
+#    subprocess.Popen(["python3", "serverZMQtest.py"])
+    if not ZMQ_client_loaded:
+#        subprocess.Popen(["python3", "clientZMQtest.py"])
+        p = Process(target=clientZMQ)
+        ZMQ_client_loaded = True
+        p.start()
+#        subprocess.Popen(["python3", "serverZMQtest.py"])
+    p1.start()
     return render(request, r"Raman.html")
 
 def Static_Control(request):
     return render(request, r"Static_Control.html")
+

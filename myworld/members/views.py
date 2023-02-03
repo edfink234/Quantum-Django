@@ -232,14 +232,14 @@ def room(request, room_name):
 
 def Raman(request):
     global ZMQ_client_loaded
-#    p1 = Process(target=serverZMQ)
-    p1 = Process(target=TrueClientZMQ)
+    p1 = Process(target=serverZMQ)
+#    p1 = Process(target=TrueClientZMQ)
     p1.start()
 #    subprocess.Popen(["python3", "serverZMQtest.py"])
     if not ZMQ_client_loaded:
 #        subprocess.Popen(["python3", "clientZMQtest.py"])
-#        p = Process(target=clientZMQ)
-        p = Process(target = TrueServerZMQ)
+        p = Process(target=clientZMQ)
+#        p = Process(target = TrueServerZMQ)
         ZMQ_client_loaded = True
         
         p.start()

@@ -14,7 +14,6 @@ async def TrueServerZMQ():
     print("Here is the ",channel_layer)
     for request in cycle(range(100)):
         message = socket.recv_multipart()
-        sleep(1)
         await channel_layer.group_send(
                     "ZMQ",
                     {"type": "chat.message", "text": [i.decode() for i in message]},

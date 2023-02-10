@@ -89,6 +89,12 @@
         <div class="container-fluid pt-1 pl-1">
 
         <script>
+            var count = 0;
+            var lowEnd = 0;
+            var highEnd = 0;
+            const interval = 100;
+            var lineVals = [];
+            
             var chatSocket = new WebSocket(
                         'ws://'
                         + window.location.host
@@ -102,9 +108,79 @@
         
             chatSocket.onmessage = function(e) {
                 const data = JSON.parse(e.data);
-                console.log("hi")
-                console.log(Object.keys(data.event))
-                console.log(data.event["text"])
+                
+                Data = data.event["text"][1].replaceAll('[','').replaceAll(']','').split(',').map(Number)
+                // console.log(Object.keys(data.event))
+                console.log(Data.slice(1))
+                lineVals.push(Data[0]);
+                console.log(Data[0]);
+                
+                if (lineVals.length > interval)
+                {
+                    lineVals.splice(0,1);
+                }
+                
+                newArr = [];
+                Data.splice(0,1);
+                while(Data.length) newArr.push(Data.splice(0,11));
+                console.log(newArr);
+                var my_plot =
+                {
+                    z : newArr,
+                    type: 'heatmap',
+                    // opacity: 0.8,
+                    zmin: 407,
+                    zmax: 1518,
+                    showlegend: false,
+                    showlegend: false,
+                    xaxis: {visible: false},
+                    showscale: false,
+                    //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
+                };
+                
+                var list = [];
+                for (var i = lowEnd; i <= highEnd; i++) {
+                    list.push(i);
+                }
+                
+                var next_plot =
+                {
+                    x: list,
+                    y: lineVals,
+                    type: 'scatter',
+                    xaxis: 'x2',
+                    yaxis: 'y2',
+                };
+                
+                var layout = {
+                    xaxis: {domain: [0, 0.3], "visible": false},
+                    yaxis: {"visible": false},
+                    yaxis2: {anchor: 'x2', range: [ 0, 5.7 ]},
+                    xaxis2: {domain: [0.35, 1], range: list},
+                    
+                    grid: {rows: 1, columns: 2, pattern: 'independent'},
+                    
+                    
+                    margin: {
+                        l: 40,
+                        r: 40,
+                        b: -10,
+                        t: 50,
+                        pad: 4
+                    }
+                };
+                
+                Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
+                if (highEnd < 99)
+                {
+                    highEnd++;
+                }
+                else
+                {
+                    lowEnd++;
+                    highEnd++;
+                }
+                
             };
                          
         </script>
@@ -112,6 +188,8 @@
         
         <img src={% static "Camera_Dummy.jpg" %} alt="Camera Dummy">
         <img src= {% static "Pmt_Dummy.jpg" %} alt="Pmt Dummy">
+            <br/> <br/><br/><br/><br/>
+            <div id="heat-map-line-graph-show"></div>
         </div>
     </body>
 </html>

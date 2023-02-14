@@ -3,6 +3,8 @@ from time import sleep
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 from random import randint
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 channel_names = []
 
@@ -190,9 +192,15 @@ class ZMQChannels(WebsocketConsumer):
             self.room_group_name, self.channel_name
         )
         #pass
-    
+    def receive(self, text_data):
+        channel_layer = get_channel_layer()
+#        print(text_data)
+        print(channel_layer)
+        async_to_sync(channel_layer.send)("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
+        
     def chat_message(self, event):
 #        print(event,"!!!")
+#        sleep(1)
 #        message = event["message"]+"!"*ZMQChannels.count
 #        print("message =",message)
 #        # Send message to WebSocket

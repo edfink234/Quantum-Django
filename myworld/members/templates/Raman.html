@@ -200,10 +200,19 @@
                 console.log(lowEnd, highEnd)
                 chatSocket.close();
             }
-            
             function SendBack()
             {
+                /*var startTime = new Date().getTime();
+                var interval = setInterval(function(){
+                    if(new Date().getTime() - startTime > 100){
+                        clearInterval(interval);
+                        return;
+                    }
+                    
+                    console.log("hi friend");
+                }, 0);*/
                 chatSocket.send("hi friend");
+
             }
                          
         </script>

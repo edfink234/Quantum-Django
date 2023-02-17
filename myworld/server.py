@@ -84,9 +84,11 @@ def main():
     loop = asyncio.get_event_loop()
     asyncio.ensure_future(func_group_send(socket, channel_layer))
     asyncio.ensure_future(func_receive(channel_layer))
-#    try:
-    for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(sig, ask_exit)
+    try:
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, ask_exit)
+    except NotImplementedError:
+        pass  # Ignore if not implemented. Means this program is running in windows.
     loop.run_forever()
     loop.close()
 

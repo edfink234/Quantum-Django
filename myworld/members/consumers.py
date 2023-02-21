@@ -168,7 +168,8 @@ class TestDataAutomatic(WebsocketConsumer):
         self.send(text_data=json.dumps({"message": message}))
 
 class ZMQChannels(WebsocketConsumer):
-    count = 1
+#    count = 1
+    channel_layer = get_channel_layer()
     def connect(self):
         channel_names.append(self.channel_name)
         print("self.channel_name =",self.channel_name)
@@ -204,6 +205,7 @@ class ZMQChannels(WebsocketConsumer):
 #        message = event["message"]+"!"*ZMQChannels.count
 #        print("message =",message)
 #        # Send message to WebSocket
+        
         print("Message received from consumers!")#, event["text"])
         self.send(text_data=json.dumps({"event": event}))
-        ZMQChannels.count+=1
+#        ZMQChannels.count+=1

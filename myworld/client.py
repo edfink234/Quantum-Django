@@ -22,7 +22,7 @@ with open("members/0_data_decrystallized_noIon.csv") as f:
 #            print(row1)
 #            print("sent")
             client_socket.send_multipart((b"CAMERA", str(row1).encode()))
-#            sleep()
+            sleep(0.025)
         except StopIteration:
             f.seek(0) #move the cursor back to the beginning of the file
     

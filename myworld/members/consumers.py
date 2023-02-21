@@ -206,6 +206,6 @@ class ZMQChannels(WebsocketConsumer):
 #        print("message =",message)
 #        # Send message to WebSocket
         
-        print("Message received from consumers!")#, event["text"])
+#        print("Message received from consumers!")#, event["text"])
         self.send(text_data=json.dumps({"event": event}))
 #        ZMQChannels.count+=1

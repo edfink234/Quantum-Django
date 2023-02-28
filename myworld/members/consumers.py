@@ -1,11 +1,11 @@
 import json
 from time import sleep
 from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from random import randint
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-
+import asyncio
 channel_names = []
 
 class ChatConsumer(WebsocketConsumer):
@@ -167,10 +167,10 @@ class TestDataAutomatic(WebsocketConsumer):
         # Send message to WebSocket
         self.send(text_data=json.dumps({"message": message}))
 
-class ZMQChannels(WebsocketConsumer):
-#    count = 1
+class ZMQChannels(AsyncWebsocketConsumer):
+    count = 1
     channel_layer = get_channel_layer()
-    def connect(self):
+    async def connect(self):
         channel_names.append(self.channel_name)
         print("self.channel_name =",self.channel_name)
         self.room_name = self.scope["url_route"]["kwargs"]
@@ -179,33 +179,33 @@ class ZMQChannels(WebsocketConsumer):
         self.room_group_name = "ZMQ"
         print(self.room_group_name)
         # Join room group
-        async_to_sync(self.channel_layer.group_add)(
+        await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
         
         self.groups.append(self.room_group_name)
         
-        self.accept()
-    def disconnect(self, close_code):
+        await self.accept()
+    async def disconnect(self, close_code):
         # Leave room group
         
-        async_to_sync(self.channel_layer.group_discard)(
+        await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
         #pass
-    def receive(self, text_data):
-        channel_layer = get_channel_layer()
-#        print(text_data)
-        print(channel_layer)
-        async_to_sync(channel_layer.send)("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
+    async def receive(self, text_data):
+#        channel_layer = get_channel_layer()
+        print(text_data)
+#        print(channel_layer)
+        await ZMQChannels.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
         
-    def chat_message(self, event):
+    async def chat_message(self, event):
 #        print(event,"!!!")
 #        sleep(1)
 #        message = event["message"]+"!"*ZMQChannels.count
 #        print("message =",message)
 #        # Send message to WebSocket
         
-#        print("Message received from consumers!")#, event["text"])
-        self.send(text_data=json.dumps({"event": event}))
+#        print("Message received from consumers!", event["text"])
+        await self.send(text_data=json.dumps({"event": event}))
 #        ZMQChannels.count+=1

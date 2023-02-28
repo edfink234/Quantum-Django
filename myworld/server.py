@@ -162,11 +162,15 @@ ZMQ_server_loaded = True
 socket.setsockopt(zmq.SUBSCRIBE, b"CAMERA")
 channel_layer = get_channel_layer()
 print("Here is the ",channel_layer)
-
+count=0
 async def TrueServerZMQ():
+    global count
     while True:
         message = socket.recv_multipart()
+#        print(count)
+#        count+=1
         await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+#        socket.send_string("World")
 '''
 async def TrueServerZMQReceive():
     while True:

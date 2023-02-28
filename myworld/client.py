@@ -4,6 +4,7 @@ from time import sleep
 import numpy as np
 import csv
 
+
 connectOnce = False
 
 ZMQ_client_context = zmq.Context()
@@ -15,6 +16,7 @@ if not connectOnce:
 
 with open("members/0_data_decrystallized_noIon.csv") as f:
     reader = csv.reader(f)
+    count=0
     while True:
         try:
             row1 = next(reader) # get the next line
@@ -23,6 +25,8 @@ with open("members/0_data_decrystallized_noIon.csv") as f:
 #            print("sent")
             client_socket.send_multipart((b"CAMERA", str(row1).encode()))
             sleep(0.025)
+#            print(count)
+#            count+=1
         except StopIteration:
             f.seek(0) #move the cursor back to the beginning of the file
     

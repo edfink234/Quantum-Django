@@ -155,16 +155,7 @@ def main():
 main()
 '''
 
-ZMQ_server_context = zmq.Context()
-socket = ZMQ_server_context.socket(zmq.SUB)
-socket.connect("tcp://127.0.0.1:5555")
-ZMQ_server_loaded = True
-socket.setsockopt(zmq.SUBSCRIBE, b"CAMERA")
-channel_layer = get_channel_layer()
-print("Here is the ",channel_layer)
-count=0
-async def TrueServerZMQ():
-    global count
+async def TrueServerZMQ(socket, channel_layer):
     while True:
         message = socket.recv_multipart()
 #        print(count)
@@ -196,12 +187,20 @@ def process():
 #_thread = Thread(target=between_callback, args=(channel_layer,))
 #_thread.start()
 
-if __name__ == '__main__':   
+if __name__ == '__main__':
+    ZMQ_server_context = zmq.Context()
+    socket = ZMQ_server_context.socket(zmq.SUB)
+    socket.connect("tcp://127.0.0.1:5555")
+    ZMQ_server_loaded = True
+    socket.setsockopt(zmq.SUBSCRIBE, b"CAMERA")
+    channel_layer = get_channel_layer()
+    print("Here is the ",channel_layer)
+    count=0
     p = Process(target=between_callback, args=(channel_layer,))
     p.start()
 
     #Thread(target=asyncio.run, args=(func_receive(channel_layer),)).start()
 
-    asyncio.run(TrueServerZMQ())
+    asyncio.run(TrueServerZMQ(socket, channel_layer))
 
         

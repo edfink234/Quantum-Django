@@ -64,18 +64,22 @@
         
         <div id="mySidenav" class="sidenav">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <a href="{% url 'Detection' %}">Detection</a>
-        <a href="{% url 'Quadrupole' %}">Quadrupole</a>
-        <a href="{% url 'Raman' %}">Raman</a>
-        <nobr><a href="{% url 'Motor_Control' %}">Motor Control</a></nobr>
-        <nobr><a href="{% url 'Static_Control' %}">Static Control</a></nobr>
-        <nobr><a href="{% url 'Bertha_Channels' %}">Bertha Channels</a></nobr>
-        <nobr><a href="{% url 'index' %}">Home</a></nobr>
-        <nobr><a href="{% url 'logout' %}">Log Out</a></nobr>
+        <a href="{% url 'Detection' %}" onclick="Stop()">Detection</a>
+        <a href="{% url 'Quadrupole' %}" onclick="Stop()">Quadrupole</a>
+        <a href="{% url 'Raman' %}" onclick="Stop()">Raman</a>
+        <nobr><a href="{% url 'Motor_Control' %}" onclick="Stop()">Motor Control</a></nobr>
+        <nobr><a href="{% url 'Static_Control' %}" onclick="Stop()">Static Control</a></nobr>
+        <nobr><a href="{% url 'Bertha_Channels' %}" onclick="Stop()">Bertha Channels</a></nobr>
+        <nobr><a href="{% url 'index' %}" onclick="Stop()">Home</a></nobr>
+        <nobr><a href="{% url 'logout' %}" onclick="Stop()">Log Out</a></nobr>
         </div>
         <script>
         function openNav() {
           document.getElementById("mySidenav").style.width = "250px";
+        }
+        
+        function test(){
+            alert("test");
         }
 
         function closeNav() {
@@ -89,6 +93,7 @@
         <div class="container-fluid pt-1 pl-1">
 
         <script>
+           // console.log("connected!")
             var chatSocket = new WebSocket(
                         'ws://'
                         + window.location.host
@@ -100,16 +105,13 @@
             function Start()
             {
                 var count = 0;
-                
                 const interval = 100;
-                
-                
                 chatSocket = new WebSocket(
                             'ws://'
                             + window.location.host
                            + '/ws/members/Raman/Raman/'
                         );
-                console.log("connected");
+                //console.log("connected");
                     
                 chatSocket.onclose = function(e) {
                     //console.error('Chat socket closed unexpectedly');
@@ -117,8 +119,8 @@
             
                 chatSocket.onmessage = function(e) {
                     const data = JSON.parse(e.data);
-                    console.log("received")
-                    console.log(data.event.text)
+                    //console.log("received")
+                    //console.log(data.event.text)
                     Data = data.event["text"][1].replaceAll('[','').replaceAll(']','').split(',').map(Number)
                     // console.log(Object.keys(data.event))
                     //console.log(Data.slice(1))

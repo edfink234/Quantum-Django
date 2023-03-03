@@ -24,7 +24,7 @@ with open("members/0_data_decrystallized_noIon.csv") as f:
 #            print(row1)
 #            print("sent")
             client_socket.send_multipart((b"CAMERA", str(row1).encode()))
-            sleep(0.025)
+#            sleep(0.025)
 #            print(count)
 #            count+=1
         except StopIteration:

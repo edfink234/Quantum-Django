@@ -9,6 +9,7 @@ import asyncio
 channel_names = []
 
 class ChatConsumer(WebsocketConsumer):
+    
     def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         print(self.room_name)
@@ -25,7 +26,6 @@ class ChatConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name, self.channel_name
         )
-
         #pass
 
     def receive(self, text_data):
@@ -41,8 +41,9 @@ class ChatConsumer(WebsocketConsumer):
 
     def chat_message(self, event):
         message = event["message"]
-
+        print("chat_message",message)
         # Send message to WebSocket
+        sleep(1)
         self.send(text_data=json.dumps({"message": message}))
 
 class PlotlyConsumer(WebsocketConsumer):
@@ -83,8 +84,6 @@ class PlotlyConsumer(WebsocketConsumer):
         )
         
 #        self.send(text_data=json.dumps({"message": message}))
-
-
     # Receive message from room group
     
     def chat_message(self, event):
@@ -168,14 +167,16 @@ class TestDataAutomatic(WebsocketConsumer):
         self.send(text_data=json.dumps({"message": message}))
 
 class ZMQChannels(AsyncWebsocketConsumer):
-    count = 1
+    count = 0
+    consumers = 0
     channel_layer = get_channel_layer()
+    tasks = []
     async def connect(self):
         channel_names.append(self.channel_name)
         print("self.channel_name =",self.channel_name)
         self.room_name = self.scope["url_route"]["kwargs"]
         print(self.room_name)
-        
+#        print("hi")
         self.room_group_name = "ZMQ"
         print(self.room_group_name)
         # Join room group
@@ -186,9 +187,11 @@ class ZMQChannels(AsyncWebsocketConsumer):
         self.groups.append(self.room_group_name)
         
         await self.accept()
+        ZMQChannels.consumers += 1
     async def disconnect(self, close_code):
         # Leave room group
-        
+#        print("hi")
+        ZMQChannels.consumers -= 1
         await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
@@ -197,7 +200,8 @@ class ZMQChannels(AsyncWebsocketConsumer):
 #        channel_layer = get_channel_layer()
         print(text_data)
 #        print(channel_layer)
-        await ZMQChannels.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
+        await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
+#        await ZMQChannels.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
         
     async def chat_message(self, event):
 #        print(event,"!!!")
@@ -207,5 +211,20 @@ class ZMQChannels(AsyncWebsocketConsumer):
 #        # Send message to WebSocket
         
 #        print("Message received from consumers!", event["text"])
-        await self.send(text_data=json.dumps({"event": event}))
+#        await self.channel_layer.group_send("ZMQ", {"type": "chat.message", "text_data":json.dumps({"event": event})})
+#        ZMQChannels.count += 1
+#        if ZMQChannels.count == ZMQChannels.consumers:
+
+        ZMQChannels.count+=1
+        ZMQChannels.tasks.append(asyncio.create_task(self.send(text_data=json.dumps({"event": event}))))
+        if ZMQChannels.count == ZMQChannels.consumers:
+            done, pending = await asyncio.wait(ZMQChannels.tasks)
+            ZMQChannels.tasks.clear()
+            ZMQChannels.count = 0
+            
+#        await self.send(text_data=json.dumps({"event": event}))
+
+
+#            await ZMQChannels.channel_layer.group_send("ZMQ", {"type": "chat.message", "text_data":json.dumps({"event": event})})
+#            ZMQChannels.count = 0
 #        ZMQChannels.count+=1

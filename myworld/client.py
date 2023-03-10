@@ -59,7 +59,7 @@ with open("members/0_data_decrystallized_noIon.csv") as f:
 #
 ##                print("\n\n")
 #                print("stuck")
-            sleep(0.01)
+            sleep(0.02)
 #            print("hi")
 #            print(time())
 #            print(count)

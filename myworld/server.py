@@ -6,6 +6,8 @@ import sys
 import signal
 from asgiref.sync import async_to_sync
 from multiprocessing import Process
+from shared_memory_dict import SharedMemoryDict
+
 '''
 async def TrueServerZMQ():
     ZMQ_server_context = zmq.Context()
@@ -117,7 +119,8 @@ from threading import Thread
 #        print("Break it out")
 #        raise(e)
 
-
+#Receives data from the consumer class which received data from the client
+#via the Javascript 'signal' button
 async def func_receive(channel_layer):
     try:
         while True:
@@ -154,13 +157,66 @@ def main():
 
 main()
 '''
-
+smd_config = SharedMemoryDict(name='config', size=1024)
+#Receiving data from the camera and sending it to the group
 async def TrueServerZMQ(socket, channel_layer):
+#    global smd_config
+    count=0
     while True:
+#        smd_config["status"] = False
+##        smd_config["group_send_status"] = False
+##        print("hi")
+#        try:
+#            message = socket.recv_multipart(flags=zmq.NOBLOCK)
+#            print(message)
+#            await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+##            print("😅")
+#            smd_config["status"] = True
+##            print(smd_config["status"])
+#
+#        except zmq.Again:
+##            print(smd_config["status"])
+#            continue
+        
         message = socket.recv_multipart()
+        await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+        smd_config["status"] = True
+#import signal
+#while True:
+#    try:
+#        signal.alarm(1)
+#    except:
+#        print("bye")
+#    else:
+#        print("hi")
+#        continue
+
+
+#    finally:
+#        print("hi")
+#        continue
+        
+#        try:
+##            signal.alarm(1)
+#            message = socket.recv_multipart()
+#        except:
+#
+#            print("hi")
+#        else:
+#            continue
+#        finally:
+#            try:
+#                message
+#                smd_config["status"] = True
+#            except NameError:
+#                continue
+#        print(message)
 #        print(count)
 #        count+=1
-        await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+        
+#        await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+#        smd_config["group_send_status"] = True
+#        print("done")
 #        socket.send_string("World")
 '''
 async def TrueServerZMQReceive():
@@ -171,7 +227,6 @@ def process():
     asyncio.run(TrueServerZMQReceive())
 '''
 
-        
 #p = Process(target=process)
 #p.start()
 
@@ -196,6 +251,7 @@ if __name__ == '__main__':
     channel_layer = get_channel_layer()
     print("Here is the ",channel_layer)
     count=0
+#    sleep(1)
     p = Process(target=between_callback, args=(channel_layer,))
     p.start()
 

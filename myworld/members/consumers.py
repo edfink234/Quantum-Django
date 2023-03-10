@@ -233,17 +233,17 @@ class ZMQChannels(AsyncWebsocketConsumer):
 #        ZMQChannels.count += 1
 #        if ZMQChannels.count == ZMQChannels.consumers:
 
-        ZMQChannels.count+=1
-        print(ZMQChannels.consumers,ZMQChannels.count)
-        ZMQChannels.tasks.append(asyncio.create_task(self.send(text_data=json.dumps({"event": event}))))
-        if ZMQChannels.count == ZMQChannels.consumers:
-            done, pending = await asyncio.wait(ZMQChannels.tasks)
-#            await ZMQChannels_send(event)
-            ZMQChannels.tasks.clear()
-            ZMQChannels.count = 0
+#        ZMQChannels.count+=1
+#        print(ZMQChannels.consumers,ZMQChannels.count)
+#        ZMQChannels.tasks.append(asyncio.create_task(self.send(text_data=json.dumps({"event": event}))))
+#        if ZMQChannels.count == ZMQChannels.consumers:
+#            done, pending = await asyncio.wait(ZMQChannels.tasks)
+##            await ZMQChannels_send(event)
+#            ZMQChannels.tasks.clear()
+#            ZMQChannels.count = 0
             
             
-#        await self.send(text_data=json.dumps({"event": event}))
+        await self.send(text_data=json.dumps({"event": event}))
 #        await self.send(text_data=json.dumps({"event": event}))
 
 #            await ZMQChannels.channel_layer.group_send("ZMQ", {"type": "chat.message", "text_data":json.dumps({"event": event})})

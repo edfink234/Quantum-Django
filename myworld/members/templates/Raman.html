@@ -101,6 +101,7 @@
                     );
             var lowEnd = 0;
             var highEnd = 0;
+            var numLines = 0;
             var lineVals = [];
             var started = true;
             function Start()
@@ -124,7 +125,42 @@
                 chatSocket.onmessage = function(e) {
                     const data = JSON.parse(e.data);
                     //console.log("received")
-                    //console.log(data.event.text)
+                    
+                    //console.log(Object.keys(data.event.text).length);
+                    
+                    var startTime = parseFloat(data.event.text[2])*1000;
+                    
+                    var endTime = new Date().getTime();
+                    
+                    
+                    var timeDiff = (endTime-startTime)/1000;
+                    
+                    if (numLines++ < 1)
+                    {
+                        document.querySelector('#chat-log').value += "Time Difference = "+timeDiff+" seconds \n";
+                    }
+                    else
+                    {
+                        document.querySelector('#chat-log').value = "Time Difference = "+timeDiff+" seconds \n";
+                    }
+                    //console.log(timeDiff);
+                    if (timeDiff > 1)
+                    {
+                        chatSocket.send("increase!");
+                    }
+                    /*else if (timeDiff < 1)
+                    {
+                        chatSocket.send("decrease!");
+                    }*/
+                    
+                    /*var interval = setInterval(function(){
+                        if(new Date().getTime() - startTime > 1000){
+                            clearInterval(interval);
+                            return;
+                        }
+                        chatSocket.send("hi friend");
+                        console.log("hi friend");
+                    }, 0);*/
                     Data = data.event["text"][1].replaceAll('[','').replaceAll(']','').split(',').map(Number)
                     // console.log(Object.keys(data.event))
                     //console.log(Data.slice(1))
@@ -209,15 +245,6 @@
             }
             function SendBack()
             {
-                /*var startTime = new Date().getTime();
-                var interval = setInterval(function(){
-                    if(new Date().getTime() - startTime > 1000){
-                        clearInterval(interval);
-                        return;
-                    }
-                    chatSocket.send("hi friend");
-                    console.log("hi friend");
-                }, 0);*/
                 if (!started)
                 {
                     chatSocket = new WebSocket(
@@ -247,5 +274,7 @@
             <br/>
             <div id="heat-map-line-graph-show"></div>
         </div>
+        <br/> <br/> </br>
+        <textarea id="chat-log" cols="100" rows="1" readonly></textarea><br>
     </body>
 </html>

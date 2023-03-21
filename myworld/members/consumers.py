@@ -1,4 +1,5 @@
 import json
+import sys
 from time import sleep
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
@@ -6,6 +7,7 @@ from random import randint
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import asyncio
+from channels.exceptions import ChannelFull
 channel_names = []
 
 class ChatConsumer(WebsocketConsumer):
@@ -216,9 +218,17 @@ class ZMQChannels(AsyncWebsocketConsumer):
         #pass
     async def receive(self, text_data):
 #        channel_layer = get_channel_layer()
-        print(text_data)
+#        print(text_data)
 #        print(channel_layer)
-        await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
+#        sleep(0.1)
+        try:
+            await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
+        except ChannelFull:
+#            print("caught!")
+            pass
+#            sleep(0.1)
+#            sys.exit(1)
+            
 #        await ZMQChannels.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
         
     async def chat_message(self, event):

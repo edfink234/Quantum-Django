@@ -20,14 +20,18 @@ sleep(1)
 with open("members/0_data_decrystallized_noIon.csv") as f:
     reader = csv.reader(f)
     count=0
+    smd_config["status"] = 0.025
     while True:
         try:
             row1 = next(reader) # get the next line
             row1 = [float(i) for i in row1[1:]]
 #            print(row1)
 #            print("sent")
-            smd_config["status"] = False
+#            smd_config["status"] = False
+            sleep(smd_config["status"])
             client_socket.send_multipart((b"CAMERA", str(row1).encode(),str(time()).encode()))
+#            print(row1)
+            
 #            print("sent")
 #            while True:
 #                try:
@@ -52,14 +56,15 @@ with open("members/0_data_decrystallized_noIon.csv") as f:
 #                except KeyError:
 #                    continue
 #            print(str(row1).encode(),str(time()).encode())
-            while not smd_config["status"]:
-                pass
+#            while not smd_config["status"]:
+#                print("a")
+#                pass
 ##                print(smd_config.get("status"))
 #                client_socket.send_multipart((b"CAMERA", str(row1).encode(),str(time()).encode()))
 #
 ##                print("\n\n")
 #                print("stuck")
-            sleep(0.02)
+            
 #            print("hi")
 #            print(time())
 #            print(count)

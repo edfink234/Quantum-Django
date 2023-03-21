@@ -127,6 +127,12 @@ async def func_receive(channel_layer):
             x = await channel_layer.receive("ZMQ")
             print("pass")
             print(x)
+            if x.get('text_data')=='"increase!"':
+                smd_config["status"]+=1e-5
+                print(smd_config["status"])
+            elif x.get('text_data')=='"decrease!"':
+                smd_config["status"]-=1e-5
+                print(smd_config["status"])
     except asyncio.CancelledError as e:
         print("Break it out")
         raise(e)
@@ -161,26 +167,27 @@ smd_config = SharedMemoryDict(name='config', size=1024)
 #Receiving data from the camera and sending it to the group
 async def TrueServerZMQ(socket, channel_layer):
 #    global smd_config
-    count=0
+#    count=0
     while True:
 #        smd_config["status"] = False
 ##        smd_config["group_send_status"] = False
 ##        print("hi")
-#        try:
-#            message = socket.recv_multipart(flags=zmq.NOBLOCK)
-#            print(message)
-#            await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
-##            print("😅")
-#            smd_config["status"] = True
-##            print(smd_config["status"])
-#
-#        except zmq.Again:
-##            print(smd_config["status"])
-#            continue
+        try:
+            message = socket.recv_multipart(flags=zmq.NOBLOCK)
+        #            print(message)
+        #            smd_config["status"] = True
+            await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+        #            print("😅")
+            
+#            print(smd_config["status"])
+
+        except zmq.Again:
+#            print(smd_config["status"])
+            continue
         
-        message = socket.recv_multipart()
-        await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
-        smd_config["status"] = True
+#        message = socket.recv_multipart()
+#        await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+#        smd_config["status"] = True
 #import signal
 #while True:
 #    try:
@@ -250,7 +257,7 @@ if __name__ == '__main__':
     socket.setsockopt(zmq.SUBSCRIBE, b"CAMERA")
     channel_layer = get_channel_layer()
     print("Here is the ",channel_layer)
-    count=0
+#    count=0
 #    sleep(1)
     p = Process(target=between_callback, args=(channel_layer,))
     p.start()

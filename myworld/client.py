@@ -12,6 +12,8 @@ smd_config = SharedMemoryDict(name='config', size=1024)
 ZMQ_client_context = zmq.Context()
 print("Connecting to hello world server…")
 client_socket = ZMQ_client_context.socket(zmq.PUB)
+#print([i for i in dir(zmq) if "HWM" in i])
+client_socket.setsockopt(zmq.SNDHWM, 1000000)
 if not connectOnce:
     client_socket.bind("tcp://127.0.0.1:5555")
     connectOnce = True

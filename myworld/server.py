@@ -125,14 +125,15 @@ async def func_receive(channel_layer):
     try:
         while True:
             x = await channel_layer.receive("ZMQ")
-            print("pass")
-            print(x)
+#            print(x)
             if x.get('text_data')=='"increase!"':
                 smd_config["status"]+=1e-5
-                print(smd_config["status"])
+                print(smd_config["status"],end="\r",flush=True)
             elif x.get('text_data')=='"decrease!"':
-                smd_config["status"]-=1e-5
-                print(smd_config["status"])
+                smd_config["status"]-=1e-6
+                print(smd_config["status"],end="\r",flush=True)
+            elif x.get('text_data')=='"hi friend"':
+                print("🥳"*1000,end="\n\n")
     except asyncio.CancelledError as e:
         print("Break it out")
         raise(e)
@@ -174,6 +175,7 @@ async def TrueServerZMQ(socket, channel_layer):
 ##        print("hi")
         try:
             message = socket.recv_multipart(flags=zmq.NOBLOCK)
+            
         #            print(message)
         #            smd_config["status"] = True
             await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
@@ -252,6 +254,7 @@ def process():
 if __name__ == '__main__':
     ZMQ_server_context = zmq.Context()
     socket = ZMQ_server_context.socket(zmq.SUB)
+    socket.setsockopt(zmq.RCVHWM, 1000000)
     socket.connect("tcp://127.0.0.1:5555")
     ZMQ_server_loaded = True
     socket.setsockopt(zmq.SUBSCRIBE, b"CAMERA")

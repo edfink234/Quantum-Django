@@ -208,7 +208,7 @@
             
             document.addEventListener("click",function(event){
                 var ctxMenu = document.getElementById("ctxmenu");
-                
+                //remove right-click menu if defined
                 if (!isMouseHover && ctxMenu)
                 {
                     ctxMenu.parentNode.removeChild(ctxMenu);

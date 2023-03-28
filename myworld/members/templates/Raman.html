@@ -92,6 +92,19 @@
         <br/><br/><br/>
         <div class="container-fluid pt-1 pl-1">
 
+        <menu id="ctxMenu">
+            <menu title="File">
+                <menu title="Save"></menu>
+                <menu title="Save As"></menu>
+                <menu title="Open"></menu>
+            </menu>
+            <menu title="Edit">
+                <menu title="Cut"></menu>
+                <menu title="Copy"></menu>
+                <menu title="Paste"></menu>
+            </menu>
+        </menu>
+            
         <style>
         .square {
               width: 100px;
@@ -103,6 +116,35 @@
               animation-iteration-count: infinite;
         }
             
+        .outer_square {
+            width: 400px;
+            height: 400px;
+            
+        }
+        
+        mydiv {
+            display: block;
+            /* etc. */
+        }
+        
+        #ctxmenu {
+          position: fixed;
+          background: ghostwhite;
+          color: black;
+          cursor: pointer;
+          border: 1px black solid
+        }
+
+        #ctxmenu > p {
+          padding: 0 1rem;
+          margin: 0
+        }
+
+        #ctxmenu > p:hover {
+          background: black;
+          color: ghostwhite
+        }
+        
         @keyframes example {
           0%   {background-color:red; left:0px; top:0px;}
           25%  {background-color:yellow; left:200px; top:0px;}
@@ -111,21 +153,67 @@
           100% {background-color:red; left:0px; top:0px;}
         }
         </style>
+        
         <script>
-            document.addEventListener("contextmenu", function (evt) {
-                //alert("body clicked");
-               
-                evt.preventDefault();
-                var square = document.createElement('div');
+            let isMouseHover = false;
+            
+            let basicAnimation = function(){
+                var border = document.createElement('mydiv');
+                border.id = "border_id";
+                border.className = 'outer_square';
+                var square = document.createElement('mydiv');
                 square.className = 'square';
                 
-                document.body.appendChild(square);
-                //TODO: Add child to div so that height is constant
+                border.appendChild(square);
+                document.body.appendChild(border);
+                isMouseHover = false; //right-click menu disappears
                 
-                //document.getElementById("div").style.animation = "example";
-               
+               // alert(document.getElementById("border_id"));
+            };
+            
+            let removeBasicAnimation = function(){
+                var ctxMenu = document.getElementById("border_id");
+                if (ctxMenu)
+                {
+                    ctxMenu.parentNode.removeChild(ctxMenu);
+                }
+                isMouseHover = false; //right-click menu disappears
+            };
+
+            document.addEventListener("contextmenu", function (e) {
+                e.preventDefault();
+                let menu = document.createElement("div");
                 
-            }); 
+                menu.id = "ctxmenu";
+                menu.style.top = (e.pageY)+"px";
+                menu.style.left = (event.pageX)+"px";
+
+                //menu.style = `top:${e.pageY-10}px;left:${e.pageX-40}px`;
+                //menu.onmouseleave = () => ctxmenu.outerHTML = '';
+                menu.innerHTML =
+                String.raw`
+                <p onclick = "basicAnimation()">Add Basic Animation</p>
+                <p onclick = "removeBasicAnimation()">Remove Basic Animation</p>
+                <p onclick='alert("Thank you!"); isMouseHover = false;'>Upvote</p>`;
+                document.body.appendChild(menu);
+                menu.addEventListener("mouseleave", function (event) {
+                  isMouseHover = false;
+                }, false);
+
+                menu.addEventListener("mouseover", function (event) {
+                isMouseHover = true;
+                }, false);
+                
+            }, false);
+            
+            document.addEventListener("click",function(event){
+                var ctxMenu = document.getElementById("ctxmenu");
+                
+                if (!isMouseHover && ctxMenu)
+                {
+                    ctxMenu.parentNode.removeChild(ctxMenu);
+                }
+            },false);
             
             console.log("connected!")
             chatSocket = new WebSocket(
@@ -335,7 +423,7 @@
             <div id="heat-map-line-graph-show"></div>
         </div>
         <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>
-        <input type = "text" class = "foo" id="chat-log" name = "timediff" size="50" readonly>
+        <input type = "text" id="chat-log" name = "timediff" size="50" readonly>
             
             <br/><br/><br/>
             

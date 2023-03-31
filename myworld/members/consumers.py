@@ -168,21 +168,21 @@ class TestDataAutomatic(WebsocketConsumer):
         # Send message to WebSocket
         self.send(text_data=json.dumps({"message": message}))
 
-obj_list = []
-async def ZMQChannels_send(event):
-    global obj_list
-    print(len(obj_list))
-    tasks = []
-    for i in obj_list:
-        tasks.append(asyncio.create_task(i.send(text_data=json.dumps({"event": event}))))
-    if not tasks:
-        return
-    done, pending = await asyncio.wait(tasks)
-    obj_list.clear()
-
-def append_to_obj_list(obj):
-    global obj_list
-    obj_list.append(obj)
+#obj_list = []
+#async def ZMQChannels_send(event):
+#    global obj_list
+#    print(len(obj_list))
+#    tasks = []
+#    for i in obj_list:
+#        tasks.append(asyncio.create_task(i.send(text_data=json.dumps({"event": event}))))
+#    if not tasks:
+#        return
+#    done, pending = await asyncio.wait(tasks)
+#    obj_list.clear()
+#
+#def append_to_obj_list(obj):
+#    global obj_list
+#    obj_list.append(obj)
 
 class ZMQChannels(AsyncWebsocketConsumer):
     count = 0
@@ -190,12 +190,11 @@ class ZMQChannels(AsyncWebsocketConsumer):
 #    channel_layer = get_channel_layer()
     tasks = []
     async def connect(self):
-        global obj_list
+#        global obj_list
         channel_names.append(self.channel_name)
         print("self.channel_name =",self.channel_name)
         self.room_name = self.scope["url_route"]["kwargs"]
         print(self.room_name)
-        
         self.room_group_name = "ZMQ"
         print(self.room_group_name)
         # Join room group
@@ -207,7 +206,7 @@ class ZMQChannels(AsyncWebsocketConsumer):
         self.consumer = ZMQChannels.consumers
         await self.accept()
         ZMQChannels.consumers += 1
-        append_to_obj_list(self)
+#        append_to_obj_list(self)
     async def disconnect(self, close_code):
         # Leave room group
         print('disconnecting')

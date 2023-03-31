@@ -132,17 +132,17 @@
           background: ghostwhite;
           color: black;
           cursor: pointer;
-          border: 1px black solid
+          border: 1px black solid;
         }
 
         #ctxmenu > p {
           padding: 0 1rem;
-          margin: 0
+          margin: 0;
         }
 
         #ctxmenu > p:hover {
           background: black;
-          color: ghostwhite
+          color: ghostwhite;
         }
         
         @keyframes example {
@@ -168,6 +168,7 @@
                 document.body.appendChild(border);
                 isMouseHover = false; //right-click menu disappears
                 
+                document.getElementById('ctxmenu').remove();
                // alert(document.getElementById("border_id"));
             };
             
@@ -178,16 +179,20 @@
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
                 isMouseHover = false; //right-click menu disappears
+                
+                document.getElementById('ctxmenu').remove();
             };
 
-            document.addEventListener("contextmenu", function (e) {
-                e.preventDefault();
-                let menu = document.createElement("div");
+            document.body.addEventListener("contextmenu", function (e) {
                 
+                e.preventDefault();
+                let menu = document.createElement("mydiv");
+                console.log("hi");
                 menu.id = "ctxmenu";
-                menu.style.top = (e.pageY)+"px";
-                menu.style.left = (event.pageX)+"px";
-
+                menu.style.top = (e.clientY)+"px"; //y-position of menu
+                menu.style.left = (event.clientX)+"px"; //x-position of menu
+                
+                //console.log(document.body.offsetWidth, document.body.offsetHeight);
                 //menu.style = `top:${e.pageY-10}px;left:${e.pageX-40}px`;
                 //menu.onmouseleave = () => ctxmenu.outerHTML = '';
                 menu.innerHTML =
@@ -195,14 +200,20 @@
                 <p onclick = "basicAnimation()">Add Basic Animation</p>
                 <p onclick = "removeBasicAnimation()">Remove Basic Animation</p>
                 <p onclick='alert("Thank you!"); isMouseHover = false;'>Upvote</p>`;
-                document.body.appendChild(menu);
-                menu.addEventListener("mouseleave", function (event) {
+                
+                /*menu.addEventListener("mouseleave", function (event) {
                   isMouseHover = false;
                 }, false);
 
                 menu.addEventListener("mouseover", function (event) {
-                isMouseHover = true;
-                }, false);
+                    isMouseHover = true;
+                    
+                }, false);*/
+                
+                document.body.appendChild(menu);
+                //console.log(document.body);
+                
+                //console.log(document.getElementById("ctxmenu").offsetLeft, document.getElementById("ctxmenu").offsetTop);
                 
             }, false);
             
@@ -214,6 +225,11 @@
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
             },false);
+            
+           /* document.body.addEventListener("contextmenu", function (e) {
+                e.preventDefault();
+                alert("hi");
+            });*/
             
             console.log("connected!")
             chatSocket = new WebSocket(

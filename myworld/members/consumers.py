@@ -8,6 +8,8 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import asyncio
 from channels.exceptions import ChannelFull
+from pymongo import MongoClient
+
 channel_names = []
 
 class ChatConsumer(WebsocketConsumer):
@@ -159,30 +161,12 @@ class TestDataAutomatic(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name, {"type": "chat_message", "message": message}
         )
-        
-        #self.send(text_data=json.dumps({"message": message}))
 
     def chat_message(self, event):
         message = event["message"]
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({"message": message}))
-
-#obj_list = []
-#async def ZMQChannels_send(event):
-#    global obj_list
-#    print(len(obj_list))
-#    tasks = []
-#    for i in obj_list:
-#        tasks.append(asyncio.create_task(i.send(text_data=json.dumps({"event": event}))))
-#    if not tasks:
-#        return
-#    done, pending = await asyncio.wait(tasks)
-#    obj_list.clear()
-#
-#def append_to_obj_list(obj):
-#    global obj_list
-#    obj_list.append(obj)
 
 class ZMQChannels(AsyncWebsocketConsumer):
     count = 0
@@ -206,7 +190,6 @@ class ZMQChannels(AsyncWebsocketConsumer):
         self.consumer = ZMQChannels.consumers
         await self.accept()
         ZMQChannels.consumers += 1
-#        append_to_obj_list(self)
     async def disconnect(self, close_code):
         # Leave room group
         print('disconnecting')
@@ -214,47 +197,55 @@ class ZMQChannels(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
-        #pass
+    
+    #Receives data from Raman.html and sends it to server.py
     async def receive(self, text_data):
-#        channel_layer = get_channel_layer()
+#        print(self.scope["user"])
 #        print(text_data)
-#        print(channel_layer)
-#        sleep(0.1)
         try:
             await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
         except ChannelFull:
-#            print("caught!")
             pass
-#            sleep(0.1)
-#            sys.exit(1)
-            
-#        await ZMQChannels.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
-        
+
+    #Sends data from server.py to Raman.html
     async def chat_message(self, event):
-#        print(event,"!!!")
-#        sleep(1)
-#        message = event["message"]+"!"*ZMQChannels.count
-#        print("message =",message)
-#        # Send message to WebSocket
-        
-#        print("Message received from consumers!", event["text"])
-#        await self.channel_layer.group_send("ZMQ", {"type": "chat.message", "text_data":json.dumps({"event": event})})
-#        ZMQChannels.count += 1
-#        if ZMQChannels.count == ZMQChannels.consumers:
-
-#        ZMQChannels.count+=1
-#        print(ZMQChannels.consumers,ZMQChannels.count)
-#        ZMQChannels.tasks.append(asyncio.create_task(self.send(text_data=json.dumps({"event": event}))))
-#        if ZMQChannels.count == ZMQChannels.consumers:
-#            done, pending = await asyncio.wait(ZMQChannels.tasks)
-##            await ZMQChannels_send(event)
-#            ZMQChannels.tasks.clear()
-#            ZMQChannels.count = 0
-            
-            
         await self.send(text_data=json.dumps({"event": event}))
-#        await self.send(text_data=json.dumps({"event": event}))
 
-#            await ZMQChannels.channel_layer.group_send("ZMQ", {"type": "chat.message", "text_data":json.dumps({"event": event})})
-#            ZMQChannels.count = 0
-#        ZMQChannels.count+=1
+
+#https://pymongo.readthedocs.io/en/stable/tutorial.html
+#from pymongo import MongoClient
+#client = MongoClient()
+#db = client.test_database
+#db.posts
+#import datetime
+#post = {"author": "Mike", "text": "My first blog post!", "tags": ["mongodb", "python", "pymongo"], "date": datetime.datetime.utcnow()}
+#posts = db.posts
+#post_id = posts.insert_one(post).inserted_id
+#db.list_collection_names()
+#import pprint
+#pprint.pprint(posts.find_one())
+#pprint.pprint(posts.find_one({"author": "Mike"}))
+#posts.find_one({"author": "Eliot"})
+#pprint.pprint(posts.find_one({"_id": post_id}))
+
+
+#from pymongo import MongoClient
+#client = MongoClient()
+#db = client.test_database
+#import datetime
+#post = {"author": "Mike", "text": "My first blog post!", "tags": ["mongodb", "python", "pymongo"], "date": datetime.datetime.utcnow()}
+#posts = db.posts
+#post_id = posts.insert_one(post).inserted_id
+#import pprint
+#pprint.pprint(posts.find_one())
+#pprint.pprint(posts.find({"author": "Mike"}))
+#posts.find_one_and_delete({"author": "Mike"}) #https://www.geeksforgeeks.org/python-mongodb-find_one_and_update-query/
+#
+#from pymongo import MongoClient
+#client = MongoClient()
+#db = client.test_database #test_database is the database we store everything in
+#db.posts.find_one({"author": "Mike"})
+#db.posts.find_one_and_delete({"author": "Mike"})
+#db.posts.insert_one({"author": "Mike", "data": "some html code"})
+#db.posts.find_one_and_update({"author": "Mike"}, { '$set': {"author":"ed", "data":"some other html code"}})
+#db.posts.find_one_and_update({"author": "ed"}, { '$set': {"data":"some new html code"}})

@@ -126,14 +126,18 @@ async def func_receive(channel_layer):
         while True:
             x = await channel_layer.receive("ZMQ")
 #            print(x)
-            if x.get('text_data')=='"increase!"':
-                smd_config["status"]+=1e-5
-                print(smd_config["status"],end="\r",flush=True)
-            elif x.get('text_data')=='"decrease!"':
-                smd_config["status"]-=1e-6
-                print(smd_config["status"],end="\r",flush=True)
+            if smd_config.get("status"):
+                if x.get('text_data')=='"increase!"':
+                    smd_config["status"]+=1e-5
+                    print(smd_config["status"],end="\r",flush=True)
+                elif x.get('text_data')=='"decrease!"':
+                    smd_config["status"]-=1e-6
+                    print(smd_config["status"],end="\r",flush=True)
             elif x.get('text_data')=='"hi friend"':
                 print("🥳"*1000,end="\n\n")
+            else:
+                print(x.get('text_data'))
+            
     except asyncio.CancelledError as e:
         print("Break it out")
         raise(e)

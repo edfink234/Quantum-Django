@@ -260,28 +260,7 @@ def room(request, room_name):
     return render(request, r"room.html", {"room_name": room_name})
 
 def Raman(request):
-    '''
-    global ZMQ_client_loaded
-    asyncio.create_task(TrueServerZMQ())
-    p1 = Process(target=serverZMQ)
-    p1 = Process(target=TrueClientZMQ)
-    p1.start()
-    subprocess.Popen(["python3", "serverZMQtest.py"])
-    if not ZMQ_client_loaded:
-        subprocess.Popen(["python3", "clientZMQtest.py"])
-        p = Process(target=clientZMQ)
-        
-        p = Process(target = TrueServerZMQ)
-        ZMQ_client_loaded = True
-        try:
-            p.start()
-        except:
-            print("caught")
-        
-        
-        subprocess.Popen(["python3", "serverZMQtest.py"])
-    p1.start()
-    '''
+#    print(request.user.get_username())
     return render(request, r"Raman.html")
 
 def Static_Control(request):

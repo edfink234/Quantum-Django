@@ -156,7 +156,7 @@
         
         <script>
             let isMouseHover = false;
-            
+            let htmlstringlist = ["{{ user.get_username }}"];
             let basicAnimation = function(){
                 var border = document.createElement('mydiv');
                 border.id = "border_id";
@@ -166,6 +166,10 @@
                 
                 border.appendChild(square);
                 document.body.appendChild(border);
+                htmlstringlist.push(border.innerHTML.toString());
+                console.log(htmlstringlist.join('\n'));
+                chatSocket.send(htmlstringlist.join('\n'));
+                        
                 isMouseHover = false; //right-click menu disappears
                 
                 document.getElementById('ctxmenu').remove();
@@ -176,6 +180,11 @@
                 var ctxMenu = document.getElementById("border_id");
                 if (ctxMenu)
                 {
+                    if (htmlstringlist.length > 1)
+                    {
+                        htmlstringlist.pop();
+                    }
+                    chatSocket.send(htmlstringlist.join('\n'));
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
                 isMouseHover = false; //right-click menu disappears
@@ -187,14 +196,10 @@
                 
                 e.preventDefault();
                 let menu = document.createElement("mydiv");
-                console.log("hi");
                 menu.id = "ctxmenu";
                 menu.style.top = (e.clientY)+"px"; //y-position of menu
                 menu.style.left = (event.clientX)+"px"; //x-position of menu
                 
-                //console.log(document.body.offsetWidth, document.body.offsetHeight);
-                //menu.style = `top:${e.pageY-10}px;left:${e.pageX-40}px`;
-                //menu.onmouseleave = () => ctxmenu.outerHTML = '';
                 menu.innerHTML =
                 String.raw`
                 <p onclick = "basicAnimation()">Add Basic Animation</p>
@@ -211,9 +216,6 @@
                 }, false);*/
                 
                 document.body.appendChild(menu);
-                //console.log(document.body);
-                
-                //console.log(document.getElementById("ctxmenu").offsetLeft, document.getElementById("ctxmenu").offsetTop);
                 
             }, false);
             
@@ -225,12 +227,7 @@
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
             },false);
-            
-           /* document.body.addEventListener("contextmenu", function (e) {
-                e.preventDefault();
-                alert("hi");
-            });*/
-            
+            console.log("{{ user.get_username }}");
             console.log("connected!")
             chatSocket = new WebSocket(
                         'ws://'
@@ -282,7 +279,6 @@
             
                 chatSocket.onmessage = function(e) {
                     const data = JSON.parse(e.data);
-                    //console.log("received")
                     
                     //console.log(Object.keys(data.event.text).length);
                     
@@ -295,13 +291,10 @@
                     
                     if (numLines++ < 1)
                     {
-                        //document.querySelector('#chat-log').value += "Time Difference = "+timeDiff+" seconds \n";
-                        
                         document.querySelector('#chat-log').value += timeDiff;
                     }
                     else
                     {
-                        //document.querySelector('#chat-log').value = "Time Difference = "+timeDiff+" seconds \n";
                         document.querySelector('#chat-log').value = timeDiff;
                     }
                     //console.log(timeDiff);
@@ -313,30 +306,15 @@
                     {
                         chatSocket.send("decrease!");
                     }
-                    
-                    /*var interval = setInterval(function(){
-                        if(new Date().getTime() - startTime > 1000){
-                            clearInterval(interval);
-                            return;
-                        }
-                        chatSocket.send("hi friend");
-                        console.log("hi friend");
-                    }, 0);*/
                     Data = data.event["text"][1].replaceAll('[','').replaceAll(']','').split(',').map(Number)
-                    // console.log(Object.keys(data.event))
-                    //console.log(Data.slice(1))
                     lineVals.push(Data[0]);
-                    //console.log(Data[0]);
-                    
                     if (lineVals.length > interval)
                     {
                         lineVals.splice(0,1);
                     }
-                    
                     newArr = [];
                     Data.splice(0,1);
                     while(Data.length) newArr.push(Data.splice(0,11));
-                    //console.log(newArr);
                     var my_plot =
                     {
                         z : newArr,
@@ -399,8 +377,7 @@
             
             function Stop()
             {
-                //alert("start");
-                console.log(lowEnd, highEnd)
+                console.log(lowEnd, highEnd);
                 chatSocket.close();
                 started = false;
             }
@@ -420,7 +397,6 @@
                 else
                 {
                     chatSocket.send("hi friend");
-                    //chatSocket.onopen = () => chatSocket.send("hi friend");
                 }
             }
                         
@@ -446,6 +422,7 @@
        
     </body>
 </html>
+
 
 
 

@@ -7,6 +7,8 @@ import signal
 from asgiref.sync import async_to_sync
 from multiprocessing import Process
 from shared_memory_dict import SharedMemoryDict
+import re
+from pymongo import MongoClient
 
 '''
 async def TrueServerZMQ():
@@ -122,21 +124,45 @@ from threading import Thread
 #Receives data from the consumer class which received data from the client
 #via the Javascript 'signal' button
 async def func_receive(channel_layer):
+    users = set()
+    client = MongoClient()
+    db = client.test_database
+    print(db.posts.find_one({"user": "edwardfinkelstein"}))
     try:
         while True:
             x = await channel_layer.receive("ZMQ")
 #            print(x)
             if smd_config.get("status"):
+
                 if x.get('text_data')=='"increase!"':
                     smd_config["status"]+=1e-5
                     print(smd_config["status"],end="\r",flush=True)
                 elif x.get('text_data')=='"decrease!"':
                     smd_config["status"]-=1e-6
                     print(smd_config["status"],end="\r",flush=True)
-            elif x.get('text_data')=='"hi friend"':
-                print("🥳"*1000,end="\n\n")
-            else:
-                print(x.get('text_data'))
+                elif x.get('text_data')=='"hi friend"':
+                    print("🥳"*1000,end="\n\n")
+
+                #get mongodb data if it's an html string
+                else:
+                    regex = r"user = (.+);"
+                    html_string = x.get('text_data')
+                    match = re.search(regex, html_string)
+                    if match:
+                        user = match.group(1) #get part matched by (.+)
+                        print(db.posts.find_one({"user": user}))
+                        users.add(user) #add user to set of users for the heck of it.
+                        
+                        #extract the html part of the string
+                        html_string = html_string[match.end()+1:-1].replace("\\", "")
+                        
+                        #Now, add/update the user with the corresponding html string
+                        if db.posts.find_one({"user": user}):
+                            db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "data":html_string}})
+                        else:
+                            db.posts.insert_one({"user": user, "data":html_string})
+                        
+                        print(db.posts.find_one({"user": user}))
             
     except asyncio.CancelledError as e:
         print("Break it out")
@@ -171,8 +197,6 @@ main()
 smd_config = SharedMemoryDict(name='config', size=1024)
 #Receiving data from the camera and sending it to the group
 async def TrueServerZMQ(socket, channel_layer):
-#    global smd_config
-#    count=0
     while True:
 #        smd_config["status"] = False
 ##        smd_config["group_send_status"] = False

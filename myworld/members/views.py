@@ -20,6 +20,7 @@ import subprocess
 import sys
 import os
 import asyncio
+from pymongo import MongoClient
 
 '''
 0_data_decrystallized_noIon.csv
@@ -261,7 +262,16 @@ def room(request, room_name):
 
 def Raman(request):
 #    print(request.user.get_username())
-    return render(request, r"Raman.html")
+    client = MongoClient()
+    db = client.test_database
+    if request.user.is_authenticated:
+        username = request.user.username
+    print(username)
+    html_string = ""
+    if db.posts.find_one({"user": username}):
+        html_string = db.posts.find_one({"user": username})['data']
+    
+    return render(request, r"Raman.html", context = {'gui_elements' : html_string})
 
 def Static_Control(request):
     return render(request, r"Static_Control.html")

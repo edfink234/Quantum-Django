@@ -158,8 +158,15 @@
             console.log(String.raw`{{ gui_elements | safe }};`);
             let isMouseHover = false;
             
-            htmlElements = String.raw`{{ gui_elements | safe }}`.split(";");
+            /*htmlElements = String.raw`{{ gui_elements | safe }}`.split(";");
             console.log(htmlElements);
+            
+            let htmlstringlist = ["user = {{ user.get_username }}"];
+            
+            for (const elem of htmlElements)
+            {
+                htmlstringlist.push(elem);
+            }*/
             
             let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`];
             
@@ -174,6 +181,7 @@
                 document.body.appendChild(border);
                 htmlstringlist.push(border.outerHTML.toString());
                 fullHtml = htmlstringlist.join(' ')
+                //fullHtml = htmlstringlist.join(';');
                 console.log(fullHtml);
                 SendBack(fullHtml);
                         
@@ -187,13 +195,26 @@
                 if (ctxMenu)
                 {
                     fullHtml = htmlstringlist.join(' ');
+                    //fullHtml = htmlstringlist.join(';');
                     //console.log(htmlstringlist);
                     if (htmlstringlist.length > 1)
                     {
-                        const elem = htmlstringlist.pop();
-                        console.log("elem = ",elem);
+                        
+                        length = htmlstringlist.length
+                        lastIndex = htmlstringlist[length-1].lastIndexOf(String.raw`<mydiv id="border_id"`);
+                        
+                        console.log(lastIndex);
+                        
+                        htmlstringlist[length-1] = htmlstringlist[length-1].substring(0,lastIndex);
+                        
+                        if (!htmlstringlist[length-1])
+                        {
+                            const elem = htmlstringlist.pop();
+                            console.log("elem = ",elem);
+                        }
                     }
                     fullHtml = htmlstringlist.join(' ');
+                    //fullHtml = htmlstringlist.join(';');
                     console.log(fullHtml);
                     SendBack(fullHtml);
                     ctxMenu.parentNode.removeChild(ctxMenu);

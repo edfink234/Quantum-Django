@@ -154,6 +154,7 @@ async def func_receive(channel_layer):
                 users.add(user) #add user to set of users for the heck of it.
                 
                 #extract the html part of the string
+                
                 html_string = html_string[match.end()+1:-1].replace("\\", "")
                 
                 #Now, add/update the user with the corresponding html string

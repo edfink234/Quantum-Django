@@ -270,7 +270,6 @@ def Raman(request):
     html_string = ""
     if db.posts.find_one({"user": username}):
         html_string = db.posts.find_one({"user": username})['data']
-    print(html_string)
     
     return render(request, r"Raman.html", context = {'gui_elements' : html_string})
 

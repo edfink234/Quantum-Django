@@ -155,8 +155,14 @@
         </style>
         
         <script>
+            console.log(String.raw`{{ gui_elements | safe }};`);
             let isMouseHover = false;
-            let htmlstringlist = ["user = {{ user.get_username }};"];
+            
+            htmlElements = String.raw`{{ gui_elements | safe }}`.split(";");
+            console.log(htmlElements);
+            
+            let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`];
+            
             let basicAnimation = function(){
                 var border = document.createElement('mydiv');
                 border.id = "border_id";
@@ -166,36 +172,37 @@
                 
                 border.appendChild(square);
                 document.body.appendChild(border);
-                htmlstringlist.push(border.innerHTML.toString());
-                console.log(htmlstringlist.join(' '));
-                //chatSocket.send(htmlstringlist.join(' '));
-                SendBack(htmlstringlist.join(' '));
+                htmlstringlist.push(border.outerHTML.toString());
+                fullHtml = htmlstringlist.join(' ')
+                console.log(fullHtml);
+                SendBack(fullHtml);
                         
                 isMouseHover = false; //right-click menu disappears
                 
                 document.getElementById('ctxmenu').remove();
-               // alert(document.getElementById("border_id"));
             };
             
             let removeBasicAnimation = function(){
                 var ctxMenu = document.getElementById("border_id");
                 if (ctxMenu)
                 {
+                    fullHtml = htmlstringlist.join(' ');
+                    //console.log(htmlstringlist);
                     if (htmlstringlist.length > 1)
                     {
-                        htmlstringlist.pop();
+                        const elem = htmlstringlist.pop();
+                        console.log("elem = ",elem);
                     }
-                    //chatSocket.send(htmlstringlist.join(' '));
-                    
-                    SendBack(htmlstringlist.join(' '));
-                    
+                    fullHtml = htmlstringlist.join(' ');
+                    console.log(fullHtml);
+                    SendBack(fullHtml);
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
                 isMouseHover = false; //right-click menu disappears
                 
                 document.getElementById('ctxmenu').remove();
             };
-
+            
             document.body.addEventListener("contextmenu", function (e) {
                 
                 e.preventDefault();
@@ -423,7 +430,8 @@
             
             <br/><br/><br/>
         
-        {{ gui_elements | safe }}
+        {{ gui_elements | safe }};
+        
        
     </body>
 </html>

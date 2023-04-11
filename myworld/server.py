@@ -127,7 +127,7 @@ async def func_receive(channel_layer):
     users = set()
     client = MongoClient()
     db = client.test_database
-    print(db.posts.find_one({"user": "edwardfinkelstein"}))
+#    print(db.posts.find_one({"user": "edwardfinkelstein"}))
     try:
         while True:
             x = await channel_layer.receive("ZMQ")
@@ -140,29 +140,29 @@ async def func_receive(channel_layer):
                 elif x.get('text_data')=='"decrease!"':
                     smd_config["status"]-=1e-6
                     print(smd_config["status"],end="\r",flush=True)
-                elif x.get('text_data')=='"hi friend"':
-                    print("🥳"*1000,end="\n\n")
+            if x.get('text_data')=='"hi friend"':
+                print("🥳"*1000,end="\n\n")
 
-                #get mongodb data if it's an html string
+            #get mongodb data if it's an html string
+
+            regex = r"user = (.+);"
+            html_string = x.get('text_data')
+            match = re.search(regex, html_string)
+            if match:
+                user = match.group(1) #get part matched by (.+)
+#                        print(db.posts.find_one({"user": user}))
+                users.add(user) #add user to set of users for the heck of it.
+                
+                #extract the html part of the string
+                html_string = html_string[match.end()+1:-1].replace("\\", "")
+                
+                #Now, add/update the user with the corresponding html string
+                if db.posts.find_one({"user": user}):
+                    db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "data":html_string}})
                 else:
-                    regex = r"user = (.+);"
-                    html_string = x.get('text_data')
-                    match = re.search(regex, html_string)
-                    if match:
-                        user = match.group(1) #get part matched by (.+)
-                        print(db.posts.find_one({"user": user}))
-                        users.add(user) #add user to set of users for the heck of it.
-                        
-                        #extract the html part of the string
-                        html_string = html_string[match.end()+1:-1].replace("\\", "")
-                        
-                        #Now, add/update the user with the corresponding html string
-                        if db.posts.find_one({"user": user}):
-                            db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "data":html_string}})
-                        else:
-                            db.posts.insert_one({"user": user, "data":html_string})
-                        
-                        print(db.posts.find_one({"user": user}))
+                    db.posts.insert_one({"user": user, "data":html_string})
+                
+                print(db.posts.find_one({"user": user}))
             
     except asyncio.CancelledError as e:
         print("Break it out")

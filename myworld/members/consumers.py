@@ -202,6 +202,7 @@ class ZMQChannels(AsyncWebsocketConsumer):
     async def receive(self, text_data):
 #        print(self.scope["user"])
 #        print(text_data)
+#        print(type(json.dumps(text_data)))
         try:
             await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
         except ChannelFull:

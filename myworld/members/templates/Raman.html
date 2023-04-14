@@ -14,52 +14,51 @@
     
     <body>
         <div class="container-fluid pt-1 pl-1" style="height:50px">
-          <div class="d-flex align-items-center flex-wrap">
-            <button class="btn btn-primary" onclick="openNav()">
-              &#9776
-            </button>
+<!--            <div class="row">-->
+                <div class="d-flex align-items-center flex-wrap">
+                    <button class="btn btn-primary" onclick="openNav()">
+                        &#9776
+                    </button>
 
-            <div class="d-flex">
-              <h3 class="pl-1 d-flex px-2">Raman</h3>
-            </div>
-            <div class="d-flex container justify-content-between">
-              <div class="d-flex align-items-center">
-                <div class="px-2">
-                  <div class="progress" style="width:100px">
-                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                      QFDR
+                    <div class="d-flex">
+                        <h3 class="pl-1 d-flex px-2">Raman</h3>
                     </div>
-                  </div>
-                </div>
+                    <div class="d-flex container justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="px-2">
+                                <div class="progress" style="width:100px">
+                                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                                        QFDR
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="px-2">
+                                <div class="progress" style="width:100px">
+                                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                        Branching
+                                    </div>
+                                </div>
+                            </div>
 
-                <div class="px-2">
-                  <div class="progress" style="width:100px">
-                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                    Branching
+                            <div class="px-2">
+                                <div class="progress" style="width:100px">
+                                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                        Autocalibration
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex alert-success p-1 rounded border border-primary">
+                            <p class="text-white"></p>Autocalibration</p>
+                        </div>
+
+                        <div class="d-flex alert-success p-1 rounded border border-primary">
+                            Status: Executing Seq1
+                        </div>
                     </div>
-                  </div>
                 </div>
-
-                <div class="px-2">
-                  <div class="progress" style="width:100px">
-                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                      Autocalibration
-                    </div>
-                  </div>
-                </div>
-              </div>
-            
-
-              <div class="d-flex alert-success p-1 rounded border border-primary">
-                <p class="text-white"></p>Autocalibration</p>
-              </div>
-
-              <div class="d-flex alert-success p-1 rounded border border-primary">
-                Status: Executing Seq1
-              </div>
-            </div>
-
-          </div>
+<!--            </div>-->
         </div>
         
         <div id="mySidenav" class="sidenav">
@@ -73,86 +72,81 @@
         <nobr><a href="{% url 'index' %}" onclick="Stop()">Home</a></nobr>
         <nobr><a href="{% url 'logout' %}" onclick="Stop()">Log Out</a></nobr>
         </div>
+        
         <script>
-        function openNav() {
-          document.getElementById("mySidenav").style.width = "250px";
-        }
-        
-        function test(){
-            alert("test");
-        }
+            function openNav() {
+              document.getElementById("mySidenav").style.width = "250px";
+            }
+            
+            function test(){
+                alert("test");
+            }
 
-        function closeNav() {
-          document.getElementById("mySidenav").style.width = "0";
-        }
+            function closeNav() {
+              document.getElementById("mySidenav").style.width = "0";
+            }
         </script>
-        <br/>
-        <br/>
-        <br/>
-        <br/><br/><br/>
-        <div class="container-fluid pt-1 pl-1">
-
-        <menu id="ctxMenu">
-            <menu title="File">
-                <menu title="Save"></menu>
-                <menu title="Save As"></menu>
-                <menu title="Open"></menu>
-            </menu>
-            <menu title="Edit">
-                <menu title="Cut"></menu>
-                <menu title="Copy"></menu>
-                <menu title="Paste"></menu>
-            </menu>
-        </menu>
-            
+        
         <style>
-        .square {
-              width: 100px;
-              height: 100px;
-              background-color: red;
-              position: relative;
-              animation-name: example;
-              animation-duration: 4s;
-              animation-iteration-count: infinite;
-        }
+            .square {
+                  width: 100px;
+                  height: 100px;
+                  background-color: red;
+                  position: relative;
+                  animation-name: example;
+                  animation-duration: 4s;
+                  animation-iteration-count: infinite;
+            }
+                
+            .outer_square {
+                width: 100%;
+                height: 400px;
+                position: relative;
+            }
             
-        .outer_square {
-            width: 400px;
-            height: 400px;
+            mydiv {
+                display: block;
+                /* etc. */
+            }
             
-        }
-        
-        mydiv {
-            display: block;
-            /* etc. */
-        }
-        
-        #ctxmenu {
-          position: fixed;
-          background: ghostwhite;
-          color: black;
-          cursor: pointer;
-          border: 1px black solid;
-        }
+            #ctxmenu {
+              position: fixed;
+              background: ghostwhite;
+              color: black;
+              cursor: pointer;
+              border: 1px black solid;
+            }
 
-        #ctxmenu > p {
-          padding: 0 1rem;
-          margin: 0;
-        }
+            #ctxmenu > p {
+              padding: 0 1rem;
+              margin: 0;
+            }
 
-        #ctxmenu > p:hover {
-          background: black;
-          color: ghostwhite;
-        }
-        
-        @keyframes example {
-          0%   {background-color:red; left:0px; top:0px;}
-          25%  {background-color:yellow; left:200px; top:0px;}
-          50%  {background-color:blue; left:200px; top:200px;}
-          75%  {background-color:green; left:0px; top:200px;}
-          100% {background-color:red; left:0px; top:0px;}
-        }
+            #ctxmenu > p:hover {
+              background: black;
+              color: ghostwhite;
+            }
+            
+            @keyframes example {
+                0%   {background-color:red; left:0%; top:0%;}
+                25%  {background-color:yellow; left:50%; top:0%;}
+    /*            50%  {background-color:blue; left:calc(50% * var(--random1))); top:50%;}
+                75%  {background-color:green; left:calc(50% * var(--random2)); top:50%;}*/
+                50%  {background-color:blue; left:calc(50%); top:50%;}
+                75%  {background-color:green; left:calc(0%); top:50%;}
+                100% {background-color:red; left:0%; top:0%;}
+            }
         </style>
+        
+        <script>
+        /*function getRandom()
+        {
+            return Math.random();
+        }
+
+        document.documentElement.style.setProperty('--random1', getRandom());
+        document.documentElement.style.setProperty('--random2', getRandom());*/
+        </script>
         
         <script>
             console.log(String.raw`{{ gui_elements | safe }};`);
@@ -174,6 +168,7 @@
                 var border = document.createElement('mydiv');
                 border.id = "border_id";
                 border.className = 'outer_square';
+                //border.className = 'container';
                 var square = document.createElement('mydiv');
                 square.className = 'square';
                 
@@ -191,8 +186,8 @@
             };
             
             let removeBasicAnimation = function(){
-                var ctxMenu = document.getElementById("border_id");
-                if (ctxMenu)
+                var ctxMenu = document.getElementById("border_id"); //get animation html element
+                if (ctxMenu) //if an animation is on the webpage, delete it
                 {
                     fullHtml = htmlstringlist.join(' ');
                     //fullHtml = htmlstringlist.join(';');
@@ -221,7 +216,6 @@
                 }
                 isMouseHover = false; //right-click menu disappears
                 
-                document.getElementById('ctxmenu').remove();
             };
             
             document.body.addEventListener("contextmenu", function (e) {
@@ -229,7 +223,7 @@
                 e.preventDefault();
                 let menu = document.createElement("mydiv");
                 menu.id = "ctxmenu";
-                menu.style.top = (e.clientY)+"px"; //y-position of menu
+                menu.style.top = (e.clientY)+"px";      //y-position of menu
                 menu.style.left = (event.clientX)+"px"; //x-position of menu
                 
                 menu.innerHTML =
@@ -238,27 +232,21 @@
                 <p onclick = "removeBasicAnimation()">Remove Basic Animation</p>
                 <p onclick='alert("Thank you!"); isMouseHover = false;'>Upvote</p>`;
                 
-                /*menu.addEventListener("mouseleave", function (event) {
-                  isMouseHover = false;
-                }, false);
-
-                menu.addEventListener("mouseover", function (event) {
-                    isMouseHover = true;
-                    
-                }, false);*/
-                
                 document.body.appendChild(menu);
                 
             }, false);
             
             document.addEventListener("click",function(event){
                 var ctxMenu = document.getElementById("ctxmenu");
-                //remove right-click menu if defined
+                //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
+                //and the user's not hovering over one of them (!isMouseHover)
                 if (!isMouseHover && ctxMenu)
                 {
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
-            },false);
+                
+            }, false);
+            
             console.log("{{ user.get_username }}");
             console.log("connected!")
             chatSocket = new WebSocket(
@@ -266,8 +254,8 @@
                         + window.location.host
                        + '/ws/members/Raman/Raman/'
                     );
-            var lowEnd = 0;
-            var highEnd = 0;
+            var lowEnd = 0;     //lower x-value for line graph
+            var highEnd = 0;    //upper x-value for line graph
             var numLines = 0;
             var lineVals = [];
             var started = true;
@@ -311,9 +299,7 @@
             
                 chatSocket.onmessage = function(e) {
                     const data = JSON.parse(e.data);
-                    
-                    //console.log(Object.keys(data.event.text).length);
-                    
+                                        
                     var startTime = parseFloat(data.event.text[2])*1000;
                     
                     var endTime = new Date().getTime();
@@ -434,24 +420,59 @@
                         
             
         </script>
-        
-        <img src={% static "Camera_Dummy.jpg" %} alt="Camera Dummy">
-        <img src= {% static "Pmt_Dummy.jpg" %} alt="Pmt Dummy">
-            <br/> <br/> </br>
-            <button onclick="Start()">Start!</button>
-            <br> </br>
-            <button onclick="Stop()">Stop!</button>
-            <br/><br/>
-            <button onclick="SendBack()">Signal!</button>
+        <div class="container-fluid pt-1 pl-1">
             <br/>
-            <div id="heat-map-line-graph-show"></div>
+            <br/>
+            <br/>
+            <div class="row">
+                <div class="col-sm" align = "left">
+                    <img src={% static "Camera_Dummy.jpg" %} alt="Camera Dummy">
+                </div>
+                <div class="col-sm" align = "left">
+                    <img src= {% static "Pmt_Dummy.jpg" %} alt="Pmt Dummy">
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <br/>
+            <div class = "row">
+                <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-success" onclick="Start()">Start!</button>
+                </div>
+                <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-danger" onclick="Stop()">Stop!</button>
+                </div>
+                <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-info" onclick="SendBack()">Signal!</button>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <br/>
+            <div class="row" id="heat-map-line-graph-show"  align = "center">
+            </div>
+            
+            <div class="row">
+                <div class="col-sm" align = "center">
+                    <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>
+                    <input type = "text" id="chat-log" name = "timediff" size="50" readonly>
+                </div>
+            </div>
+            <br/>
+            <br/>
+            <br/>
+            <div class="row">
+                <div class="col-sm">
+                    {{ gui_elements | safe }};
+                </div>
+            </div>
         </div>
-        <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>
-        <input type = "text" id="chat-log" name = "timediff" size="50" readonly>
+        
+        
             
             <br/><br/><br/>
         
-        {{ gui_elements | safe }};
+        
         
        
     </body>

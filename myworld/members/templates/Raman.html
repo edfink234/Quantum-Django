@@ -102,10 +102,12 @@
                 width: 100%;
                 height: 400px;
                 position: relative;
+                cursor: move;
             }
             
             mydiv {
                 display: block;
+                position: absolute;
                 /* etc. */
             }
             
@@ -149,7 +151,7 @@
         </script>
         
         <script>
-            console.log(String.raw`{{ gui_elements | safe }};`);
+        
             let isMouseHover = false;
             
             /*htmlElements = String.raw`{{ gui_elements | safe }}`.split(";");
@@ -168,7 +170,30 @@
                 var border = document.createElement('mydiv');
                 border.id = "border_id";
                 border.className = 'outer_square';
-                //border.className = 'container';
+                border.draggable="true";
+                border.position = "absolute";
+                border.addEventListener('mousedown', function(event)
+                { // Add inline function for mousedown event
+                    // Add logic for handling mouse down event on the border element
+                    console.log('Mouse down on border element');
+                }); // Add event listener for mousedown event
+                
+                border.addEventListener('dragstart', function(event)
+                {
+                    console.log("started dragging");
+                    console.log(event.clientX + "px");
+                    
+                });
+                
+                border.addEventListener('dragend', function(event)
+                {
+                    event.preventDefault();
+                    console.log("ended dragging");
+                    console.log(border.attributes[0]);
+                    console.log(event.clientX + "px");
+                    
+                });
+                
                 var square = document.createElement('mydiv');
                 square.className = 'square';
                 
@@ -215,6 +240,7 @@
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
                 isMouseHover = false; //right-click menu disappears
+                document.getElementById('ctxmenu').remove();
                 
             };
             
@@ -224,7 +250,7 @@
                 let menu = document.createElement("mydiv");
                 menu.id = "ctxmenu";
                 menu.style.top = (e.clientY)+"px";      //y-position of menu
-                menu.style.left = (event.clientX)+"px"; //x-position of menu
+                menu.style.left = (e.clientX)+"px"; //x-position of menu
                 
                 menu.innerHTML =
                 String.raw`
@@ -420,7 +446,7 @@
                         
             
         </script>
-        <div class="container-fluid pt-1 pl-1">
+        <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
             <br/>
             <br/>
             <br/>
@@ -462,7 +488,7 @@
             <br/>
             <br/>
             <div class="row">
-                <div class="col-sm">
+                <div class="col-sm" id = 'users_html'>
                     {{ gui_elements | safe }};
                 </div>
             </div>
@@ -472,8 +498,10 @@
             
             <br/><br/><br/>
         
-        
-        
+            <script>
+                
+            </script>
+            
        
     </body>
 </html>

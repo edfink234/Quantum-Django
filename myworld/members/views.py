@@ -262,17 +262,19 @@ def room(request, room_name):
 
 def Raman(request):
 #    print(request.user.get_username())
-    client = MongoClient()
-    db = client.test_database
+    client = MongoClient() #instance of a MongoClient
+    db = client.test_database #db = the whole mongodb database
     if request.user.is_authenticated:
-        username = request.user.username
+        username = request.user.username #setting the username
     print(username)
     html_string = ""
     if db.posts.find_one({"user": username}):
+        #getting the data of the user if existing already
         html_string = db.posts.find_one({"user": username})['data']
     
     return render(request, r"Raman.html", context = {'gui_elements' : html_string})
 
 def Static_Control(request):
     return render(request, r"Static_Control.html")
+
 

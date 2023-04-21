@@ -1,3 +1,5 @@
+#publisher
+
 import zmq
 from itertools import cycle
 from time import sleep, time
@@ -19,7 +21,8 @@ if not connectOnce:
     connectOnce = True
 
 sleep(1)
-with open("members/0_data_decrystallized_noIon.csv") as f:
+
+with open("members/1_data_crystallized_oneIon.csv") as f:
     reader = csv.reader(f)
     count=0
     smd_config["status"] = 0.025

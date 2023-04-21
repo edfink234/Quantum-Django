@@ -1,3 +1,5 @@
+#subscriber
+
 from channels.layers import get_channel_layer
 from time import sleep
 import asyncio
@@ -124,7 +126,7 @@ from threading import Thread
 #Receives data from the consumer class which received data from the client
 #via the Javascript 'signal' button
 async def func_receive(channel_layer):
-    users = set()
+    users = set() #set of unique users, not used, but hey, if you need it, why not
     client = MongoClient()
     db = client.test_database
 #    print(db.posts.find_one({"user": "edwardfinkelstein"}))
@@ -145,22 +147,22 @@ async def func_receive(channel_layer):
 
             #get mongodb data if it's an html string
 
-            regex = r"user = (.+);"
+            regex = r"user = (.+);" #'user = ' followed by 1 or more instances of anything
             html_string = x.get('text_data')
-            match = re.search(regex, html_string)
-            if match:
+            match = re.search(regex, html_string) #search through html_string for regex pattern
+            if match: #if regex pattern found
                 user = match.group(1) #get part matched by (.+)
-#                        print(db.posts.find_one({"user": user}))
+                
                 users.add(user) #add user to set of users for the heck of it.
                 
-                #extract the html part of the string
-                
+                #extract the html part of the string, i.e., the data
                 html_string = html_string[match.end()+1:-1].replace("\\", "")
                 
                 #Now, add/update the user with the corresponding html string
                 if db.posts.find_one({"user": user}):
                     db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "data":html_string}})
-                else:
+                else: #if user is not registered in the mongdb database
+                    #add the user with the user's data
                     db.posts.insert_one({"user": user, "data":html_string})
                 
                 print(db.posts.find_one({"user": user}))

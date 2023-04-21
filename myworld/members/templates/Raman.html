@@ -422,7 +422,12 @@
                     var layout = {
                         xaxis: {domain: [0, 0.3], "visible": false},
                         yaxis: {"visible": false},
-                        yaxis2: {anchor: 'x2', range: [ 0, 5.7 ]},
+                        //sets the y axis of the line graph
+                        //can change the range from what it is now (0,100.7) to something
+                        //else if you like ⌄⌄⌄
+                        
+                        yaxis2: {anchor: 'x2', range: [ 36, 62]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv" 
+                        
                         xaxis2: {domain: [0.35, 1], range: list},
                         
                         grid: {rows: 1, columns: 2, pattern: 'independent'},

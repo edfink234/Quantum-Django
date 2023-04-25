@@ -77,10 +77,6 @@
             function openNav() {
               document.getElementById("mySidenav").style.width = "250px";
             }
-            
-            function test(){
-                alert("test");
-            }
 
             function closeNav() {
               document.getElementById("mySidenav").style.width = "0";
@@ -128,12 +124,11 @@
               background: black;
               color: ghostwhite;
             }
+            
             /* animation for square */
             @keyframes example {
                 0%   {background-color:red; left:0%; top:0%;}
                 25%  {background-color:yellow; left:50%; top:0%;}
-    /*            50%  {background-color:blue; left:calc(50% * var(--random1))); top:50%;}
-                75%  {background-color:green; left:calc(50% * var(--random2)); top:50%;}*/
                 50%  {background-color:blue; left:calc(50%); top:50%;}
                 75%  {background-color:green; left:calc(0%); top:50%;}
                 100% {background-color:red; left:0%; top:0%;}
@@ -142,86 +137,96 @@
         </style>
         
         <script>
-        /*function getRandom()
-        {
-            return Math.random();
-        }
-
-        document.documentElement.style.setProperty('--random1', getRandom());
-        document.documentElement.style.setProperty('--random2', getRandom());*/
-        </script>
-        
-        <script>
         
             let isMouseHover = false;
             
-            /*htmlElements = String.raw`{{ gui_elements | safe }}`.split(";");
-            console.log(htmlElements);
-            
-            let htmlstringlist = ["user = {{ user.get_username }}"];
-            
-            for (const elem of htmlElements)
-            {
-                htmlstringlist.push(elem);
-            }*/
-            
             let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by Raman function in views.py
             
+            //⌄⌄⌄ fired when you drag something over the document
             document.addEventListener('dragover', function(event) {
-                event.preventDefault();
+                event.preventDefault(); //prevents default behaviour
                 return false;
                 
             });
             
+            //https://stackoverflow.com/a/26230989
+            //⌄⌄⌄ Gets element's position relative to the document
+            function getCoords(elem) // crossbrowser version
+            {
+                var box = elem.getBoundingClientRect();
+
+                var body = document.body;
+                var docEl = document.documentElement;
+
+                var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+                var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+                var clientTop = docEl.clientTop || body.clientTop || 0;
+                var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+                var top  = box.top +  scrollTop - clientTop;
+                var left = box.left + scrollLeft - clientLeft;
+
+                return { "top": Math.round(top), "left": Math.round(left) };
+            }
+            
+            //⌄⌄⌄ function used for dragstart EventListener
+            let startDrag = function(event)
+            {
+                event.dataTransfer.effectAllowed = "move"; //allows element to drag
+                console.log(event.clientX + "px", event.clientY + "px"); //log coordinates
+            }
+            
+            //⌄⌄⌄ function used for dragend EventListener
+            let endDrag = function(event)
+            {
+                event.preventDefault(); //prevent default behaviour
+                // Calculate the distance dragged
+                console.log(event.clientX + "px", event.clientY + "px");
+                
+                //⌄⌄⌄ setting the position of the border to the client's mouse position
+                this.style.left = event.clientX + "px";
+                this.style.top = event.clientY + "px";
+               
+                // Scroll the page to where element is dropped.
+                coords = getCoords(this);
+                window.scrollTo(coords["left"], coords["top"]);
+            };
+            
+            //⌄⌄⌄ fired when you click "Add Basic Animation"
             let basicAnimation = function(){
-                var border = document.createElement('mydiv');
-                border.id = "border_id";
+                var border = document.createElement('mydiv'); //create a mydiv element
+                border.id = "border_id"; //assign an id
                 border.className = 'outer_square'; //the animation takes place in the border element
-                border.draggable="true";
-                border.position = "absolute";
-                // Variables to store initial mouse coordinates
-                var initialMouseY = 0;
+                border.draggable="true"; //make draggable
+                border.position = "relative"; //https://www.w3schools.com/css/css_positioning.asp
                 
+                //⌄⌄⌄ behaviour when user starts dragging this element
+                border.addEventListener('dragstart', startDrag, true);
+                //⌄⌄⌄ behaviour when user stops dragging this element
+                border.addEventListener('dragend', endDrag, true);
                 
-                border.addEventListener('dragstart', function(event)
-                {
-                    event.dataTransfer.effectAllowed = "move"; //allows element to drag
-                    console.log(event.clientX + "px", event.clientY + "px"); //log coordinates
-                    
-                    // Store the initial mouse Y coordinate
-                    initialMouseY = event.clientY;
-                }, true);
-                
-                border.addEventListener('dragend', function(event)
-                {
-                    event.preventDefault();
-                    // Calculate the distance dragged
-                    var distanceDragged = event.clientY - initialMouseY;
-                    // Scroll the page up by the distance dragged
-                    window.scrollBy(0, 0.1*distanceDragged);
-                    console.log(event.clientX + "px", event.clientY + "px");
-                    //setting the position of the border to the client's mouse position
-                    border.style.left = event.clientX + "px";
-                    border.style.top = event.clientY + "px";
-                   
-                    border.style.backgroundColor = '';
-                    
-                }, true);
-                
-                var square = document.createElement('mydiv');
+                var square = document.createElement('mydiv'); //creating square for animation
                 square.className = 'square';
                 
-                border.appendChild(square);
+                border.appendChild(square); //adding square to border
+                //⌄⌄⌄ adding animation to document
                 document.body.appendChild(border);
-                htmlstringlist.push(border.outerHTML.toString());
-                fullHtml = htmlstringlist.join(' ')
-                //fullHtml = htmlstringlist.join(';');
-                console.log(fullHtml);
-                SendBack(fullHtml);
-                        
-                isMouseHover = false; //right-click menu disappears
                 
-                document.getElementById('ctxmenu').remove();
+                // Scroll the page to where element is dropped.
+                coords = getCoords(border);
+                window.scrollTo(coords["left"], coords["top"]);
+                
+                //⌄⌄⌄ adding html of animation to list of html strings
+                htmlstringlist.push(border.outerHTML.toString());
+              
+                fullHtml = htmlstringlist.join(' '); //converting html list to one html string
+
+                SendBack(fullHtml); //send back to subscriber to update user's mongodb. First, sends it to the ZMQChannels receive method (where arg = fullHtml) and then from there to the server.py func_receive function
+                        
+                isMouseHover = false; //so that right-click menu disappears
+                
+                document.getElementById('ctxmenu').remove(); //removes right-click menu from document
             };
             
             let removeBasicAnimation = function(){
@@ -255,12 +260,37 @@
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
                 isMouseHover = false; //right-click menu disappears
-                document.getElementById('ctxmenu').remove();
-                
+                document.getElementById('ctxmenu').remove(); //removes right-click menu from document
             };
             
+            function PauseAnimations()
+            {
+                // Get all elements with the .square class
+                var squareElements = document.querySelectorAll('.square');
+
+                // Loop through each square element and set animation-play-state to "paused"
+                for (var i = 0; i < squareElements.length; i++)
+                {
+                      var squareElement = squareElements[i];
+                      squareElement.style.animationPlayState = 'paused';
+                }
+            }
+            
+            function ResumeAnimations()
+            {
+                // Get all elements with the .square class
+                var squareElements = document.querySelectorAll('.square');
+
+                // Loop through each square element and set animation-play-state to "running"
+                for (var i = 0; i < squareElements.length; i++)
+                {
+                    var squareElement = squareElements[i];
+                    squareElement.style.animationPlayState = 'running';
+                }
+            }
+            
             //⌄⌄⌄ Fires when user right-clicks on page ⌄⌄⌄
-            document.body.addEventListener("contextmenu", function (e) {
+            document.addEventListener("contextmenu", function (e) {
                 
                 e.preventDefault(); //prevent default right-click behaviour
                 let menu = document.createElement("mydiv"); //create a 'mydiv' element for menu
@@ -268,7 +298,13 @@
                 menu.style.top = (e.clientY)+"px";    //y-position of menu
                 menu.style.left = (e.clientX)+"px";   //x-position of menu
                 
-                //⌄⌄⌄ Can add more elements to the right click menu in the String.raw ⌄⌄⌄
+                menu.draggable = true; //make menu draggable
+                //⌄⌄⌄ behaviour when user starts dragging this element
+                menu.addEventListener('dragstart', startDrag, true);
+                //⌄⌄⌄ behaviour when user stops dragging this element
+                menu.addEventListener('dragend', endDrag, true);
+                
+                //⌄⌄⌄ Can add more elements to the right click menu in the String.raw below ⌄⌄⌄
                 menu.innerHTML =
                 String.raw`
                 <p onclick = "basicAnimation()">Add Basic Animation</p>
@@ -277,13 +313,17 @@
                 <p onclick = "Start()">Start</p>
                 <p onclick = "Stop()">Stop</p>
                 <p onclick = "SendBack()">Signal</p>
+                <p onclick = "PauseAnimations()">Pause Animations</p>
+                <p onclick = "ResumeAnimations()">Resume Animations</p>
                 `;
                 
                 document.body.appendChild(menu); //add menu to document body
                 
-            }, false); //change to true to make it fire relatively sooner
+            }, false); //change to true to make it fire relatively sooner (if I understand the docs correctly...)
             
+            //⌄⌄⌄ 1 click on the webpage corresponds to 1 menu that disappears from the webpage
             document.addEventListener("click",function(event){
+                
                 var ctxMenu = document.getElementById("ctxmenu"); //true if a menu is on the webpage, false if not
                 //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
                 //and the user's not hovering over one of them (!isMouseHover)
@@ -291,7 +331,7 @@
                 {
                     ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
                 }
-                
+
             }, false);
             
             console.log("{{ user.get_username }}"); //logging the user's username to console
@@ -303,9 +343,9 @@
                     );
             var lowEnd = 0;     //lower x-value for line graph
             var highEnd = 0;    //upper x-value for line graph
-            var numLines = 0;
-            var lineVals = [];
-            var started = true;
+            var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
+            var lineVals = [];  //stores y-coordinates of line plot
+            var started = true; //
             function Start()
             {
                 var count = 0;
@@ -426,7 +466,7 @@
                         //can change the range from what it is now (0,100.7) to something
                         //else if you like ⌄⌄⌄
                         
-                        yaxis2: {anchor: 'x2', range: [ 36, 62]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv" 
+                        yaxis2: {anchor: 'x2', range: [ 36, 62]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv"
                         
                         xaxis2: {domain: [0.35, 1], range: list},
                         
@@ -442,11 +482,11 @@
                     };
                     
                     Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
-                    if (highEnd < 99)
+                    if (highEnd < 99) //increase x-axis bound if it's less than 99, can change to whatever you like
                     {
                         highEnd++;
                     }
-                    else
+                    else    //else increase the x-axis lower and upper bounds by 1
                     {
                         lowEnd++;
                         highEnd++;
@@ -473,12 +513,12 @@
                                 'ws://'
                                 + window.location.host
                                + '/ws/members/Raman/Raman/'
-                            );
+                            ); //first start up the chat socket
                     
-                    chatSocket.onopen = () => chatSocket.send(arg);
-                    started = true;
+                    chatSocket.onopen = () => chatSocket.send(arg); //send it
+                    started = true; //flag to denote that chat socket is up and running
                 }
-                else //if it is, just send back the data stored in the variable 'arg' to subscriber
+                else //if it is, just send back the data stored in the variable 'arg' to subscriber in server.py
                 {
                     chatSocket.send(arg);
                 }
@@ -488,6 +528,7 @@
         </script>
         <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
             <!--⌄⌄⌄ heat-map and line graph ⌄⌄⌄-->
+            <br/>
             <br/>
             <div class="row" id="heat-map-line-graph-show"  align = "center">
             </div>
@@ -516,20 +557,25 @@
             
             <br/>
             <div class="row">
-<!--load user's gui elements at the end of the document in the django variable 'gui_elements' -->
+                <!--load user's gui elements at the end of the document in the django variable 'gui_elements' -->
                 <div class="col-sm" id = 'users_html'>
                     {{ gui_elements | safe }};
                     
                 </div>
             </div>
         </div>
-        
-        
-            
-            <br/><br/><br/>
+
+            <br/><br/><br/> <!--new lines-->
         
             <script>
-                
+                //responsible for loading elements addEventListeners that sit in the
+                //django variable 'gui_elements'
+                const collection = document.getElementsByClassName("outer_square");
+                for (let i = 0; i < collection.length; i++)
+                {
+                    collection[i].addEventListener('dragstart', startDrag, true);
+                    collection[i].addEventListener('dragend', endDrag, true);
+                }
             </script>
             
        

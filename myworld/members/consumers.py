@@ -198,13 +198,11 @@ class ZMQChannels(AsyncWebsocketConsumer):
             self.room_group_name, self.channel_name
         )
     
-    #Receives data from Raman.html and sends it to server.py
+    #Receives data from Raman.html and sends it to server.py, called by chatsocket.send
     async def receive(self, text_data):
-#        print(self.scope["user"])
-#        print(text_data)
-#        print(type(json.dumps(text_data)))
         try:
-            await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data":json.dumps(text_data)})
+#            if text_data[:text_data.index]...
+            await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data": json.dumps(text_data)}) #send data to server.py
         except ChannelFull:
             pass
 

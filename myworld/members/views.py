@@ -272,6 +272,7 @@ def Raman(request):
         #getting the data of the user if existing already
         html_string = db.posts.find_one({"user": username})['data']
     
+    #return the users html (stored in html_string) as a django variable that can be rendered at the bottom of Raman.html
     return render(request, r"Raman.html", context = {'gui_elements' : html_string})
 
 def Static_Control(request):

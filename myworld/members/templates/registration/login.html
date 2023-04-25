@@ -21,3 +21,47 @@
 </html>
 
 <!--TODO: https://learndjango.com/tutorials/django-signup-tutorial -->
+
+<!--
+ - To add a regular user "john", do the following:
+
+    1. Start the django shell with `python3 manage.py shell`
+    2. `from django.contrib.auth.models import User`
+    3. `user = User.objects.create_user("john", "lennon@thebeatles.com", "johnpassword")`
+
+    In 3., we have created a regular user with username = "john", email = "lennon@thebeatles.com", and password = "johnpassword"
+
+ - To delete a regular user "john", do the following:
+
+    1. Start the django shell with `python3 manage.py shell`
+    2. `from django.contrib.auth.models import User`
+    3. user = User.objects.get(username = "john")
+    4. user.delete()
+    5. Run the followwing code:
+
+        from pymongo import MongoClient
+        client = MongoClient()
+        db = client.test_database
+        db.posts.find_one_and_delete({"author": "john"})
+
+ - To create a super user "joe", do the following:
+
+    1. `python manage.py createsuperuser --username=joe --email=joe@example.com`
+    2. enter the password, e.g., joepassword
+    3. enter the password again
+
+ - To delete a super user "joe", do the following:
+
+    1. Start the django shell with `python3 manage.py shell`
+    2. `from django.contrib.auth.models import User`
+    3. User.objects.get(username="joe", is_superuser=True).delete()
+    4. Run the following code:
+
+        from pymongo import MongoClient
+        client = MongoClient()
+        db = client.test_database
+        db.posts.find_one_and_delete({"author": "joe"})
+
+
+For more information, consult the following webpage: https://docs.djangoproject.com/en/4.2/topics/auth/default/
+-->

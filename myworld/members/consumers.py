@@ -9,8 +9,7 @@ from asgiref.sync import async_to_sync
 import asyncio
 from channels.exceptions import ChannelFull
 from pymongo import MongoClient
-
-channel_names = []
+import re
 
 class ChatConsumer(WebsocketConsumer):
     
@@ -169,26 +168,22 @@ class TestDataAutomatic(WebsocketConsumer):
         self.send(text_data=json.dumps({"message": message}))
 
 class ZMQChannels(AsyncWebsocketConsumer):
-    count = 0
     consumers = 0
-#    channel_layer = get_channel_layer()
-    tasks = []
+    users = set() #set of unique users, not used, but hey, if you need it, why not
     async def connect(self):
-#        global obj_list
-        channel_names.append(self.channel_name)
         print("self.channel_name =",self.channel_name)
         self.room_name = self.scope["url_route"]["kwargs"]
-        print(self.room_name)
-        self.room_group_name = "ZMQ"
-        print(self.room_group_name)
+        print(self.room_name) #Empty dictionary
+        self.room_group_name = "ZMQ" #Setting the group name to ZMQ
+        print(self.room_group_name) #ZMQ
         # Join room group
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
         
         self.groups.append(self.room_group_name)
-        self.consumer = ZMQChannels.consumers
-        await self.accept()
+        self.consumer = ZMQChannels.consumers #the `n'th` consumer, not used though...
+        await self.accept() #accept the connection
         ZMQChannels.consumers += 1
     async def disconnect(self, close_code):
         # Leave room group
@@ -201,7 +196,32 @@ class ZMQChannels(AsyncWebsocketConsumer):
     #Receives data from Raman.html and sends it to server.py, called by chatsocket.send
     async def receive(self, text_data):
         try:
-#            if text_data[:text_data.index]...
+            print(text_data)
+            client = MongoClient()
+            db = client.test_database #stores the database for all of the users
+            
+            #get mongodb data if it's an html string
+
+            regex = r"user = (.+);" #this part matches the string "user = " followed by 1 or more instances of anything (.+) followed by a semicolon ;
+            html_string = text_data
+            match = re.search(regex, html_string) #search through html_string for regex pattern
+            if match: #if regex pattern found
+                user = match.group(1) #get part matched by (.+), the user's username
+                
+                ZMQChannels.users.add(user) #add user to set of users for the heck of it.
+                
+                #extract the html part of the string, i.e., the data
+                html_string = html_string[match.end()+1:].replace("\\", "")
+                
+                #Now, add/update the user with the corresponding html string
+                if db.posts.find_one({"user": user}):
+                    db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "data":html_string}})
+                else: #if user is not registered in the mongdb database
+                    #add the user with the user's data
+                    db.posts.insert_one({"user": user, "data":html_string})
+                
+                return #if there was a match, then we're done here: we just needed to store some data in mongodb for this case
+            
             await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data": json.dumps(text_data)}) #send data to server.py
         except ChannelFull:
             pass

@@ -14,7 +14,7 @@ ZMQ_client_context = zmq.Context()
 print("Connecting to hello world server…")
 client_socket = ZMQ_client_context.socket(zmq.PUB)
 #print([i for i in dir(zmq) if "HWM" in i])
-client_socket.setsockopt(zmq.SNDHWM, 1000000)
+client_socket.setsockopt(zmq.SNDHWM, 1)
 if not connectOnce:
     client_socket.bind("tcp://127.0.0.1:5555")
     connectOnce = True
@@ -24,7 +24,7 @@ sleep(1)
 with open("members/1_data_crystallized_oneIon.csv") as f:
     reader = csv.reader(f)
     count=0
-    smd_config["status"] = 0.025
+    smd_config["status"] = 0.025 #Get rid of me during production, just delays 
     while True:
         try:
             row1 = next(reader) # get the next line

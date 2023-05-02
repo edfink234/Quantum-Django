@@ -14,575 +14,79 @@
     
     <body>
         <div class="container-fluid pt-1 pl-1" style="height:50px">
-<!--            <div class="row">-->
-                <div class="d-flex align-items-center flex-wrap">
-                    <button class="btn btn-primary" onclick="openNav()">
-                        &#9776
-                    </button>
+          <div class="d-flex align-items-center flex-wrap">
+            <button class="btn btn-primary" onclick="openNav()">
+              &#9776
+            </button>
 
-                    <div class="d-flex">
-                        <h3 class="pl-1 d-flex px-2">Raman</h3>
+            <div class="d-flex">
+              <h3 class="pl-1 d-flex px-2">Raman</h3>
+            </div>
+            <div class="d-flex container justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                      QFDR
                     </div>
-                    <div class="d-flex container justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <div class="px-2">
-                                <div class="progress" style="width:100px">
-                                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-                                        QFDR
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="px-2">
-                                <div class="progress" style="width:100px">
-                                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                        Branching
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="px-2">
-                                <div class="progress" style="width:100px">
-                                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                                        Autocalibration
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex alert-success p-1 rounded border border-primary">
-                            <p class="text-white"></p>Autocalibration</p>
-                        </div>
-
-                        <div class="d-flex alert-success p-1 rounded border border-primary">
-                            Status: Executing Seq1
-                        </div>
-                    </div>
+                  </div>
                 </div>
-<!--            </div>-->
+
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    Branching
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                      Autocalibration
+                    </div>
+                  </div>
+                </div>
+              </div>
+            
+
+              <div class="d-flex alert-success p-1 rounded border border-primary">
+                <p class="text-white"></p>Autocalibration</p>
+              </div>
+
+              <div class="d-flex alert-success p-1 rounded border border-primary">
+                Status: Executing Seq1
+              </div>
+            </div>
+
+          </div>
         </div>
         
         <div id="mySidenav" class="sidenav">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <a href="{% url 'Detection' %}" onclick="Stop()">Detection</a>
-        <a href="{% url 'Quadrupole' %}" onclick="Stop()">Quadrupole</a>
-        <a href="{% url 'Raman' %}" onclick="Stop()">Raman</a>
-        <nobr><a href="{% url 'Motor_Control' %}" onclick="Stop()">Motor Control</a></nobr>
-        <nobr><a href="{% url 'Static_Control' %}" onclick="Stop()">Static Control</a></nobr>
-        <nobr><a href="{% url 'Bertha_Channels' %}" onclick="Stop()">Bertha Channels</a></nobr>
-        <nobr><a href="{% url 'index' %}" onclick="Stop()">Home</a></nobr>
-        <nobr><a href="{% url 'logout' %}" onclick="Stop()">Log Out</a></nobr>
+        <a href="{% url 'Detection' %}">Detection</a>
+        <a href="{% url 'Quadrupole' %}">Quadrupole</a>
+        <a href="{% url 'Raman' %}">Raman</a>
+        <nobr><a href="{% url 'Motor_Control' %}">Motor Control</a></nobr>
+        <nobr><a href="{% url 'Static_Control' %}">Static Control</a></nobr>
+        <nobr><a href="{% url 'Bertha_Channels' %}">Bertha Channels</a></nobr>
+        <nobr><a href="{% url 'index' %}">Home</a></nobr>
+        <nobr><a href="{% url 'logout' %}">Log Out</a></nobr>
         </div>
-        
         <script>
-            function openNav() {
-              document.getElementById("mySidenav").style.width = "250px";
-            }
+        function openNav() {
+          document.getElementById("mySidenav").style.width = "250px";
+        }
 
-            function closeNav() {
-              document.getElementById("mySidenav").style.width = "0";
-            }
+        function closeNav() {
+          document.getElementById("mySidenav").style.width = "0";
+        }
+            
+        
         </script>
-        
-        <style>
-            .square {
-                  width: 100px;
-                  height: 100px;
-                  background-color: red;
-                  position: relative;
-                  animation-name: example;
-                  animation-duration: 4s;
-                  animation-iteration-count: infinite;
-            }
-            /* border for animation */
-            .outer_square {
-                width: 50%;
-                height: 400px;
-                position: relative;
-                cursor: move;
-            }
-            
-            mydiv {
-                display: block;
-                position: absolute;
-                /* etc. */
-            }
-            
-            #ctxmenu {
-              position: fixed;
-              background: ghostwhite;
-              color: black;
-              cursor: pointer;
-              border: 1px black solid;
-            }
-
-            #ctxmenu > p {
-              padding: 0 1rem;
-              margin: 0;
-            }
-
-            #ctxmenu > p:hover {
-              background: black;
-              color: ghostwhite;
-            }
-            
-            /* animation for square */
-            @keyframes example {
-                0%   {background-color:red; left:0%; top:0%;}
-                25%  {background-color:yellow; left:50%; top:0%;}
-                50%  {background-color:blue; left:calc(50%); top:50%;}
-                75%  {background-color:green; left:calc(0%); top:50%;}
-                100% {background-color:red; left:0%; top:0%;}
-            }
-        
-        </style>
-        
-        <script>
-        
-            let isMouseHover = false;
-            
-            let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by Raman function in views.py
-            
-            //⌄⌄⌄ fired when you drag something over the document
-            document.addEventListener('dragover', function(event) {
-                event.preventDefault(); //prevents default behaviour
-                return false;
-                
-            });
-            
-            //https://stackoverflow.com/a/26230989
-            //⌄⌄⌄ Gets element's position relative to the document
-            function getCoords(elem) // crossbrowser version
-            {
-                var box = elem.getBoundingClientRect();
-
-                var body = document.body;
-                var docEl = document.documentElement;
-
-                var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-                var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-
-                var clientTop = docEl.clientTop || body.clientTop || 0;
-                var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-
-                var top  = box.top +  scrollTop - clientTop;
-                var left = box.left + scrollLeft - clientLeft;
-
-                return { "top": Math.round(top), "left": Math.round(left) };
-            }
-            
-            //⌄⌄⌄ function used for dragstart EventListener
-            let startDrag = function(event)
-            {
-                event.dataTransfer.effectAllowed = "move"; //allows element to drag
-                console.log(event.clientX + "px", event.clientY + "px"); //log coordinates
-            }
-            
-            //⌄⌄⌄ function used for dragend EventListener
-            let endDrag = function(event)
-            {
-                event.preventDefault(); //prevent default behaviour
-                // Calculate the distance dragged
-                console.log(event.clientX + "px", event.clientY + "px");
-                
-                //⌄⌄⌄ setting the position of the border to the client's mouse position
-                this.style.left = event.clientX + "px";
-                this.style.top = event.clientY + "px";
-               
-                // Scroll the page to where element is dropped.
-                coords = getCoords(this);
-                //window.scrollTo(coords["left"], coords["top"]);
-            };
-            
-            //⌄⌄⌄ fired when you click "Add Basic Animation"
-            let basicAnimation = function(){
-                var border = document.createElement('mydiv'); //create a mydiv element
-                border.id = "border_id"; //assign an id
-                border.className = 'outer_square'; //the animation takes place in the border element
-                border.draggable="true"; //make draggable
-                border.position = "relative"; //https://www.w3schools.com/css/css_positioning.asp
-                
-                //⌄⌄⌄ behaviour when user starts dragging this element
-                border.addEventListener('dragstart', startDrag, true);
-                //⌄⌄⌄ behaviour when user stops dragging this element
-                border.addEventListener('dragend', endDrag, true);
-                
-                var square = document.createElement('mydiv'); //creating square for animation
-                square.className = 'square';
-                
-                border.appendChild(square); //adding square to border
-                //⌄⌄⌄ adding animation to document
-                document.body.appendChild(border);
-                
-                // Scroll the page to where element is dropped.
-                coords = getCoords(border);
-                window.scrollTo(coords["left"], coords["top"]);
-                
-                //⌄⌄⌄ adding html of animation to list of html strings
-                htmlstringlist.push(border.outerHTML.toString());
-              
-                fullHtml = htmlstringlist.join(' '); //converting html list to one html string
-
-                SendBack(fullHtml); //send back to subscriber to update user's mongodb. First, sends it to the ZMQChannels receive method (where arg = fullHtml) and then from there to the server.py func_receive function
-                        
-                isMouseHover = false; //so that right-click menu disappears
-                
-                document.getElementById('ctxmenu').remove(); //removes right-click menu from document
-            };
-            
-            let removeBasicAnimation = function(){
-                var ctxMenu = document.getElementById("border_id"); //get animation html element
-                if (ctxMenu) //if an animation is on the webpage, delete it
-                {
-                    fullHtml = htmlstringlist.join(' ');
-                    if (htmlstringlist.length > 1)
-                    {
-                        
-                        length = htmlstringlist.length
-                        // finds last index of mydiv element in last element of htmlstringlist
-                        lastIndex = htmlstringlist[length-1].lastIndexOf(String.raw`<mydiv id="border_id"`);
-                        
-                        console.log(lastIndex);
-                        
-                        //reintializing last element of htmlstringlist with a substring that doesn't contain the last mydiv element
-                        htmlstringlist[length-1] = htmlstringlist[length-1].substring(0,lastIndex);
-                        
-                        if (!htmlstringlist[length-1]) //if last element of htmlstringlist is empty
-                        {
-                            //get rid of last element in htmlstringlist and log it to the console
-                            const elem = htmlstringlist.pop();
-                            console.log("elem = ",elem);
-                        }
-                    }
-                    //parsing from a list to a string where each element in the string is separated by a space
-                    fullHtml = htmlstringlist.join(' ');
-                    console.log(fullHtml);
-                    SendBack(fullHtml); //sending updated html to the subscriber in server.py
-                    ctxMenu.parentNode.removeChild(ctxMenu);
-                }
-                isMouseHover = false; //right-click menu disappears
-                document.getElementById('ctxmenu').remove(); //removes right-click menu from document
-            };
-            
-            function PauseAnimations()
-            {
-                // Get all elements with the .square class
-                var squareElements = document.querySelectorAll('.square');
-
-                // Loop through each square element and set animation-play-state to "paused"
-                for (var i = 0; i < squareElements.length; i++)
-                {
-                      var squareElement = squareElements[i];
-                      squareElement.style.animationPlayState = 'paused';
-                }
-            }
-            
-            function ResumeAnimations()
-            {
-                // Get all elements with the .square class
-                var squareElements = document.querySelectorAll('.square');
-
-                // Loop through each square element and set animation-play-state to "running"
-                for (var i = 0; i < squareElements.length; i++)
-                {
-                    var squareElement = squareElements[i];
-                    squareElement.style.animationPlayState = 'running';
-                }
-            }
-            
-            //⌄⌄⌄ Fires when user right-clicks on page ⌄⌄⌄
-            document.addEventListener("contextmenu", function (e) {
-                
-                e.preventDefault(); //prevent default right-click behaviour
-                let menu = document.createElement("mydiv"); //create a 'mydiv' element for menu
-                menu.id = "ctxmenu"; //set id of menu
-                menu.style.top = (e.clientY)+"px";    //y-position of menu
-                menu.style.left = (e.clientX)+"px";   //x-position of menu
-                
-                menu.draggable = true; //make menu draggable
-                //⌄⌄⌄ behaviour when user starts dragging this element
-                menu.addEventListener('dragstart', startDrag, true);
-                //⌄⌄⌄ behaviour when user stops dragging this element
-                menu.addEventListener('dragend', endDrag, true);
-                
-                //⌄⌄⌄ Can add more elements to the right click menu in the String.raw below ⌄⌄⌄
-                menu.innerHTML =
-                String.raw`
-                <p onclick = "basicAnimation()">Add Basic Animation</p>
-                <p onclick = "removeBasicAnimation()">Remove Basic Animation</p>
-                <p onclick='alert("Thank you!"); isMouseHover = false;'>Upvote</p>
-                <p onclick = "Start()">Start</p>
-                <p onclick = "Stop()">Stop</p>
-                <p onclick = "SendBack()">Signal</p>
-                <p onclick = "PauseAnimations()">Pause Animations</p>
-                <p onclick = "ResumeAnimations()">Resume Animations</p>
-                `;
-                
-                document.body.appendChild(menu); //add menu to document body
-                
-            }, false); //change to true to make it fire relatively sooner (if I understand the docs correctly...)
-            
-            //⌄⌄⌄ 1 click on the webpage corresponds to 1 menu that disappears from the webpage
-            document.addEventListener("click",function(event){
-                
-                var ctxMenu = document.getElementById("ctxmenu"); //true if a menu is on the webpage, false if not
-                //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
-                //and the user's not hovering over one of them (!isMouseHover)
-                if (!isMouseHover && ctxMenu)
-                {
-                    ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
-                }
-
-            }, false);
-            
-            console.log("{{ user.get_username }}"); //logging the user's username to console
-            console.log("connected!");
-            chatSocket = new WebSocket(     //creating new WebSocket instance
-                        'ws://'
-                        + window.location.host
-                       + '/ws/members/Raman/Raman/'
-                    );
-            var lowEnd = 0;     //lower x-value for line graph
-            var highEnd = 0;    //upper x-value for line graph
-            var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
-            var lineVals = [];  //stores y-coordinates of line plot
-            var started = true; //
-            function Start()
-            {
-                var count = 0;
-                const interval = 100;
-                if (!started)
-                {
-                    chatSocket = new WebSocket(
-                                'ws://'
-                                + window.location.host
-                               + '/ws/members/Raman/Raman/'
-                            );
-                    started = true;
-                }
-                    
-                chatSocket.onclose = function(e) {
-                    //Reference: https://stackoverflow.com/a/61283792/18255427
-                    let specificStatusCodeMappings = {
-                        '1000': 'Normal Closure',
-                        '1001': 'Going Away',
-                        '1002': 'Protocol Error',
-                        '1003': 'Unsupported Data',
-                        '1004': '(For future)',
-                        '1005': 'No Status Received',
-                        '1006': 'Abnormal Closure',
-                        '1007': 'Invalid frame payload data',
-                        '1008': 'Policy Violation',
-                        '1009': 'Message too big',
-                        '1010': 'Missing Extension',
-                        '1011': 'Internal Error',
-                        '1012': 'Service Restart',
-                        '1013': 'Try Again Later',
-                        '1014': 'Bad Gateway',
-                        '1015': 'TLS Handshake'
-                    };
-                    
-                    console.log(specificStatusCodeMappings[e.code]);
-                };
-            
-                //⌄⌄⌄ Fires when camera data is received
-                chatSocket.onmessage = function(e) {
-                    const data = JSON.parse(e.data);
-                                        
-                    var startTime = parseFloat(data.event.text[2])*1000;
-                    
-                    var endTime = new Date().getTime();
-                    
-                    
-                    var timeDiff = (endTime-startTime)/1000;
-                    
-                    //how often to update the 'Time Difference (seconds):' text box, here it updates it every time a new time difference value is calculated. You can change '1' to a different number, e.g., 5, to make the time difference value displayed update only after 5 such values are calculated. ⌄⌄⌄
-                    if (numLines++ < 1) //append to value displayed in text box
-                    {
-                        document.querySelector('#chat-log').value += timeDiff;
-                    }
-                    else //re-assign value displayed in text box
-                    {
-                        document.querySelector('#chat-log').value = timeDiff;
-                    }
-                    
-                    //TODO: In production, delete following 'if' and 'else if' statements. Only implemented to sync tabs/windows, but in production, the publishing rate will not be infinite
-                    //Increase sleep time of publisher if time difference between
-                    //when data is sent to when it's received here is greater than 1
-                    //second ⌄⌄⌄
-                    if (timeDiff > 1)
-                    {
-                        chatSocket.send("increase!");
-                    }
-                    
-                    //Decrease sleep time of publisher if time difference between
-                    //when data is sent to when it's received here is greater than 1
-                    //second ⌄⌄⌄
-                    else if (timeDiff < 1)
-                    {
-                        chatSocket.send("decrease!");
-                    }
-                    
-                    Data = data.event["text"][1].replaceAll('[','').replaceAll(']','').split(',').map(Number)
-                    lineVals.push(Data[0]);
-                    if (lineVals.length > interval)
-                    {
-                        lineVals.splice(0,1);
-                    }
-                    newArr = [];
-                    Data.splice(0,1);
-                    while(Data.length) newArr.push(Data.splice(0,11));
-                    var my_plot =
-                    {
-                        z : newArr,
-                        type: 'heatmap',
-                        // opacity: 0.8,
-                        zmin: 407,
-                        zmax: 1518,
-                        showlegend: false,
-                        showlegend: false,
-                        xaxis: {visible: false},
-                        showscale: false,
-                        //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
-                    };
-                    
-                    var list = [];
-                    for (var i = lowEnd; i <= highEnd; i++) {
-                        list.push(i);
-                    }
-                    
-                    var next_plot =
-                    {
-                        x: list,
-                        y: lineVals,
-                        type: 'scatter',
-                        xaxis: 'x2',
-                        yaxis: 'y2',
-                    };
-                    
-                    var layout = {
-                        xaxis: {domain: [0, 0.3], "visible": false},
-                        yaxis: {"visible": false},
-                        //sets the y axis of the line graph
-                        //can change the range from what it is now (0,100.7) to something
-                        //else if you like ⌄⌄⌄
-                        
-                        yaxis2: {anchor: 'x2', range: [ 36, 62]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv"
-                        
-                        xaxis2: {domain: [0.35, 1], range: list},
-                        
-                        grid: {rows: 1, columns: 2, pattern: 'independent'},
-                        
-                        margin: {
-                            l: 40,
-                            r: 40,
-                            b: -10,
-                            t: 50,
-                            pad: 4
-                        }
-                    };
-                    
-                    Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
-                    if (highEnd < 99) //increase x-axis bound if it's less than 99, can change to whatever you like
-                    {
-                        highEnd++;
-                    }
-                    else    //else increase the x-axis lower and upper bounds by 1
-                    {
-                        lowEnd++;
-                        highEnd++;
-                    }
-                };
-            }
-            
-            Start(); //start data streaming
-            
-            //Stop data streaming, called when user clicks 'Stop' ⌄⌄⌄
-            function Stop()
-            {
-                console.log(lowEnd, highEnd);
-                chatSocket.close();
-                started = false;
-            }
-            
-            //Send a message back to subscriber, called when user clicks 'Signal' ⌄⌄⌄
-            function SendBack(arg = "hi friend")
-            {
-                if (!started) //if chatsocket is not connected, connect it
-                {
-                    chatSocket = new WebSocket(
-                                'ws://'
-                                + window.location.host
-                               + '/ws/members/Raman/Raman/'
-                            ); //first start up the chat socket
-                    
-                    chatSocket.onopen = () => chatSocket.send(arg); //send it
-                    started = true; //flag to denote that chat socket is up and running
-                }
-                else //if it is, just send back the data stored in the variable 'arg' to subscriber in server.py
-                {
-                    chatSocket.send(arg);
-                }
-            }
-                        
-            
-        </script>
-        <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
-            <!--⌄⌄⌄ heat-map and line graph ⌄⌄⌄-->
-            <br/>
-            <br/>
-            <div class="row" id="heat-map-line-graph-show"  align = "center">
-            </div>
-            
-            <div class="row">
-                <div class="col-sm" align = "center">
-                    <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>
-                    <input type = "text" id="chat-log" name = "timediff" size="50" readonly>
-                </div>
-            </div>
-            <br/>
-            <br/>
-            
-            <!--Buttons on document to Start data streaming (Start()), Stop data streaming (Stop()), and send a signal back to the subscriber in server.py (SendBack()) respectively ⌄⌄⌄-->
-            <div class = "row">
-                <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-success" onclick="Start()">Start!</button>
-                </div>
-                <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-danger" onclick="Stop()">Stop!</button>
-                </div>
-                <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-info" onclick="SendBack()">Signal!</button>
-                </div>
-            </div>
-            
-            <br/>
-            <div class="row">
-                <!--load user's gui elements at the end of the document in the django variable 'gui_elements' -->
-                <div class="col-sm" id = 'users_html'>
-                    {{ gui_elements | safe }};
-                    
-                </div>
-            </div>
-        </div>
-
-            <br/><br/><br/> <!--new lines-->
-        
-            <script>
-                //responsible for loading elements addEventListeners that sit in the
-                //django variable 'gui_elements'
-                const collection = document.getElementsByClassName("outer_square");
-                for (let i = 0; i < collection.length; i++)
-                {
-                    collection[i].addEventListener('dragstart', startDrag, true);
-                    collection[i].addEventListener('dragend', endDrag, true);
-                }
-            </script>
-            
-       
+        <br/>
+        <br/>
+        <br/>
+        <br/><br/><br/>
     </body>
 </html>
-
-
-
-
-

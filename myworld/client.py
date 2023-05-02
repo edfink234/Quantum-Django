@@ -13,10 +13,9 @@ smd_config = SharedMemoryDict(name='config', size=1024) #Get rid of me during pr
 ZMQ_client_context = zmq.Context()
 print("Connecting to hello world server…")
 client_socket = ZMQ_client_context.socket(zmq.PUB)
-#print([i for i in dir(zmq) if "HWM" in i])
-client_socket.setsockopt(zmq.SNDHWM, 1)
+client_socket.setsockopt(zmq.SNDHWM, 1) #set high-water mark to 1
 if not connectOnce:
-    client_socket.bind("tcp://127.0.0.1:5555")
+    client_socket.bind("tcp://127.0.0.1:5555") #connect to local host
     connectOnce = True
 
 sleep(1)
@@ -24,13 +23,13 @@ sleep(1)
 with open("members/1_data_crystallized_oneIon.csv") as f:
     reader = csv.reader(f)
     count=0
-    smd_config["status"] = 0.025 #Get rid of me during production, just delays 
+    smd_config["status"] = 0.025 #Get rid of me during production, just delays publisher
     while True:
         try:
             row1 = next(reader) # get the next line
-            row1 = [float(i) for i in row1[1:]]
+            row1 = [float(i) for i in row1[1:]] #only process the second to last numbers in each row
 
-            sleep(smd_config["status"])
+            sleep(smd_config["status"]) #Get rid of me during production, just delays publisher
             client_socket.send_multipart((b"CAMERA", str(row1).encode(),str(time()).encode()))
             
         except StopIteration:

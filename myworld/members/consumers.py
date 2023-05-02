@@ -11,167 +11,11 @@ from channels.exceptions import ChannelFull
 from pymongo import MongoClient
 import re
 
-class ChatConsumer(WebsocketConsumer):
-    
-    def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
-        print(self.room_name)
-        self.room_group_name = "chat_%s" % self.room_name
-
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
-        )
-        self.accept()
-
-    def disconnect(self, close_code):
-        # Leave room group
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name, self.channel_name
-        )
-        #pass
-
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
-        print(message*2)
-
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "chat_message", "message": message}
-        )
-#        self.send(text_data=json.dumps({"message": message}))
-
-    def chat_message(self, event):
-        message = event["message"]
-        print("chat_message",message)
-        # Send message to WebSocket
-        sleep(1)
-        self.send(text_data=json.dumps({"message": message}))
-
-class PlotlyConsumer(WebsocketConsumer):
-    max_length = 0;
-    def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]
-        # print(self.room_name)
-        
-        self.room_group_name = "mygroup"
-        print(self.room_group_name)
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
-        )
-        
-        self.accept()
-
-    def disconnect(self, close_code):
-        # Leave room group
-        
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name, self.channel_name
-        )
-        #pass
-
-    def receive(self, text_data):
-        point_data_json = json.loads(text_data)
-        message = point_data_json["text_data"]
-        x=list(zip(message[0],message[1]))
-        temp = len(str(x));
-        if (temp > PlotlyConsumer.max_length):
-            PlotlyConsumer.max_length = temp;
-        print(" "*PlotlyConsumer.max_length,end="\r",flush=True)
-        print(x,flush=True,end="\r")
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "chat_message", "message": message}
-        )
-        
-#        self.send(text_data=json.dumps({"message": message}))
-    # Receive message from room group
-    
-    def chat_message(self, event):
-        message = event["message"]
-
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({"message": message}))
-    
-class TestData(WebsocketConsumer):
-    def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]
-        # print(self.room_name)
-        
-        self.room_group_name = "testdata"
-        print(self.room_group_name)
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
-        )
-        
-        self.accept()
-    def disconnect(self, close_code):
-        # Leave room group
-        
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name, self.channel_name
-        )
-        #pass
-
-    def receive(self, text_data):
-        point_data_json = json.loads(text_data)
-        message = point_data_json["text_data"]
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "chat_message", "message": message}
-        )
-        
-        #self.send(text_data=json.dumps({"message": message}))
-
-    def chat_message(self, event):
-        message = event["message"]
-
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({"message": message}))
-    
-class TestDataAutomatic(WebsocketConsumer):
-    def connect(self):
-        self.room_name = self.scope["url_route"]["kwargs"]
-        # print(self.room_name)
-        
-        self.room_group_name = "testdataAuto"
-        print(self.room_group_name)
-        # Join room group
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
-        )
-        
-        self.accept()
-    def disconnect(self, close_code):
-        # Leave room group
-        
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name, self.channel_name
-        )
-        #pass
-
-    def receive(self, text_data):
-        point_data_json = json.loads(text_data)
-        message = point_data_json["text_data"]
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "chat_message", "message": message}
-        )
-
-    def chat_message(self, event):
-        message = event["message"]
-
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({"message": message}))
-
 class ZMQChannels(AsyncWebsocketConsumer):
     consumers = 0
     users = set() #set of unique users, not used, but hey, if you need it, why not
     async def connect(self):
-        print("self.channel_name =",self.channel_name)
+        print("self.channel_name in ZMQChannels =",self.channel_name)
         self.room_name = self.scope["url_route"]["kwargs"]
         print(self.room_name) #Empty dictionary
         self.room_group_name = "ZMQ" #Setting the group name to ZMQ
@@ -196,18 +40,18 @@ class ZMQChannels(AsyncWebsocketConsumer):
     #Receives data from Raman.html and sends it to server.py, called by chatsocket.send
     async def receive(self, text_data):
         try:
-            print(text_data)
             client = MongoClient()
             db = client.test_database #stores the database for all of the users
             
             #get mongodb data if it's an html string
 
             regex = r"user = (.+);" #this part matches the string "user = " followed by 1 or more instances of anything (.+) followed by a semicolon ;
-            html_string = text_data
+            html_string = text_data #copy text_data to html_string since we want to modify it potentially
+#            print(html_string+"\n" if html_string != "decrease!" and html_string != "increase!" else "", end="")
             match = re.search(regex, html_string) #search through html_string for regex pattern
             if match: #if regex pattern found
                 user = match.group(1) #get part matched by (.+), the user's username
-                
+                print(user)
                 ZMQChannels.users.add(user) #add user to set of users for the heck of it.
                 
                 #extract the html part of the string, i.e., the data
@@ -215,10 +59,10 @@ class ZMQChannels(AsyncWebsocketConsumer):
                 
                 #Now, add/update the user with the corresponding html string
                 if db.posts.find_one({"user": user}):
-                    db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "data":html_string}})
+                    db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "index_data":html_string}})
                 else: #if user is not registered in the mongdb database
                     #add the user with the user's data
-                    db.posts.insert_one({"user": user, "data":html_string})
+                    db.posts.insert_one({"user": user, "index_data":html_string})
                 
                 return #if there was a match, then we're done here: we just needed to store some data in mongodb for this case
             

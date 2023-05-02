@@ -88,38 +88,7 @@
         <br/>
         <br/>
         <br/><br/><br/>
-        {% autoescape off %}
-        {{ fig_div }} <br/>
-<!--        <script src="https://requirejs.org/docs/release/2.3.5/minified/require.js"></script>-->
-<!--        -->
-<!--        <div id="demo">-->
-<!--          <h2>Let AJAX change this text</h2>-->
-<!--          <button type="button" onclick="loadDoc()">Change Content</button>-->
-<!--        </div>-->
         
-        <input type="hidden" id="myVar" name="variable" value="{{ string_loaded_data }}" readonly>
-        <script>
-            var myVar = document.getElementById("myVar").value;
-            console.log(myVar);
-            
-            window.addEventListener('load', function() {
-               // const websocket = new WebSocket("ws://127.0.0.1:8765");
-               temp = (8765 + parseInt(myVar-1)).toString();
-               const websocket = new WebSocket("ws://localhost:"+temp);
-                console.log("connected! "+myVar);
-                websocket.onmessage = function(e) {
-                    //console.log(e.data);
-                    const data = JSON.parse(e.data);
-                    console.log(data)
-                }
-                
-                
-            });
-                
-            
-            
-        </script>
-        {% endautoescape %}
     </body>
 </html>
 

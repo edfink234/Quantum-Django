@@ -90,24 +90,6 @@
         <br/>
         <br/>
         <br/><br/><br/>
-        {% autoescape off %}
-        {{ fig_div }} <br/>
-        {{ plot_div }} <br/>
-        <table style="border:1px solid black;margin-left:auto;
-      margin-right:auto; text-align: center"; border="1"; padding: 50px; margin:  20px 20px;>
-<!--      {{ points.0 }}-->
-      <tr>
-      <td><b>x</b></td>
-      <td><b>y</b></td>
-      </tr>
-      {% for x,y in points %}
-      <tr>
-      <td>{{ x }}</td>
-      <td>{{ y }}</td>
-      </tr>
-      {% endfor %}
-      </table>
-      <br/>
-      {% endautoescape %}
+        
     </body>
 </html>

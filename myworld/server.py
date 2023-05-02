@@ -13,23 +13,21 @@ from shared_memory_dict import SharedMemoryDict
 from threading import Thread
 
 #Receives data from the consumer class function 'receive' which received data from the Raman.html
-#via the Javascript 'signal' button
+
 async def func_receive(channel_layer):
     try:
         while True:
             x = await channel_layer.receive("ZMQ")
-#            print(x)
             if smd_config.get("status"):
-
                 if x.get('text_data')=='"increase!"':
                     smd_config["status"]+=1e-5
-                    print(smd_config["status"],end="\r",flush=True)
                 elif x.get('text_data')=='"decrease!"':
                     smd_config["status"]-=1e-6
-                    print(smd_config["status"],end="\r",flush=True)
+            
+            #via the Javascript 'signal' button
             if x.get('text_data')=='"hi friend"':
                 print("🥳"*1000,end="\n\n")
-            
+            print(smd_config["status"], flush = True, end = "\r")
     except asyncio.CancelledError as e:
         print("Break it out")
         raise(e)

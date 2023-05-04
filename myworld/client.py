@@ -28,7 +28,6 @@ with open("members/1_data_crystallized_oneIon.csv") as f:
         try:
             row1 = next(reader) # get the next line
             row1 = [float(i) for i in row1[1:]] #only process the second to last numbers in each row
-
             sleep(smd_config["status"]) #Get rid of me during production, just delays publisher
             client_socket.send_multipart((b"CAMERA", str(row1).encode(),str(time()).encode()))
             

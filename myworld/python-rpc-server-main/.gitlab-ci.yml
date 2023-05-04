@@ -1,0 +1,33 @@
+default:
+  image: python:3.9
+  before_script:
+    - cat /etc/os-release
+    - cd RPC_server
+    - pip install -e .
+    - cd ..
+
+build_test:
+  stage: deploy
+  except:
+    - tags
+  script:
+    - pip install build
+    - pip install twine
+    # serves as test with dummy value
+    - bash tag_as_version.sh 0.0.0
+    - cd RPC_server
+    - python -m build
+    - ls dist
+
+build_and_upload:
+  stage: deploy
+  only:
+    - tags
+  script:
+    - pip install build
+    - pip install twine
+    - bash tag_as_version.sh $CI_COMMIT_TAG
+    - cd RPC_server
+    - python -m build
+    - ls dist
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*

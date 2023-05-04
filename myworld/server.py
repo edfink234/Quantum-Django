@@ -20,9 +20,9 @@ async def func_receive(channel_layer):
             x = await channel_layer.receive("ZMQ")
             if smd_config.get("status"):
                 if x.get('text_data')=='"increase!"':
-                    smd_config["status"]+=1e-5
+                    smd_config["status"]+=1e-5 #increase time delay for publisher in client.py
                 elif x.get('text_data')=='"decrease!"':
-                    smd_config["status"]-=1e-6
+                    smd_config["status"]-=1e-6 #decrease time delay for publisher in client.py
             
             #via the Javascript 'signal' button
             if x.get('text_data')=='"hi friend"':

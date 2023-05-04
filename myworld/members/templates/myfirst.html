@@ -155,7 +155,7 @@
                 var y = window.screen.height;//document.body.scrollHeight;
                 
                 //console.log(event.pageY, y);
-                if (event.pageX > x && event.pageY > y)
+                /*if (event.pageX > x && event.pageY > y)
                 {
                     window.resizeTo(event.pageX, event.pageX);
                 }
@@ -166,8 +166,8 @@
                 else if (event.pageY > y)
                 {
                     window.resizeTo(x, event.pageY);
-                }
-                window.scrollTo({bottom: x, left: y, behavior: "smooth"});
+                }*/
+                window.scrollTo({bottom: event.pageX, left: event.pageY, behavior: "smooth"});
                 
                 return false; //prevents the default action
                 
@@ -412,7 +412,15 @@
                 //⌄⌄⌄ Fires when camera data is received
                 chatSocket.onmessage = function(e) {
                     const data = JSON.parse(e.data);
-                                        
+
+                    if (typeof data.event.text === "undefined" && typeof data.event.maxbox_channels !== "undefined")
+                    {
+                        console.log(data.event.maxbox_channels);
+                        return;
+                        //TODO: plot data instead of logging it.
+                    }
+                    
+                    //⌄⌄⌄ else it's the heat-map-line-graph data, handled below ⌄⌄⌄
                     var startTime = parseFloat(data.event.text[2])*1000;
                     
                     var endTime = new Date().getTime();

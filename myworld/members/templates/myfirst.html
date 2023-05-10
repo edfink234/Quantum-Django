@@ -371,6 +371,13 @@
             var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
             var lineVals = [];  //stores y-coordinates of line plot
             var started = true; //
+            
+            //Voltage values
+            var lowVoltageBin = 0;  //lower x-value for voltage line graph
+            var highVoltageBin = 0; //upper x-value for voltage line graph
+            var activatedChannels = Array(16).fill(true); //by default all channels are activated
+            var voltageChannelVals = Array(16);
+            
             function Start()
             {
                 var count = 0;
@@ -415,9 +422,104 @@
 
                     if (typeof data.event.text === "undefined" && typeof data.event.maxbox_channels !== "undefined")
                     {
-                        console.log(data.event.maxbox_channels);
+                        //console.log(data.event.maxbox_channels);
+                        var voltageData = [
+                          {
+                            x: [...Array(16).keys()],
+                            y: data.event.maxbox_channels,
+                            type: 'bar',
+                            
+                          }
+                        ];
+                        
+                        voltages_layout = {'yaxis': {'range': [0, 1]}, autosize: false, margin: {
+                            l: 40,
+                            r: 40,
+                            b: -10,
+                            t: 50,
+                            pad: 4
+                        }}
+                        
+                        Plotly.newPlot('voltages', voltageData, voltages_layout);
+                        
                         return;
-                        //TODO: plot data instead of logging it.
+                        //TODO: 16 line graphs.
+                        /*
+                        var voltage_x_vals = []; //line-graph x-coordinates
+                        for (let i = lowVoltageBin; i <= highVoltageBin; i++)
+                        {
+                            voltage_x_vals.push(i);
+                        }
+                        
+                        var curr_data = data.event.maxbox_channels;
+                        var max_length = 100;
+                        var data = [];
+                    
+                        
+                        //loop over 16 channels;
+                        for (let i = 0; i < 16; i++)
+                        {
+                            if (activatedChannels[i])
+                            {
+                                if (typeof voltageChannelVals[i] == 'undefined')
+                                {
+                                    voltageChannelVals[i] = [curr_data[i]];
+                                }
+                                else if (voltageChannelVals[i].length >= max_length)
+                                {
+                                    voltageChannelVals[i].splice(0,1); //get rid of first element
+                                    voltageChannelVals[i].push(curr_data[i]); //add new value to end of list for this channel
+                                }
+                                else
+                                {
+                                    voltageChannelVals[i].push(curr_data[i]); //add new value to end of list for this channel
+                                }
+                            }
+                        }
+                        
+                        
+                        var trace1 = {
+                          x: [1, 2, 3],
+                          y: [4, 5, 6],
+                          name: "trace1",
+                          type: 'scatter'
+                        };
+
+                        var trace2 = {
+                          x: [20, 30, 40],
+                          y: [50, 60, 70],
+                          xaxis: 'x2',
+                          yaxis: 'y2',
+                          name: "trace2",
+                          type: 'scatter'
+                        };
+
+                        var trace3 = {
+                          x: [300, 400, 500],
+                          y: [600, 700, 800],
+                          xaxis: 'x3',
+                          yaxis: 'y3',
+                          name: "trace3",
+                          type: 'scatter'
+                        };
+
+                        var trace4 = {
+                          x: [4000, 5000, 6000],
+                          y: [7000, 8000, 9000],
+                          xaxis: 'x4',
+                          yaxis: 'y4',
+                          name: "trace4",
+                          type: 'scatter'
+                        };
+
+                        var data = [trace1, trace2, trace3, trace4];
+
+                        var layout = {
+                          grid: {rows: 2, columns: 2, pattern: 'independent'},
+                        };
+                        
+                        Plotly.newPlot('voltages', data, layout);
+                            */
                     }
                     
                     //⌄⌄⌄ else it's the heat-map-line-graph data, handled below ⌄⌄⌄
@@ -569,7 +671,14 @@
             <br/>
             <div class="row" id="heat-map-line-graph-show"  align = "center">
             </div>
-            
+            <br/>
+            <br/>
+            <div class="row">
+                <div class="col-sm" id="voltages" align = "center">
+                    
+                </div>
+            </div>
+            <br/>
             <div class="row">
                 <div class="col-sm" align = "center">
                     <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>

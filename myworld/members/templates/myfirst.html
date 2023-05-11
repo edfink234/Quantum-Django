@@ -157,7 +157,6 @@
         <script>
         
             let isMouseHover = false;
-            let isVoltageMouseHover = false;
             
             let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by Raman function in views.py
             
@@ -518,18 +517,6 @@
                 {
                     var x = document.getElementById("flexCheckDefault" + i);
                     x.checked = activatedChannels[i];
-                    //the following event listeners are to set isVoltageMouseHover
-                    //to true, so that when you click on the voltage channel menu,
-                    //it doesn't make the menu go away. Note, you have to double click
-                    //off of the voltage menu usually TWICE to make it go away, sorry!
-                    x.addEventListener('mouseover', function(e)
-                    {
-                        isVoltageMouseHover = true;
-                    });
-                    x.addEventListener('change', function(e)
-                    {
-                        isVoltageMouseHover = true;
-                    });
                 }
             }
             
@@ -604,16 +591,6 @@
                     ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
                     return;
                 }
-                
-                ctxMenu = document.getElementById("ctxmenu_voltage"); //true if a voltage menu is on the webpage, false if not
-                
-                if (!isVoltageMouseHover && ctxMenu)
-                {
-                    ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
-                    return;
-                }
-
-                isVoltageMouseHover = false;
 
             }, false);
             
@@ -706,6 +683,13 @@
                         {
                             //increase upper limit until the x-range has reached max_length
                             highVoltageBin++;
+                        }
+                        
+                        //first check if there are any activated channels:
+                        if (activatedChannels.every(element => element === false))
+                        {
+                            document.getElementById("voltages").innerHTML = "";
+                            return;
                         }
                         
                         var voltage_channel_counter = 0; //number of active channels, not always equal to 16

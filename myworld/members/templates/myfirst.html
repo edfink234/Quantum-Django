@@ -125,6 +125,24 @@
               color: ghostwhite;
             }
             
+            #ctxmenu_voltage {
+              position: fixed;
+              background: ghostwhite;
+              color: black;
+              cursor: pointer;
+              border: 1px black solid;
+            }
+
+            #ctxmenu_voltage > p {
+              padding: 0 1rem;
+              margin: 0;
+            }
+
+            #ctxmenu_voltage > p:hover {
+              background: black;
+              color: ghostwhite;
+            }
+            
             /* animation for square */
             @keyframes example {
                 0%   {background-color:red; left:0%; top:0%;}
@@ -139,8 +157,29 @@
         <script>
         
             let isMouseHover = false;
+            let isVoltageMouseHover = false;
             
             let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by Raman function in views.py
+            
+            console.log("{{ user.get_username }}"); //logging the user's username to console
+            console.log("connected!");
+            chatSocket = new WebSocket(     //creating new WebSocket instance
+                        'ws://'
+                        + window.location.host
+                       + '/ws/members/Raman/Raman/'
+                    );
+            var lowEnd = 0;     //lower x-value for line graph
+            var highEnd = 0;    //upper x-value for line graph
+            var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
+            var lineVals = [];  //stores y-coordinates of line plot
+            var started = true; //
+            
+            //Voltage values
+            var lowVoltageBin = 0;  //lower x-value for voltage line graph
+            var highVoltageBin = 0; //upper x-value for voltage line graph
+            var activatedChannels = Array(16).fill(true); //by default all channels are activated
+            var voltageChannelVals = Array(16);
+            
             
             //⌄⌄⌄ fired when you drag something over the document
             document.addEventListener('dragover', function(event) {
@@ -155,7 +194,8 @@
                 var y = window.screen.height;//document.body.scrollHeight;
                 
                 //console.log(event.pageY, y);
-                /*if (event.pageX > x && event.pageY > y)
+                /*
+                if (event.pageX > x && event.pageY > y)
                 {
                     window.resizeTo(event.pageX, event.pageX);
                 }
@@ -166,9 +206,9 @@
                 else if (event.pageY > y)
                 {
                     window.resizeTo(x, event.pageY);
-                }*/
+                }
                 window.scrollTo({bottom: event.pageX, left: event.pageY, behavior: "smooth"});
-                
+                */
                 return false; //prevents the default action
                 
             });
@@ -314,9 +354,208 @@
                 }
             }
             
+            function SetVoltageChannels(top, left)
+            {
+                let menu = document.createElement("div"); //create a 'mydiv' element for menu
+                menu.id = "ctxmenu_voltage"; //set id of menu
+                menu.style.top = (top)+"px";    //y-position of menu
+                menu.style.left = (left)+"px";   //x-position of menu
+                
+                menu.draggable = true; //make menu draggable
+                //⌄⌄⌄ behaviour when user starts dragging this element
+                menu.addEventListener('dragstart', startDrag, true);
+                //⌄⌄⌄ behaviour when user stops dragging this element
+                menu.addEventListener('dragend', endDrag, true);
+                
+                menu.innerHTML =
+                String.raw`
+                <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
+                    <div class="row">
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault0">
+                            <label class="form-check-label" for="flexCheckDefault0">
+                            Voltage channel 0
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault1">
+                            <label class="form-check-label" for="flexCheckDefault1">
+                            Voltage channel 1
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault2">
+                            <label class="form-check-label" for="flexCheckDefault2">
+                            Voltage channel 2
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault3">
+                            <label class="form-check-label" for="flexCheckDefault3">
+                            Voltage channel 3
+                            </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault4">
+                            <label class="form-check-label" for="flexCheckDefault4">
+                            Voltage channel 4
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault5">
+                            <label class="form-check-label" for="flexCheckDefault5">
+                            Voltage channel 5
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault6">
+                            <label class="form-check-label" for="flexCheckDefault6">
+                            Voltage channel 6
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault7">
+                            <label class="form-check-label" for="flexCheckDefault7">
+                            Voltage channel 7
+                            </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault8">
+                            <label class="form-check-label" for="flexCheckDefault8">
+                            Voltage channel 8
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault9">
+                            <label class="form-check-label" for="flexCheckDefault9">
+                            Voltage channel 9
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault10">
+                            <label class="form-check-label" for="flexCheckDefault10">
+                            Voltage channel 10
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault11">
+                            <label class="form-check-label" for="flexCheckDefault11">
+                            Voltage channel 11
+                            </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault12">
+                            <label class="form-check-label" for="flexCheckDefault12">
+                            Voltage channel 12
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault13">
+                            <label class="form-check-label" for="flexCheckDefault13">
+                            Voltage channel 13
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault14">
+                            <label class="form-check-label" for="flexCheckDefault14">
+                            Voltage channel 14
+                            </label>
+                            </div>
+                        </div>
+                        <div class="col-sm" align = "center">
+                            <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault15">
+                            <label class="form-check-label" for="flexCheckDefault15">
+                            Voltage channel 15
+                            </label>
+                            </div>
+                        </div>
+                    </div>
+                
+                <br>
+                <button type="button" class="btn btn-success" onclick="SubmitVoltages()">Submit</button>
+                </div>
+                `;
+
+                document.body.appendChild(menu); //add menu to document body
+                
+                for (let i = 0; i < 16; i++)
+                {
+                    var x = document.getElementById("flexCheckDefault" + i);
+                    x.checked = activatedChannels[i];
+                    //the following event listeners are to set isVoltageMouseHover
+                    //to true, so that when you click on the voltage channel menu,
+                    //it doesn't make the menu go away. Note, you have to double click
+                    //off of the voltage menu usually TWICE to make it go away, sorry!
+                    x.addEventListener('mouseover', function(e)
+                    {
+                        isVoltageMouseHover = true;
+                    });
+                    x.addEventListener('change', function(e)
+                    {
+                        isVoltageMouseHover = true;
+                    });
+                }
+            }
+            
+            function SubmitVoltages()
+            {
+                for (let i = 0; i < 16; i++)
+                {
+                    var x = document.getElementById("flexCheckDefault" + i);
+                    activatedChannels[i] = x.checked;
+                }
+                
+                var ctxMenu = document.getElementById("ctxmenu_voltage"); //true if a menu is on the webpage, false if not
+                //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
+                //and the user's not hovering over one of them (!isMouseHover)
+                if (!isMouseHover && ctxMenu)
+                {
+                    ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
+                }
+            }
+                        
             //⌄⌄⌄ Fires when user right-clicks on page ⌄⌄⌄
             document.addEventListener("contextmenu", function (e) {
                 
+                var top = e.clientY;
+                var left = e.clientX;
+                console.log(top,left);
                 e.preventDefault(); //prevent default right-click behaviour
                 let menu = document.createElement("mydiv"); //create a 'mydiv' element for menu
                 menu.id = "ctxmenu"; //set id of menu
@@ -342,6 +581,14 @@
                 <p onclick = "ResumeAnimations()">Resume Animations</p>
                 `;
                 
+                let setVoltageChannelsButton = document.createElement("p");
+                setVoltageChannelsButton.textContent = "Set Voltage Channels";
+                setVoltageChannelsButton.addEventListener("click", function() {
+                    SetVoltageChannels(top, left);
+                });
+
+                menu.appendChild(setVoltageChannelsButton); //for some reason, this needs to be added separately...
+
                 document.body.appendChild(menu); //add menu to document body
                 
             }, false); //change to true to make it fire relatively sooner (if I understand the docs correctly...)
@@ -355,28 +602,20 @@
                 if (!isMouseHover && ctxMenu)
                 {
                     ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
+                    return;
+                }
+                
+                ctxMenu = document.getElementById("ctxmenu_voltage"); //true if a voltage menu is on the webpage, false if not
+                
+                if (!isVoltageMouseHover && ctxMenu)
+                {
+                    ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
+                    return;
                 }
 
+                isVoltageMouseHover = false;
+
             }, false);
-            
-            console.log("{{ user.get_username }}"); //logging the user's username to console
-            console.log("connected!");
-            chatSocket = new WebSocket(     //creating new WebSocket instance
-                        'ws://'
-                        + window.location.host
-                       + '/ws/members/Raman/Raman/'
-                    );
-            var lowEnd = 0;     //lower x-value for line graph
-            var highEnd = 0;    //upper x-value for line graph
-            var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
-            var lineVals = [];  //stores y-coordinates of line plot
-            var started = true; //
-            
-            //Voltage values
-            var lowVoltageBin = 0;  //lower x-value for voltage line graph
-            var highVoltageBin = 0; //upper x-value for voltage line graph
-            var activatedChannels = Array(16).fill(true); //by default all channels are activated
-            var voltageChannelVals = Array(16);
             
             function Start()
             {
@@ -423,6 +662,7 @@
                     if (typeof data.event.text === "undefined" && typeof data.event.maxbox_channels !== "undefined")
                     {
                         //console.log(data.event.maxbox_channels);
+                        /*
                         var voltageData = [
                           {
                             x: [...Array(16).keys()],
@@ -443,8 +683,9 @@
                         Plotly.newPlot('voltages', voltageData, voltages_layout);
                         
                         return;
+                         */
                         //TODO: 16 line graphs.
-                        /*
+                        
                         var voltage_x_vals = []; //line-graph x-coordinates
                         for (let i = lowVoltageBin; i <= highVoltageBin; i++)
                         {
@@ -452,74 +693,84 @@
                         }
                         
                         var curr_data = data.event.maxbox_channels;
-                        var max_length = 100;
-                        var data = [];
-                    
+                        var max_length = 100; //change this to make x-range larger for voltage channels
+                        var voltage_channel_data = [];
                         
+                        if (highVoltageBin > max_length - 1)
+                        {
+                            //move graphs to right
+                            highVoltageBin++;
+                            lowVoltageBin++;
+                        }
+                        else
+                        {
+                            //increase upper limit until the x-range has reached max_length
+                            highVoltageBin++;
+                        }
+                        
+                        var voltage_channel_counter = 0; //number of active channels, not always equal to 16
                         //loop over 16 channels;
                         for (let i = 0; i < 16; i++)
                         {
                             if (activatedChannels[i])
                             {
-                                if (typeof voltageChannelVals[i] == 'undefined')
+                                if (typeof voltageChannelVals[i] == 'undefined') //list is empty
                                 {
                                     voltageChannelVals[i] = [curr_data[i]];
                                 }
-                                else if (voltageChannelVals[i].length >= max_length)
+                                else if (voltageChannelVals[i].length >= max_length) //move graph to right
                                 {
                                     voltageChannelVals[i].splice(0,1); //get rid of first element
                                     voltageChannelVals[i].push(curr_data[i]); //add new value to end of list for this channel
                                 }
-                                else
+                                else //keep adding data to i'th channel
                                 {
                                     voltageChannelVals[i].push(curr_data[i]); //add new value to end of list for this channel
                                 }
+                                var temp_trace = {};
+                                if (!voltage_channel_counter)
+                                {
+                                    temp_trace =
+                                    {
+                                        x: voltage_x_vals,
+                                        y: voltageChannelVals[i],
+                                        name: "voltage channel " + i,
+                                        type: 'scatter'
+                                    };
+                                    voltage_channel_counter++;
+                                }
+                                else
+                                {
+                                    temp_trace =
+                                    {
+                                        x: voltage_x_vals,
+                                        y: voltageChannelVals[i],
+                                        xaxis: 'x' + (voltage_channel_counter + 1),
+                                        yaxis: 'y' + (voltage_channel_counter + 1),
+                                        name: "voltage channel " + i,
+                                        type: 'scatter'
+                                    };
+                                    voltage_channel_counter++;
+                                }
+                                voltage_channel_data.push(temp_trace);
                             }
                         }
                         
-                        
-                        var trace1 = {
-                          x: [1, 2, 3],
-                          y: [4, 5, 6],
-                          name: "trace1",
-                          type: 'scatter'
-                        };
-
-                        var trace2 = {
-                          x: [20, 30, 40],
-                          y: [50, 60, 70],
-                          xaxis: 'x2',
-                          yaxis: 'y2',
-                          name: "trace2",
-                          type: 'scatter'
-                        };
-
-                        var trace3 = {
-                          x: [300, 400, 500],
-                          y: [600, 700, 800],
-                          xaxis: 'x3',
-                          yaxis: 'y3',
-                          name: "trace3",
-                          type: 'scatter'
-                        };
-
-                        var trace4 = {
-                          x: [4000, 5000, 6000],
-                          y: [7000, 8000, 9000],
-                          xaxis: 'x4',
-                          yaxis: 'y4',
-                          name: "trace4",
-                          type: 'scatter'
-                        };
-
-                        var data = [trace1, trace2, trace3, trace4];
-
                         var layout = {
-                          grid: {rows: 2, columns: 2, pattern: 'independent'},
+                          grid: {rows: 8, columns: 2, pattern: 'independent'}, autosize: false, margin: {
+                              l: 40,
+                              r: 40,
+                              b: -10,
+                              t: 50,
+                              pad: 4
+                          },
+                          height: 2000,
+                          width: 1000,
+                          roworder: 'bottom to top'
                         };
                         
-                        Plotly.newPlot('voltages', data, layout);
-                            */
+                        Plotly.newPlot('voltages', voltage_channel_data, layout);
+                        return;
                     }
                     
                     //⌄⌄⌄ else it's the heat-map-line-graph data, handled below ⌄⌄⌄
@@ -534,11 +785,11 @@
                     //  ⌄⌄⌄
                     if (numLines++ < 1)
                     {
-                        document.querySelector('#chat-log').value += timeDiff; //append to value displayed in text box
+                        document.querySelector('#timediff').value += timeDiff; //append to value displayed in text box
                     }
                     else
                     {
-                        document.querySelector('#chat-log').value = timeDiff; //re-assign value displayed in text box
+                        document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
                     }
                     
                     //TODO: In production, delete following 'if' and 'else if' statements. Only implemented to sync tabs/windows, but in production, the publishing rate will not be infinite
@@ -682,11 +933,12 @@
             <div class="row">
                 <div class="col-sm" align = "center">
                     <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>
-                    <input type = "text" id="chat-log" name = "timediff" size="50" readonly>
+                    <input type = "text" id="timediff" name = "timediff" size="50" readonly>
                 </div>
             </div>
             <br/>
             <br/>
+
             
             <!--Buttons on document to Start data streaming (Start()), Stop data streaming (Stop()), and send a signal back to the subscriber in server.py (SendBack()) respectively ⌄⌄⌄-->
             <div class = "row">

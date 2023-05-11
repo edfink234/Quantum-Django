@@ -33,10 +33,3 @@ async def TrueServerZMQ(socket, channel_layer):
 if __name__ == '__main__':
 
     asyncio.run(TrueServerZMQ(socket, channel_layer))
-#    message = '{ "jsonrpc": "2.0", "method": "read", "id": 3}'
-#    socket.send_string(message)
-#    data = socket.recv_string()
-#    result = json.loads(data)['result']
-#    print(result)
-#
-#    time.sleep(0.5)

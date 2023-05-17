@@ -58,7 +58,7 @@ Max: 1518, 227.7
 loaded = False
 num = 0
 
-def index(request):
+def index(request): #Corresponds to myfirst.html
     print(request.user.get_username()) #print username
     client = MongoClient() #instance of a MongoClient
     db = client.test_database #db = the whole mongodb database
@@ -69,13 +69,15 @@ def index(request):
     if db.posts.find_one({"user": username}):
         #getting the data of the user if existing already
         html_string = db.posts.find_one({"user": username}).get('index_data') #returns None if index not found in dict
+        activated_channels = db.posts.find_one({"user": username}).get('activatedChannels') #returns None if index not found in dict
+        print(activated_channels, type(activated_channels[0]))
     
     #First time: html_string is None
     if not html_string:
         html_string = ""
     print("html_string =",html_string)
     #return the users html (stored in html_string) as a django variable that can be rendered at the bottom of Raman.html
-    return render(request, r"myfirst.html", context = {'gui_elements' : html_string})
+    return render(request, r"myfirst.html", context = {'gui_elements' : html_string, 'channelsActivated' : activated_channels})
 
 def Detection(request):
     return render(request, r"Detection.html")

@@ -37,17 +37,16 @@ class ZMQChannels(AsyncWebsocketConsumer):
             self.room_group_name, self.channel_name
         )
     
-    #Receives data from Raman.html and sends it to server.py, called by chatsocket.send
+    #Receives data from myfirst.html and sends it to server.py, called by chatsocket.send
     async def receive(self, text_data):
         try:
             client = MongoClient()
             db = client.test_database #stores the database for all of the users
             
             #get mongodb data if it's an html string
-
             regex = r"user = (.+);" #this part matches the string "user = " followed by 1 or more instances of anything (.+) followed by a semicolon ;
             html_string = text_data #copy text_data to html_string since we want to modify it potentially
-#            print(html_string+"\n" if html_string != "decrease!" and html_string != "increase!" else "", end="")
+            
             match = re.search(regex, html_string) #search through html_string for regex pattern
             if match: #if regex pattern found
                 user = match.group(1) #get part matched by (.+), the user's username
@@ -65,6 +64,21 @@ class ZMQChannels(AsyncWebsocketConsumer):
                     db.posts.insert_one({"user": user, "index_data":html_string})
                 
                 return #if there was a match, then we're done here: we just needed to store some data in mongodb for this case
+            elif text_data.count(",") == 15: #then text_data corresponds to the voltage data, i.e., the 16 line graphs
+                activatedChannels = text_data.split(",") #now it's a list of 'true' or 'false' strings
+                print("activatedChannels =",activatedChannels)
+                activatedChannels = [False if i == 'false' else True for i in activatedChannels] #now it's a list of booleans
+                #Now, add/update the user with the corresponding html string
+                                
+                user = str(self.scope["user"]) #self.scope["user"] is of type <class 'channels.auth.UserLazyObject'>
+                
+                
+                if db.posts.find_one({"user": user}):
+                    db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "activatedChannels":activatedChannels}})
+                else: #if user is not registered in the mongdb database
+                    #add the user with the user's data
+                    db.posts.insert_one({"user": user, "activatedChannels": activatedChannels})
+                return
             
             await self.channel_layer.send("ZMQ", {"type": "chat.message", "text_data": json.dumps(text_data)}) #send data to server.py
         except ChannelFull:

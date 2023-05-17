@@ -167,6 +167,8 @@
                         + window.location.host
                        + '/ws/members/Raman/Raman/'
                     );
+                    
+            
             var lowEnd = 0;     //lower x-value for line graph
             var highEnd = 0;    //upper x-value for line graph
             var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
@@ -177,9 +179,27 @@
             var lowVoltageBin = 0;  //lower x-value for voltage line graph
             var highVoltageBin = 0; //upper x-value for voltage line graph
             var activatedChannels = Array(16).fill(true); //by default all channels are activated
-            var voltageChannelVals = Array(16);
             
+            {
+                var channelsActivated = "{{channelsActivated}}".replaceAll('[','').replaceAll(']','').split(', ');
+                if (channelsActivated.length == 16)
+                {
+                    for (let i = 0; i < 16; i++)
+                    {
+                        if (channelsActivated[i] == "True")
+                        {
+                            activatedChannels[i] = true;
+                        }
+                        else
+                        {
+                            activatedChannels[i] = false;
+                        }
+                    }
+                }
+            }
             
+            var voltageChannelVals = Array(16); //2d array of 16 channels and their corresponding values
+             
             //⌄⌄⌄ fired when you drag something over the document
             document.addEventListener('dragover', function(event) {
                 
@@ -515,8 +535,8 @@
                 
                 for (let i = 0; i < 16; i++)
                 {
-                    var x = document.getElementById("flexCheckDefault" + i);
-                    x.checked = activatedChannels[i];
+                    var x = document.getElementById("flexCheckDefault" + i); //get checkbox i
+                    x.checked = activatedChannels[i]; //checkbox i is checked if activatedChannels[i] is true, else checkbox i is unchecked
                 }
             }
             
@@ -524,9 +544,10 @@
             {
                 for (let i = 0; i < 16; i++)
                 {
-                    var x = document.getElementById("flexCheckDefault" + i);
-                    activatedChannels[i] = x.checked;
+                    var x = document.getElementById("flexCheckDefault" + i); //get checkbox i
+                    activatedChannels[i] = x.checked; //channel i is activated if x.checked is true, else channel i is deactivated
                 }
+                
                 
                 var ctxMenu = document.getElementById("ctxmenu_voltage"); //true if a menu is on the webpage, false if not
                 //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
@@ -535,6 +556,9 @@
                 {
                     ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
                 }
+                console.log("activatedChannels =",activatedChannels);
+                SendBack(activatedChannels); //store the updated activatedChannels in the user's mongodb
+                
             }
                         
             //⌄⌄⌄ Fires when user right-clicks on page ⌄⌄⌄
@@ -892,7 +916,7 @@
                     chatSocket.onopen = () => chatSocket.send(arg); //send it
                     started = true; //flag to denote that chat socket is up and running
                 }
-                else //if it is, just send back the data stored in the variable 'arg' to subscriber in server.py
+                else //if it is, just send back the data stored in the variable 'arg' to the consumers.py ZMQChannels.receive method
                 {
                     chatSocket.send(arg);
                 }

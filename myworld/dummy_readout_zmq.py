@@ -3,15 +3,16 @@ import time
 import json
 from channels.layers import get_channel_layer
 import asyncio
+import struct
 
 context = zmq.Context()
 
 # Connect to the port where the server is listening
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:5556")
+socket = context.socket(zmq.SUB)
 
-duration = 86400
-t_end = time.time() + duration
+socket.setsockopt(zmq.RCVHWM, 1000000)
+socket.connect("tcp://127.0.0.1:5556")
+socket.setsockopt(zmq.SUBSCRIBE, b"MAXBOX")
 
 channel_layer = get_channel_layer()
 print("Here is the ",channel_layer)
@@ -19,14 +20,19 @@ print("Here is the ",channel_layer)
 
 #Receiving data from the camera and sending it to the group
 async def TrueServerZMQ(socket, channel_layer):
-    while time.time() < t_end :
+    while True :
         try:
-            message = '{ "jsonrpc": "2.0", "method": "read", "id": 3}'
-            socket.send_string(message)
-            data = socket.recv_string()
-            result = json.loads(data)['result']
-            await channel_layer.group_send("ZMQ",{"type": "chat.message", "maxbox_channels": result})
-            time.sleep(0.5)
+            message = socket.recv_multipart(flags=zmq.NOBLOCK)
+            message = socket.recv()
+            name = message.decode()
+            message = socket.recv()
+            values = struct.unpack('f' * (len(message) // 4), message)
+            message = socket.recv()
+            timestamp = float(message)
+            
+            
+            await channel_layer.group_send("ZMQ",{"type": "chat.message", "maxbox_channels": values})
+
         except zmq.Again:
             continue
 

@@ -1,16 +1,19 @@
 import numpy as np
+import zmq
+import time
+import struct
 
-from RPC_server.backend.zmq_server import zmq_server
+# init as publisher
+ZMQ_client_context = zmq.Context()
+client_socket = ZMQ_client_context.socket(zmq.PUB)
 
-#initialize the rpc server
+#set high-water mark to 1
+client_socket.setsockopt(zmq.SNDHWM, 1)
+client_socket.bind("tcp://127.0.0.1:5556")
 
-api = zmq_server()
-api.init("tcp://127.0.0.1:5556")
-
-print('started rpc server...')
+print('started server...')
 
 
-@api.add_function
 def read():
     """
     Returns an array of all values with the newest read voltages.
@@ -21,14 +24,18 @@ def read():
     array
         voltages read from the sensor
     """
-
+    # generate random numbers as dummy output
     values = np.random.rand(16).tolist()
     return values
 
 
-@api.add_function
-def rpc_info():
-    return api.rpc_info()
-    
-api.serve()
+while True:
+    values = read()
+    # can only send byte-like objects
+    values = struct.pack('f' * len(values), *values)
+    # send name, values and timestamp
+    client_socket.send_multipart((b"MAXBOX", values, str(time.time()).encode()))
+    # sleep for one second
+    time.sleep(0.1)
+
 

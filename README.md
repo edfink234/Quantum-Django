@@ -1,7 +1,7 @@
 # Quantum-Django
 Website in-development for a Quantum Computer
 
-Note: In file `mydjangoenv/lib/python3.10/site-packages/redis/client.py`, changethe function `def parse_zadd(response, **options):` to the following:
+Note: In file `mydjangoenv/lib/python3.10/site-packages/redis/client.py`, change the function `def parse_zadd(response, **options):` to the following:
 
 ```python
 def parse_zadd(response, **options):

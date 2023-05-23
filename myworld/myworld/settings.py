@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#e&vekrgcdt_3&cps7lihz8gr!jh1(a%e2#onomi)v8$qzq!3c'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-#    "channels_demultiplexer"
 ]
 
 MIDDLEWARE = [
@@ -56,17 +55,17 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'members.custom_middleware.CheckUser',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', #whitenoise
 ]
 
 ROOT_URLCONF = 'myworld.urls'
 
-STATIC_ROOT = BASE_DIR / 'productionfiles'
+STATIC_ROOT = BASE_DIR / 'productionfiles' #folder where static files are kept
 
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'mystaticfiles'
+    BASE_DIR #/ 'mystaticfiles'
 ]
 
 TEMPLATES = [

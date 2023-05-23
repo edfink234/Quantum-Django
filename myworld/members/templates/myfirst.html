@@ -83,80 +83,10 @@
             }
         </script>
         
-        <style>
-            .square {
-                  width: 100px;
-                  height: 100px;
-                  background-color: red;
-                  position: relative;
-                  animation-name: example;
-                  animation-duration: 4s;
-                  animation-iteration-count: infinite;
-            }
-            /* border for animation */
-            .outer_square {
-                width: 50%;
-                height: 400px;
-                position: relative;
-                cursor: move;
-            }
-            
-            mydiv {
-                display: block;
-                position: absolute;
-                /* etc. */
-            }
-            
-            #ctxmenu {
-              position: fixed;
-              background: ghostwhite;
-              color: black;
-              cursor: pointer;
-              border: 1px black solid;
-            }
-
-            #ctxmenu > p {
-              padding: 0 1rem;
-              margin: 0;
-            }
-
-            #ctxmenu > p:hover {
-              background: black;
-              color: ghostwhite;
-            }
-            
-            #ctxmenu_voltage {
-              position: fixed;
-              background: ghostwhite;
-              color: black;
-              cursor: pointer;
-              border: 1px black solid;
-            }
-
-            #ctxmenu_voltage > p {
-              padding: 0 1rem;
-              margin: 0;
-            }
-
-            #ctxmenu_voltage > p:hover {
-              background: black;
-              color: ghostwhite;
-            }
-            
-            /* animation for square */
-            @keyframes example {
-                0%   {background-color:red; left:0%; top:0%;}
-                25%  {background-color:yellow; left:50%; top:0%;}
-                50%  {background-color:blue; left:calc(50%); top:50%;}
-                75%  {background-color:green; left:calc(0%); top:50%;}
-                100% {background-color:red; left:0%; top:0%;}
-            }
-        
-        </style>
-        
         <script>
         
             let isMouseHover = false;
+            let voltageMenuNumber = 0;
             
             let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by Raman function in views.py
             
@@ -165,10 +95,9 @@
             chatSocket = new WebSocket(     //creating new WebSocket instance
                         'ws://'
                         + window.location.host
-                       + '/ws/members/Raman/Raman/'
+                       + '/ws/members/'
                     );
                     
-            
             var lowEnd = 0;     //lower x-value for line graph
             var highEnd = 0;    //upper x-value for line graph
             var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
@@ -201,10 +130,9 @@
             var voltageChannelVals = Array(16); //2d array of 16 channels and their corresponding values
              
             //⌄⌄⌄ fired when you drag something over the document
-            document.addEventListener('dragover', function(event) {
-                
+            document.addEventListener('dragover', function(event)
+            {
                 event.preventDefault(); //prevents default behaviour
-                
                 
                 // Scroll the page to where element is dropped.
                 //https://stackoverflow.com/questions/504052/determining-position-of-the-browser-window-in-javascript
@@ -212,22 +140,6 @@
                 var x = window.screen.width;//document.documentElement.scrollWidth;
                 var y = window.screen.height;//document.body.scrollHeight;
                 
-                //console.log(event.pageY, y);
-                /*
-                if (event.pageX > x && event.pageY > y)
-                {
-                    window.resizeTo(event.pageX, event.pageX);
-                }
-                else if (event.pageX > x)
-                {
-                    window.resizeTo(event.pageX, y);
-                }
-                else if (event.pageY > y)
-                {
-                    window.resizeTo(x, event.pageY);
-                }
-                window.scrollTo({bottom: event.pageX, left: event.pageY, behavior: "smooth"});
-                */
                 return false; //prevents the default action
                 
             });
@@ -373,10 +285,30 @@
                 }
             }
             
+            function checkVoltageChannelBoxes(number, checked)
+            {
+                var channel_box_id = "[id='flexCheckDefault" + number + "']";
+                var channel_boxes = document.querySelectorAll(channel_box_id); //getting all tick boxes for voltage channel 'i'
+                for (var j = 0; j < channel_boxes.length; j++)
+                {
+                    channel_boxes[j].checked = checked;
+                }
+                
+            }
+            
+            function closeWindow()
+            {
+                var voltageChannelMenu = document.getElementById("ctxmenu_voltage");
+                if (voltageChannelMenu) {
+                    voltageChannelMenu.parentNode.removeChild(voltageChannelMenu);
+                }
+            }
+            
             function SetVoltageChannels(top, left)
             {
                 let menu = document.createElement("div"); //create a 'mydiv' element for menu
                 menu.id = "ctxmenu_voltage"; //set id of menu
+                menu.name = "menu_" + voltageMenuNumber++;
                 menu.style.top = (top)+"px";    //y-position of menu
                 menu.style.left = (left)+"px";   //x-position of menu
                 
@@ -388,11 +320,19 @@
                 
                 menu.innerHTML =
                 String.raw`
-                <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
+                <div class="container-fluid pt-1 pl-1">
+                    <div class="row">
+                        <div class="col-sm" align = "left">
+                            <span class="close-icon" onclick="closeWindow()">
+                                X
+                            </span>
+                        </div>
+                    </div>
+                                                </br>
                     <div class="row">
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault0">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault0" onclick = "checkVoltageChannelBoxes(0, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault0">
                             Voltage channel 0
                             </label>
@@ -400,7 +340,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault1">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault1" onclick = "checkVoltageChannelBoxes(1, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault1">
                             Voltage channel 1
                             </label>
@@ -408,7 +348,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault2">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault2" onclick = "checkVoltageChannelBoxes(2, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault2">
                             Voltage channel 2
                             </label>
@@ -416,7 +356,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault3">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault3" onclick = "checkVoltageChannelBoxes(3, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault3">
                             Voltage channel 3
                             </label>
@@ -426,7 +366,7 @@
                     <div class="row">
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault4">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault4" onclick = "checkVoltageChannelBoxes(4, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault4">
                             Voltage channel 4
                             </label>
@@ -434,7 +374,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault5">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault5" onclick = "checkVoltageChannelBoxes(5, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault5">
                             Voltage channel 5
                             </label>
@@ -442,7 +382,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault6">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault6" onclick = "checkVoltageChannelBoxes(6, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault6">
                             Voltage channel 6
                             </label>
@@ -450,7 +390,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault7">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault7" onclick = "checkVoltageChannelBoxes(7, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault7">
                             Voltage channel 7
                             </label>
@@ -460,7 +400,7 @@
                     <div class="row">
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault8">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault8" onclick = "checkVoltageChannelBoxes(8, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault8">
                             Voltage channel 8
                             </label>
@@ -468,7 +408,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault9">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault9" onclick = "checkVoltageChannelBoxes(9, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault9">
                             Voltage channel 9
                             </label>
@@ -476,7 +416,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault10">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault10" onclick = "checkVoltageChannelBoxes(10, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault10">
                             Voltage channel 10
                             </label>
@@ -484,7 +424,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault11">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault11" onclick = "checkVoltageChannelBoxes(11, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault11">
                             Voltage channel 11
                             </label>
@@ -494,7 +434,7 @@
                     <div class="row">
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault12">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault12" onclick = "checkVoltageChannelBoxes(12, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault12">
                             Voltage channel 12
                             </label>
@@ -502,7 +442,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault13">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault13" onclick = "checkVoltageChannelBoxes(13, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault13">
                             Voltage channel 13
                             </label>
@@ -510,7 +450,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault14">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault14" onclick = "checkVoltageChannelBoxes(14, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault14">
                             Voltage channel 14
                             </label>
@@ -518,7 +458,7 @@
                         </div>
                         <div class="col-sm" align = "center">
                             <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault15">
+                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault15" onclick = "checkVoltageChannelBoxes(15, this.checked);">
                             <label class="form-check-label" for="flexCheckDefault15">
                             Voltage channel 15
                             </label>
@@ -535,28 +475,41 @@
                 
                 for (let i = 0; i < 16; i++)
                 {
-                    var x = document.getElementById("flexCheckDefault" + i); //get checkbox i
-                    x.checked = activatedChannels[i]; //checkbox i is checked if activatedChannels[i] is true, else checkbox i is unchecked
+                    var channel_box_id = "[id='flexCheckDefault" + i + "']";
+                    var channel_boxes = document.querySelectorAll(channel_box_id); //getting all tick boxes for voltage channel 'i'
+                    for (var j = 0; j < channel_boxes.length; j++)
+                    {
+                        channel_boxes[j].checked = activatedChannels[i];
+                    }
                 }
             }
             
             function SubmitVoltages()
             {
+                
                 for (let i = 0; i < 16; i++)
                 {
                     var x = document.getElementById("flexCheckDefault" + i); //get checkbox i
                     activatedChannels[i] = x.checked; //channel i is activated if x.checked is true, else channel i is deactivated
                 }
                 
+                var voltage_channel_menu_id = "[id='ctxmenu_voltage']";
+                var voltage_channel_menus = document.querySelectorAll(voltage_channel_menu_id);
                 
-                var ctxMenu = document.getElementById("ctxmenu_voltage"); //true if a menu is on the webpage, false if not
+                
+                
+                //var ctxMenu = document.getElementById("ctxmenu_voltage"); //true if a menu is on the webpage, false if not
                 //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
                 //and the user's not hovering over one of them (!isMouseHover)
-                if (!isMouseHover && ctxMenu)
+                if (!isMouseHover && voltage_channel_menus)
                 {
-                    ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
+                    //ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
+                    
+                    for (var j = 0; j < voltage_channel_menus.length; j++)
+                    {
+                        voltage_channel_menus[j].parentNode.removeChild(voltage_channel_menus[j]);
+                    }
                 }
-                console.log("activatedChannels =",activatedChannels);
                 SendBack(activatedChannels); //store the updated activatedChannels in the user's mongodb
                 
             }
@@ -910,7 +863,7 @@
                     chatSocket = new WebSocket(
                                 'ws://'
                                 + window.location.host
-                               + '/ws/members/Raman/Raman/'
+                               + '/ws/members/'
                             ); //first start up the chat socket
                     
                     chatSocket.onopen = () => chatSocket.send(arg); //send it
@@ -951,10 +904,10 @@
             <!--Buttons on document to Start data streaming (Start()), Stop data streaming (Stop()), and send a signal back to the subscriber in server.py (SendBack()) respectively ⌄⌄⌄-->
             <div class = "row">
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-success" onclick="Start()">Start!</button>
+                    <button type="button" class="btn btn-success" onclick="Start(); ResumeAnimations();">Start!</button>
                 </div>
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-danger" onclick="Stop()">Stop!</button>
+                    <button type="button" class="btn btn-danger" onclick="Stop(); PauseAnimations();">Stop!</button>
                 </div>
                 <div class="col-sm" align = "center">
                     <button type="button" class="btn btn-info" onclick="SendBack()">Signal!</button>

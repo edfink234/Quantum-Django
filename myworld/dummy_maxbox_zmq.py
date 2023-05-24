@@ -36,6 +36,6 @@ while True:
     # send name, values and timestamp
     client_socket.send_multipart((b"MAXBOX", values, str(time.time()).encode()))
     # sleep for one second
-    time.sleep(0.1)
+    time.sleep(1)
 
 

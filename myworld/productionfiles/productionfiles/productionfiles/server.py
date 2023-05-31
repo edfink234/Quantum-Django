@@ -15,9 +15,18 @@ from threading import Thread
 #Receives data from the consumer class function 'receive' which received data from the Raman.html
 
 async def func_receive(channel_layer):
+    """
+    Receives data from consumers.py ZMQChannels.receive(), i.e., the frontend
+
+    Parameters
+    ----------
+    channel_layer: channels_redis.core.RedisChannelLayer
+        returned by channels.layers.get_channel_layer()
+
+    """
     try:
         while True:
-            x = await channel_layer.receive("ZMQ")
+            x = await channel_layer.receive("ZMQ") #Waits until a message is received from the channel layer
             if smd_config.get("status"):
                 if x.get('text_data')=='"increase!"':
                     smd_config["status"]+=1e-5 #increase time delay for publisher in client.py
@@ -27,20 +36,40 @@ async def func_receive(channel_layer):
             #via the Javascript 'signal' button
             if x.get('text_data')=='"hi friend"':
                 print("🥳"*1000,end="\n\n")
-            print(smd_config["status"], flush = True, end = "\r")
+            print(smd_config.get("status"), flush = True, end = "\r")
     except asyncio.CancelledError as e:
         print("Break it out")
         raise(e)
 
 def between_callback(args):
+    """
+    Executed in a subprocess, stably calls func_receive 
+
+    Parameters
+    ----------
+    channel_layer: channels_redis.core.RedisChannelLayer
+        returned by channels.layers.get_channel_layer()
+
+    """
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(asyncio.gather(func_receive(args)))
     loop.close()
 
 smd_config = SharedMemoryDict(name='config', size=1024)
+print(smd_config)
 #Receiving data from the camera and sending it to the group
 async def TrueServerZMQ(socket, channel_layer):
+    """
+    Receives data from client.py, then sends it to the channel layer
+
+    Parameters
+    ----------
+    socket: zmq.sugar.context.Context
+        returned by zmq.Context()
+    channel_layer: channels_redis.core.RedisChannelLayer
+        returned by channels.layers.get_channel_layer()
+    """
     while True:
         try:
             message = socket.recv_multipart(flags=zmq.NOBLOCK)

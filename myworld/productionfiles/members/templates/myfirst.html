@@ -7,6 +7,8 @@
             <link rel="shortcut icon" href="#" />
             <meta name="viewport" content="width=device-width, initial-scale=1">
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+                <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
                     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
                     <title>Red Trap</title>
                 
@@ -74,18 +76,21 @@
         </div>
         
         <script>
-            function openNav() {
-              document.getElementById("mySidenav").style.width = "250px";
+            function openNav()
+            {
+                document.getElementById("mySidenav").style.width = "250px";
             }
 
-            function closeNav() {
-              document.getElementById("mySidenav").style.width = "0";
+            function closeNav()
+            {
+                document.getElementById("mySidenav").style.width = "0";
             }
         </script>
         
         <script>
         
             let isMouseHover = false;
+            let voltageMenuNumber = 0;
             
             let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by Raman function in views.py
             
@@ -101,7 +106,7 @@
             var highEnd = 0;    //upper x-value for line graph
             var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
             var lineVals = [];  //stores y-coordinates of line plot
-            var started = true; //
+            var started = true;
             
             //Voltage values
             var lowVoltageBin = 0;  //lower x-value for voltage line graph
@@ -258,6 +263,7 @@
                 document.getElementById('ctxmenu').remove(); //removes right-click menu from document
             };
             
+            /// Pause all animations
             function PauseAnimations()
             {
                 // Get all elements with the .square class
@@ -271,6 +277,7 @@
                 }
             }
             
+            /// Resume all animations
             function ResumeAnimations()
             {
                 // Get all elements with the .square class
@@ -284,6 +291,8 @@
                 }
             }
             
+            /// Gets the `number` checkbox (e.g. 0, 1, 2, ..., or 15) and checks or unchecks all of them
+            /// for each voltage channel window on the DOM. `checked` is either true (check) or false (uncheck)
             function checkVoltageChannelBoxes(number, checked)
             {
                 var channel_box_id = "[id='flexCheckDefault" + number + "']";
@@ -295,10 +304,21 @@
                 
             }
             
+            /// this function fires when the user clicks
+            function closeWindow()
+            {
+                var voltageChannelMenu = document.getElementById("ctxmenu_voltage");
+                if (voltageChannelMenu)
+                {
+                    voltageChannelMenu.parentNode.removeChild(voltageChannelMenu);
+                }
+            }
+            
             function SetVoltageChannels(top, left)
             {
                 let menu = document.createElement("div"); //create a 'mydiv' element for menu
                 menu.id = "ctxmenu_voltage"; //set id of menu
+                menu.name = "menu_" + voltageMenuNumber++;
                 menu.style.top = (top)+"px";    //y-position of menu
                 menu.style.left = (left)+"px";   //x-position of menu
                 
@@ -308,17 +328,17 @@
                 //⌄⌄⌄ behaviour when user stops dragging this element
                 menu.addEventListener('dragend', endDrag, true);
                 
-                menu.innerHTML =
+                menu.innerHTML = //This is the html string for the voltage channels checkbox menu, it uses bootstrap grid
                 String.raw`
                 <div class="container-fluid pt-1 pl-1">
                     <div class="row">
                         <div class="col-sm" align = "left">
-                            <span class="close-icon" onclick="closeWindow(0)">
+                            <span class="close-icon" onclick="closeWindow()">
                                 X
                             </span>
                         </div>
                     </div>
-                                                </br>
+                    </br>
                     <div class="row">
                         <div class="col-sm" align = "center">
                             <div class="form-check">
@@ -474,32 +494,29 @@
                 }
             }
             
+            /// This is what happens when the user clicks `Submit` on the voltage channel menu
             function SubmitVoltages()
             {
-                
+                //First, activate the channels that are checked
                 for (let i = 0; i < 16; i++)
                 {
                     var x = document.getElementById("flexCheckDefault" + i); //get checkbox i
                     activatedChannels[i] = x.checked; //channel i is activated if x.checked is true, else channel i is deactivated
                 }
-                
+                //Now, delete all the voltage channel menus from the screen
                 var voltage_channel_menu_id = "[id='ctxmenu_voltage']";
-                var voltage_channel_menus = document.querySelectorAll(voltage_channel_menu_id);
-                
-                
-                
-                //var ctxMenu = document.getElementById("ctxmenu_voltage"); //true if a menu is on the webpage, false if not
+                var voltage_channel_menus = document.querySelectorAll(voltage_channel_menu_id); //gets ALL voltage channel menus
+ 
                 //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
                 //and the user's not hovering over one of them (!isMouseHover)
                 if (!isMouseHover && voltage_channel_menus)
                 {
-                    //ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
-                    
                     for (var j = 0; j < voltage_channel_menus.length; j++)
                     {
                         voltage_channel_menus[j].parentNode.removeChild(voltage_channel_menus[j]);
                     }
                 }
+                            
                 SendBack(activatedChannels); //store the updated activatedChannels in the user's mongodb
                 
             }
@@ -535,8 +552,9 @@
                 <p onclick = "ResumeAnimations()">Resume Animations</p>
                 `;
                 
-                let setVoltageChannelsButton = document.createElement("p");
+                let setVoltageChannelsButton = document.createElement("p"); //creating a separate element for setting voltages
                 setVoltageChannelsButton.textContent = "Set Voltage Channels";
+                
                 setVoltageChannelsButton.addEventListener("click", function() {
                     SetVoltageChannels(top, left);
                 });
@@ -628,7 +646,6 @@
                         
                         return;
                          */
-                        //TODO: 16 line graphs.
                         
                         var voltage_x_vals = []; //line-graph x-coordinates
                         for (let i = lowVoltageBin; i <= highVoltageBin; i++)
@@ -864,9 +881,59 @@
                     chatSocket.send(arg);
                 }
             }
+            
+            function test()
+            {
+                alert("sent!");
+                document.getElementById("dropdownMenuButtonSetOutput").innerHTML =
+                String.raw`
+                  Set Output
+                `
+            }
+            
+            function FrequencySetter()
+            {
+                
+                
+                document.getElementById("dropdownMenuButtonSetOutput").innerHTML =
+                String.raw
+                `
+                <div class="slidecontainer">
+                    <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+                    <p>Frequency:
+                        <span id="demo">
+                        </span>
+                    </p>
+                </div>
+                
+                
+                <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-success" onclick="test()">Send!</button>
+                </div>
+                
+                <br/>
+                
+                `
+                
+                var slider = document.getElementById("myRange");
+                var output = document.getElementById("demo");
+                output.innerHTML = slider.value + " Hz";
+
+                slider.oninput = function() {
+                  output.innerHTML = this.value + " Hz";
+                }
+            }
+            
+            
                         
             
         </script>
+        
+        <style>
+            
+            
+        </style>
+        
         <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
             <!--⌄⌄⌄ heat-map and line graph ⌄⌄⌄-->
             <br/>
@@ -900,11 +967,52 @@
                     <button type="button" class="btn btn-danger" onclick="Stop(); PauseAnimations();">Stop!</button>
                 </div>
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-info" onclick="SendBack()">Signal!</button>
+                    <button type="button" class="btn btn-warning" onclick="SendBack()">Signal!</button>
                 </div>
             </div>
             
-            <br/>
+            <br/><br/>
+        
+            
+            <div class = "row">
+                <div class="col-sm" align = "center">
+                    <div class="dropdown">
+                      <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButtonSetOutput" data-bs-toggle="dropdown" aria-expanded="false">
+                        Set Output
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonSetOutput" id = SetOutputMenu>
+<!--                          <li class="parent"><a href="#">Frequency<span class="expand">&raquo;</span></a>-->
+<!--                              <ul class="child">-->
+<!--                                  <li><a href="inventory">Inventory Report</a></li>-->
+<!--                                  <li><a href="sales.">Sales Report</a></li>-->
+<!--                                  <li><a href="quotes">Quotes Report</a></li>-->
+<!--                                  <li><a href="workOrder">Work Order Report</a></li>-->
+<!--                                  <li><a href="prtUsed">Part Where Used Report</a></li>-->
+<!--                              </ul>-->
+<!--                          </li>-->
+                        <li><div class="dropdown-item" onclick = "FrequencySetter()">Frequency</div></li>
+                        <li><a class="dropdown-item" href="#">Amplitude</a></li>
+                        <li><a class="dropdown-item" href="#">Channel</a></li>
+                        <li><a class="dropdown-item" href="#">Phase</a></li>
+                      </ul>
+                    </div>
+                </div>
+                
+                <div class="col-sm" align = "center">
+                    <div class="dropdown">
+                      <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButtonReadTemp" data-bs-toggle="dropdown" aria-expanded="false">
+                        Read Temperature
+                      </button>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonReadTemp">
+                        <li><a class="dropdown-item" href="#">Channel</a></li>
+                      </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <br/><br/><br/>
+            <br/><br/><br/>
+            
             <div class="row">
                 <!--load user's gui elements at the end of the document in the django variable 'gui_elements' -->
                 <div class="col-sm" id = 'users_html'>

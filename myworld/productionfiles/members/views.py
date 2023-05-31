@@ -70,7 +70,7 @@ def index(request): #Corresponds to myfirst.html
         #getting the data of the user if existing already
         html_string = db.posts.find_one({"user": username}).get('index_data') #returns None if index not found in dict
         activated_channels = db.posts.find_one({"user": username}).get('activatedChannels') #returns None if index not found in dict
-        print(activated_channels, type(activated_channels[0]))
+#        print(activated_channels, type(activated_channels[0]))
     
     #First time: html_string is None
     if not html_string:

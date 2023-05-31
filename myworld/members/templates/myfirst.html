@@ -646,7 +646,6 @@
                         
                         return;
                          */
-                        //TODO: 16 line graphs.
                         
                         var voltage_x_vals = []; //line-graph x-coordinates
                         for (let i = lowVoltageBin; i <= highVoltageBin; i++)
@@ -882,6 +881,82 @@
                     chatSocket.send(arg);
                 }
             }
+            
+            function SendFrequency()
+            {
+                var val = document.getElementById("myFrequencyRange").value;
+                alert("set: Frequency = " + val + " Hz");
+                document.getElementById("dropdownMenuButtonSetOutput").innerHTML = "Set Output";
+            }
+            
+            function FrequencySetter()
+            {
+                document.getElementById("dropdownMenuButtonSetOutput").innerHTML =
+                String.raw
+                `
+                <div class="slidecontainer">
+                    <input type="range" min="1" max="100" value="50" step = "1" class="slider" id="myFrequencyRange">
+                    <p>Frequency:
+                        <span id="frequencyDemo">
+                        </span>
+                    </p>
+                </div>
+                
+                
+                <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-success" onclick="SendFrequency()">Send!</button>
+                </div>
+                
+                <br/>
+                
+                `
+                var slider = document.getElementById("myFrequencyRange");
+                var output = document.getElementById("frequencyDemo");
+                output.innerHTML = slider.value + " Hz";
+
+                slider.oninput = function() {
+                  output.innerHTML = this.value + " Hz";
+                }
+            }
+            
+            function SendAmplitude()
+            {
+                var val = document.getElementById("myAmplitudeRange").value;
+                alert("set: Amplitude = " + val);
+                document.getElementById("dropdownMenuButtonSetOutput").innerHTML = "Set Output";
+            }
+            
+            function AmplitudeSetter()
+            {
+                document.getElementById("dropdownMenuButtonSetOutput").innerHTML =
+                String.raw
+                `
+                <div class="slidecontainer">
+                    <input type="range" min="0" max="1" value="0.5" step = "0.1" class="slider" id="myAmplitudeRange">
+                    <p>Amplitude:
+                        <span id="amplitudeDemo">
+                        </span>
+                    </p>
+                </div>
+                
+                
+                <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-success" onclick="SendAmplitude()">Send!</button>
+                </div>
+                
+                <br/>
+                
+                `
+                var slider = document.getElementById("myAmplitudeRange");
+                var output = document.getElementById("amplitudeDemo");
+                output.innerHTML = slider.value;
+
+                slider.oninput = function() {
+                  output.innerHTML = this.value;
+                }
+            }
+            
+            
                         
             
         </script>
@@ -924,6 +999,7 @@
             </div>
             
             <br/><br/>
+        
             
             <div class = "row">
                 <div class="col-sm" align = "center">
@@ -931,14 +1007,15 @@
                       <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButtonSetOutput" data-bs-toggle="dropdown" aria-expanded="false">
                         Set Output
                       </button>
-                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonSetOutput">
-                        <li><div class="dropdown-item">Frequency</div></li>
-                        <li><a class="dropdown-item" href="#">Amplitude</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonSetOutput" id = SetOutputMenu>
+                        <li><div class="dropdown-item" onclick = "FrequencySetter()">Frequency</div></li>
+                        <li><div class="dropdown-item" onclick = "AmplitudeSetter()">Amplitude</div></li>
                         <li><a class="dropdown-item" href="#">Channel</a></li>
                         <li><a class="dropdown-item" href="#">Phase</a></li>
-                      </ul>
+                    </ul>
                     </div>
                 </div>
+                
                 <div class="col-sm" align = "center">
                     <div class="dropdown">
                       <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButtonReadTemp" data-bs-toggle="dropdown" aria-expanded="false">

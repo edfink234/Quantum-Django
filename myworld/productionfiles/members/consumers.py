@@ -12,7 +12,7 @@ from pymongo import MongoClient
 import re
 
 class ZMQChannels(AsyncWebsocketConsumer):
-    consumers = 0
+    consumers = 0 #this is a class variable, referred to as ZMQChannels.consumers
     users = set() #set of unique users, not used, but hey, if you need it, why not
     async def connect(self):
         print("self.channel_name in ZMQChannels =",self.channel_name)

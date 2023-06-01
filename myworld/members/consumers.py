@@ -1,5 +1,7 @@
 import json
 import sys
+import zmq
+import time
 from time import sleep
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
@@ -10,6 +12,31 @@ import asyncio
 from channels.exceptions import ChannelFull
 from pymongo import MongoClient
 import re
+
+def send_to_dds_zmq(FreqAmplChanPhaseVals):
+    FreqAmplChanPhaseVals = FreqAmplChanPhaseVals.replace("FreqAmplChanPhaseSetterVals = ","")
+    FreqAmplChanPhaseVals = FreqAmplChanPhaseVals.split(",")
+    assert(len(FreqAmplChanPhaseVals) == 5)
+    frequency = float(FreqAmplChanPhaseVals[0])
+    amplitude = float(FreqAmplChanPhaseVals[1])
+    channel = int(FreqAmplChanPhaseVals[2])
+    phase = float(FreqAmplChanPhaseVals[3])
+    profile = int(FreqAmplChanPhaseVals[4])
+    
+    print(frequency, amplitude, channel, phase, profile)
+    
+
+
+
+    context = zmq.Context()
+
+    # Connect to the port where the server is listening
+    socket = context.socket(zmq.REQ)
+    socket.connect("tcp://localhost:5557")
+
+    message_set = json.dumps({ "jsonrpc": "2.0", "method": "set_output", "params":{"freq": frequency,"ampl": amplitude, "channel": channel, "phase": phase, "profile": profile}, "id": 1})
+    
+    socket.send_string(message_set)
 
 class ZMQChannels(AsyncWebsocketConsumer):
     consumers = 0 #this is a class variable, referred to as ZMQChannels.consumers
@@ -40,6 +67,12 @@ class ZMQChannels(AsyncWebsocketConsumer):
     #Receives data from myfirst.html and sends it to server.py, called by chatsocket.send
     async def receive(self, text_data):
         try:
+#            First, check if the data is the data is of the form
+#            FreqAmplChanPhaseSetterVals = freqency, amplitude, channel, phase
+            if "FreqAmplChanPhaseSetterVals = " in text_data:
+                send_to_dds_zmq(text_data)
+                return
+            
             client = MongoClient()
             db = client.test_database #stores the database for all of the users
             

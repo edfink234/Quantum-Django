@@ -13,6 +13,8 @@ from shared_memory_dict import SharedMemoryDict
 from threading import Thread
 
 #Receives data from the consumer class function 'receive' which received data from the Raman.html
+smd_config = SharedMemoryDict(name='config', size=1024)
+
 
 async def func_receive(channel_layer):
     """
@@ -24,6 +26,7 @@ async def func_receive(channel_layer):
         returned by channels.layers.get_channel_layer()
 
     """
+    global smd_config
     try:
         while True:
             x = await channel_layer.receive("ZMQ") #Waits until a message is received from the channel layer
@@ -56,8 +59,7 @@ def between_callback(args):
     loop.run_until_complete(asyncio.gather(func_receive(args)))
     loop.close()
 
-smd_config = SharedMemoryDict(name='config', size=1024)
-print(smd_config)
+
 #Receiving data from the camera and sending it to the group
 async def TrueServerZMQ(socket, channel_layer):
     """

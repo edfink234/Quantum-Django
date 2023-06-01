@@ -24,6 +24,7 @@ with open("members/1_data_crystallized_oneIon.csv") as f:
     reader = csv.reader(f)
     count=0
     smd_config["status"] = 0.025 #Get rid of me during production, just delays publisher
+    print(smd_config["status"])
     while True:
         try:
             row1 = next(reader) # get the next line

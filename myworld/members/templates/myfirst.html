@@ -583,6 +583,7 @@
             {
                 var count = 0;
                 const interval = 100;
+                
                 if (!started)
                 {
                     chatSocket = new WebSocket(
@@ -882,81 +883,174 @@
                 }
             }
             
-            function SendFrequency()
+            function SendAll()
             {
-                var val = document.getElementById("myFrequencyRange").value;
-                alert("set: Frequency = " + val + " Hz");
+                var freqVal = document.getElementById("myFrequencyRange").value;
+                var ampVal = document.getElementById("myAmplitudeRange").value;
+                var chanVal = document.getElementById("myChannelRange").value;
+                var phaseVal = document.getElementById("myPhaseRange").value;
+                var profVal = document.getElementById("myProfileRange").value;
+                
+                
+                console.log(freqVal, ampVal, chanVal, phaseVal, profVal);
+                SendBack("FreqAmplChanPhaseSetterVals = " + [freqVal, ampVal, chanVal, phaseVal, profVal]);
+                
                 document.getElementById("dropdownMenuButtonSetOutput").innerHTML = "Set Output";
+                document.getElementById("dropdownMenuButtonSetOutput").setAttribute("clicked", "false");
             }
             
-            function FrequencySetter()
+            var amplitudeValue = 0.5;
+            var frequencyValue = 50;
+            var channelValue = 0;
+            var profileValue = 0;
+            var phaseValue = 0;
+            
+            function FreqAmplChanPhaseSetter()
             {
+
+                if (document.getElementById("dropdownMenuButtonSetOutput").getAttribute("clicked") == "false")
+                {
+                    document.getElementById("dropdownMenuButtonSetOutput").setAttribute("clicked", "true");
+                    return;
+                }
+                
                 document.getElementById("dropdownMenuButtonSetOutput").innerHTML =
                 String.raw
                 `
-                <div class="slidecontainer">
-                    <input type="range" min="1" max="100" value="50" step = "1" class="slider" id="myFrequencyRange">
-                    <p>Frequency:
-                        <span id="frequencyDemo">
-                        </span>
-                    </p>
+                <div class="row">
+                    <div class="col-sm" align = "center">
+                        <div class="slidecontainer">
+                            <input type="range" min="0" max="1" value="0.5" step = "0.1" class="slider" id="myAmplitudeRange">
+                            <p>Amplitude:
+                                <span id="amplitudeDemo">
+                                </span>
+                            </p>
+                        </div>
+                        
+                        
+
+                    </div>
+                
+                    <div class="col-sm" align = "center">
+                        <div class="slidecontainer">
+                            <input type="range" min="1" max="100" value="50" step = "1" class="slider" id="myFrequencyRange">
+                            <p>Frequency:
+                                <span id="frequencyDemo">
+                                </span>
+                            </p>
+                        </div>
+                        
+                        
+
+                    </div>
+                
+                    <div class="col-sm" align = "center">
+                        <div class="slidecontainer">
+                            <input type="range" min="0" max="3" value="0" step = "1" class="slider" id="myChannelRange">
+                            <p>Channel:
+                                <span id="channelDemo">
+                                </span>
+                            </p>
+                        </div>
+                        
+                        
+
+                    </div>
                 </div>
                 
+                <br/> <br/>
                 
-                <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-success" onclick="SendFrequency()">Send!</button>
+                <div class="row">
+                    <div class="col-sm" align = "center">
+                        <div class="slidecontainer">
+                            <input type="range" min="0" max="360" value="0" step = "0.1" class="slider" id="myPhaseRange">
+                            <p>Phase:
+                                <span id="phaseDemo">
+                                </span>
+                            </p>
+                        </div>
+                        
+
+                    </div>
+                
+                    <div class="col-sm" align = "center">
+                        <div class="slidecontainer">
+                            <input type="range" min="0" max="7" value="0" step = "1" class="slider" id="myProfileRange">
+                            <p>Profile:
+                                <span id="profileDemo">
+                                </span>
+                            </p>
+                        </div>
+
+                    </div>
+                
                 </div>
                 
-                <br/>
+                <br/> <br/>
+                
+                <div class="row">
+                    <div class="col-sm" align = "center">
+                        <button type="button" class="btn btn-success" onclick="SendAll()">Send All!</button>
+                    </div>
+                </div>
                 
                 `
-                var slider = document.getElementById("myFrequencyRange");
-                var output = document.getElementById("frequencyDemo");
-                output.innerHTML = slider.value + " Hz";
+                
+                var amplSlider = document.getElementById("myAmplitudeRange");
+                amplSlider.value = amplitudeValue;
+                var amplOutput = document.getElementById("amplitudeDemo");
+                amplOutput.innerHTML = amplSlider.value;
 
-                slider.oninput = function() {
-                  output.innerHTML = this.value + " Hz";
+                amplSlider.oninput = function()
+                {
+                    amplOutput.innerHTML = this.value;
+                    amplitudeValue = this.value;
+                }
+
+                var freqSlider = document.getElementById("myFrequencyRange");
+                freqSlider.value = frequencyValue;
+                var freqOutput = document.getElementById("frequencyDemo");
+                freqOutput.innerHTML = freqSlider.value + " Hz";
+
+                freqSlider.oninput = function()
+                {
+                    freqOutput.innerHTML = this.value + " Hz";
+                    frequencyValue = this.value;
+                }
+                
+                var channelSlider = document.getElementById("myChannelRange");
+                channelSlider.value = channelValue;
+                var channelOutput = document.getElementById("channelDemo");
+                channelOutput.innerHTML = channelSlider.value;
+
+                channelSlider.oninput = function()
+                {
+                    channelOutput.innerHTML = this.value;
+                    channelValue = this.value;
+                }
+                
+                var profileSlider = document.getElementById("myProfileRange");
+                profileSlider.value = profileValue;
+                var profileOutput = document.getElementById("profileDemo");
+                profileOutput.innerHTML = profileSlider.value;
+
+                profileSlider.oninput = function()
+                {
+                    profileOutput.innerHTML = this.value;
+                    profileValue = this.value;
+                }
+                
+                var phaseSlider = document.getElementById("myPhaseRange");
+                phaseSlider.value = phaseValue;
+                var phaseOutput = document.getElementById("phaseDemo");
+                phaseOutput.innerHTML = phaseSlider.value + "&deg";
+
+                phaseSlider.oninput = function()
+                {
+                    phaseOutput.innerHTML = this.value + "&deg";
+                    phaseValue = this.value;
                 }
             }
-            
-            function SendAmplitude()
-            {
-                var val = document.getElementById("myAmplitudeRange").value;
-                alert("set: Amplitude = " + val);
-                document.getElementById("dropdownMenuButtonSetOutput").innerHTML = "Set Output";
-            }
-            
-            function AmplitudeSetter()
-            {
-                document.getElementById("dropdownMenuButtonSetOutput").innerHTML =
-                String.raw
-                `
-                <div class="slidecontainer">
-                    <input type="range" min="0" max="1" value="0.5" step = "0.1" class="slider" id="myAmplitudeRange">
-                    <p>Amplitude:
-                        <span id="amplitudeDemo">
-                        </span>
-                    </p>
-                </div>
-                
-                
-                <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-success" onclick="SendAmplitude()">Send!</button>
-                </div>
-                
-                <br/>
-                
-                `
-                var slider = document.getElementById("myAmplitudeRange");
-                var output = document.getElementById("amplitudeDemo");
-                output.innerHTML = slider.value;
-
-                slider.oninput = function() {
-                  output.innerHTML = this.value;
-                }
-            }
-            
-            
                         
             
         </script>
@@ -1003,17 +1097,8 @@
             
             <div class = "row">
                 <div class="col-sm" align = "center">
-                    <div class="dropdown">
-                      <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButtonSetOutput" data-bs-toggle="dropdown" aria-expanded="false">
-                        Set Output
-                      </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonSetOutput" id = SetOutputMenu>
-                        <li><div class="dropdown-item" onclick = "FrequencySetter()">Frequency</div></li>
-                        <li><div class="dropdown-item" onclick = "AmplitudeSetter()">Amplitude</div></li>
-                        <li><a class="dropdown-item" href="#">Channel</a></li>
-                        <li><a class="dropdown-item" href="#">Phase</a></li>
-                    </ul>
-                    </div>
+                    <button type="button" class="btn btn-info" id="dropdownMenuButtonSetOutput" onclick="FreqAmplChanPhaseSetter();" clicked="true">Set Output</button>
+
                 </div>
                 
                 <div class="col-sm" align = "center">

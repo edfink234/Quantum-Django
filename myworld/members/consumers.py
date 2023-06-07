@@ -13,7 +13,7 @@ from channels.exceptions import ChannelFull
 from pymongo import MongoClient
 import re
 
-def send_to_dds_zmq(FreqAmplChanPhaseVals):
+async def send_freq_chan_ampl_phase_to_dds_zmq(channel_layer, FreqAmplChanPhaseVals):
     FreqAmplChanPhaseVals = FreqAmplChanPhaseVals.replace("FreqAmplChanPhaseSetterVals = ","")
     FreqAmplChanPhaseVals = FreqAmplChanPhaseVals.split(",")
     assert(len(FreqAmplChanPhaseVals) == 5)
@@ -24,9 +24,6 @@ def send_to_dds_zmq(FreqAmplChanPhaseVals):
     profile = int(FreqAmplChanPhaseVals[4])
     
     print(frequency, amplitude, channel, phase, profile)
-    
-
-
 
     context = zmq.Context()
 
@@ -37,6 +34,28 @@ def send_to_dds_zmq(FreqAmplChanPhaseVals):
     message_set = json.dumps({ "jsonrpc": "2.0", "method": "set_output", "params":{"freq": frequency,"ampl": amplitude, "channel": channel, "phase": phase, "profile": profile}, "id": 1})
     
     socket.send_string(message_set)
+    data_set = socket.recv_string()
+    result_set = json.loads(data_set)['result']
+    await channel_layer.group_send("ZMQ",{"type": "chat.message", "send_freq_chan_ampl_phase_to_dds_zmq": result_set})
+    
+async def send_chan_read_temp_to_dds_zmq(channel_layer, ChanVal):
+    ChanVal = ChanVal.replace("ChanSetterValReadTemp = ","")
+    channel = int(ChanVal)
+    
+    print(channel)
+
+    context = zmq.Context()
+
+    # Connect to the port where the server is listening
+    socket = context.socket(zmq.REQ)
+    socket.connect("tcp://localhost:5557")
+
+    message_read = json.dumps({ "jsonrpc": "2.0", "method": "read_temperature", "params":{"channel": channel}, "id": 2})
+    
+    socket.send_string(message_read)
+    data_read = socket.recv_string()
+    result_read = json.loads(data_read)['result']
+    await channel_layer.group_send("ZMQ",{"type": "chat.message", "send_chan_read_temp_to_dds_zmq": result_read, "channel": channel})
 
 class ZMQChannels(AsyncWebsocketConsumer):
     consumers = 0 #this is a class variable, referred to as ZMQChannels.consumers
@@ -70,7 +89,13 @@ class ZMQChannels(AsyncWebsocketConsumer):
 #            First, check if the data is the data is of the form
 #            FreqAmplChanPhaseSetterVals = freqency, amplitude, channel, phase
             if "FreqAmplChanPhaseSetterVals = " in text_data:
-                send_to_dds_zmq(text_data)
+                await send_freq_chan_ampl_phase_to_dds_zmq(self.channel_layer, text_data)
+                return
+            
+#            Second, check if the data is the data is of the form
+#            ChanSetterValReadTemp = channel
+            elif "ChanSetterValReadTemp = " in text_data:
+                await send_chan_read_temp_to_dds_zmq(self.channel_layer, text_data)
                 return
             
             client = MongoClient()

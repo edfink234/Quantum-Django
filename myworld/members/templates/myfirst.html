@@ -583,7 +583,6 @@
             {
                 var count = 0;
                 const interval = 100;
-                
                 if (!started)
                 {
                     chatSocket = new WebSocket(
@@ -624,29 +623,6 @@
 
                     if (typeof data.event.text === "undefined" && typeof data.event.maxbox_channels !== "undefined")
                     {
-                        //console.log(data.event.maxbox_channels);
-                        /*
-                        var voltageData = [
-                          {
-                            x: [...Array(16).keys()],
-                            y: data.event.maxbox_channels,
-                            type: 'bar',
-                            
-                          }
-                        ];
-                        
-                        voltages_layout = {'yaxis': {'range': [0, 1]}, autosize: false, margin: {
-                            l: 40,
-                            r: 40,
-                            b: -10,
-                            t: 50,
-                            pad: 4
-                        }}
-                        
-                        Plotly.newPlot('voltages', voltageData, voltages_layout);
-                        
-                        return;
-                         */
                         
                         var voltage_x_vals = []; //line-graph x-coordinates
                         for (let i = lowVoltageBin; i <= highVoltageBin; i++)
@@ -739,6 +715,47 @@
                         };
                         
                         Plotly.newPlot('voltages', voltage_channel_data, layout);
+                        return;
+                    }
+                    //else, this could be the result of "Set Output"
+                    else if (typeof data.event.text === "undefined" && typeof data.event.send_freq_chan_ampl_phase_to_dds_zmq !== "undefined")
+                    {
+                        var result = data.event.send_freq_chan_ampl_phase_to_dds_zmq;
+                        console.log(result);
+                        if (result) //if successfully written, display a green checkmark for 2 seconds
+                        {
+                            document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").innerHTML =
+                            String.raw
+                            `
+                            <font size="72 px">&#9989</font>
+                            `;
+                        }
+                        else //else, display a red X for 2 seconds
+                        {
+                            document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").innerHTML =
+                            String.raw
+                            `
+                            <font size="72 px">&#10060</font>
+                            `;
+                        }
+                        
+                        
+                        setTimeout(() => {  document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").innerHTML = "Set Output"; }, 2000);
+                        
+                        return;
+                    }
+                    
+                    //else, this could be the result of "Read Temperature"
+                    else if (typeof data.event.text === "undefined" && typeof data.event.send_chan_read_temp_to_dds_zmq !== "undefined")
+                    {
+                        var result = data.event.send_chan_read_temp_to_dds_zmq;
+                        var channel = data.event.channel
+                        console.log(result);
+                        document.getElementById("dropdownMenuButtonChanOutput").innerHTML = "Temperature at Channel " + channel + " = " +  result;
+                        
+                        
+                        setTimeout(() => {  document.getElementById("dropdownMenuButtonChanOutput").innerHTML = "Read Temperature"; }, 2000);
+                        
                         return;
                     }
                     
@@ -868,6 +885,7 @@
             {
                 if (!started) //if chatsocket is not connected, connect it
                 {
+                    
                     chatSocket = new WebSocket(
                                 'ws://'
                                 + window.location.host
@@ -883,7 +901,23 @@
                 }
             }
             
-            function SendAll()
+            function SendChan()
+            {
+                var chanVal = document.getElementById("myChannelReadTempRange").value;
+                
+                console.log(chanVal);
+                var running = started;
+                SendBack("ChanSetterValReadTemp = " + chanVal);
+                
+                document.getElementById("dropdownMenuButtonChanOutput").innerHTML = "Read Temperature";
+                document.getElementById("dropdownMenuButtonChanOutput").setAttribute("clicked", "false");
+                if (!running)
+                {
+                    Start();
+                }
+            }
+            
+            function SendFreqAmplChanPhase()
             {
                 var freqVal = document.getElementById("myFrequencyRange").value;
                 var ampVal = document.getElementById("myAmplitudeRange").value;
@@ -891,12 +925,15 @@
                 var phaseVal = document.getElementById("myPhaseRange").value;
                 var profVal = document.getElementById("myProfileRange").value;
                 
-                
                 console.log(freqVal, ampVal, chanVal, phaseVal, profVal);
+                var running = started;
                 SendBack("FreqAmplChanPhaseSetterVals = " + [freqVal, ampVal, chanVal, phaseVal, profVal]);
                 
-                document.getElementById("dropdownMenuButtonSetOutput").innerHTML = "Set Output";
-                document.getElementById("dropdownMenuButtonSetOutput").setAttribute("clicked", "false");
+                document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").setAttribute("clicked", "false");
+                if (!running)
+                {
+                    Start();
+                }
             }
             
             var amplitudeValue = 0.5;
@@ -905,16 +942,58 @@
             var profileValue = 0;
             var phaseValue = 0;
             
+            function ChannelSetter()
+            {
+                if (document.getElementById("dropdownMenuButtonChanOutput").getAttribute("clicked") == "false")
+                {
+                    document.getElementById("dropdownMenuButtonChanOutput").setAttribute("clicked", "true");
+                    return;
+                }
+                document.getElementById("dropdownMenuButtonChanOutput").innerHTML =
+                String.raw
+                `
+                <div class="row">
+                    <div class="col-sm" align = "center">
+                        <div class="slidecontainer">
+                            <input type="range" min="0" max="3" value="0" step = "1" class="slider" id="myChannelReadTempRange">
+                            <p>Channel:
+                                <span id="ChannelReadTempDemo">
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm" align = "center">
+                        <button type="button" class="btn btn-success" onclick="SendChan()">
+                            Read Now!
+                        </button>
+                    </div>
+                </div>
+                `
+                
+                var channelSlider = document.getElementById("myChannelReadTempRange");
+                channelSlider.value = channelValue;
+                var channelOutput = document.getElementById("ChannelReadTempDemo");
+                channelOutput.innerHTML = channelSlider.value;
+
+                channelSlider.oninput = function()
+                {
+                    channelOutput.innerHTML = this.value;
+                    channelValue = this.value;
+                }
+            }
+            
             function FreqAmplChanPhaseSetter()
             {
 
-                if (document.getElementById("dropdownMenuButtonSetOutput").getAttribute("clicked") == "false")
+                if (document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").getAttribute("clicked") == "false")
                 {
-                    document.getElementById("dropdownMenuButtonSetOutput").setAttribute("clicked", "true");
+                    document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").setAttribute("clicked", "true");
                     return;
                 }
                 
-                document.getElementById("dropdownMenuButtonSetOutput").innerHTML =
+                document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").innerHTML =
                 String.raw
                 `
                 <div class="row">
@@ -986,11 +1065,11 @@
                 
                 </div>
                 
-                <br/> <br/>
+                <br/> 
                 
                 <div class="row">
                     <div class="col-sm" align = "center">
-                        <button type="button" class="btn btn-success" onclick="SendAll()">Send All!</button>
+                        <button type="button" class="btn btn-success" onclick="SendFreqAmplChanPhase()">Send All!</button>
                     </div>
                 </div>
                 
@@ -1097,19 +1176,17 @@
             
             <div class = "row">
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-info" id="dropdownMenuButtonSetOutput" onclick="FreqAmplChanPhaseSetter();" clicked="true">Set Output</button>
+                    <button type="button" class="btn btn-info" id="dropdownMenuButtonSetFreqAmplChanPhaseOutput" onclick="FreqAmplChanPhaseSetter();" clicked="true">
+                        Set Output
+                    </button>
 
                 </div>
                 
                 <div class="col-sm" align = "center">
-                    <div class="dropdown">
-                      <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButtonReadTemp" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button type="button" class="btn btn-info" id="dropdownMenuButtonChanOutput" onclick="ChannelSetter();" clicked="true">
                         Read Temperature
-                      </button>
-                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonReadTemp">
-                        <li><a class="dropdown-item" href="#">Channel</a></li>
-                      </ul>
-                    </div>
+                    </button>
+
                 </div>
             </div>
             

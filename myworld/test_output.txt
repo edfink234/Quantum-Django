@@ -1,5 +1,5 @@
-frequency: 1
-amplitude: 2
-channel: 6
-phase: 42
-profile: 128
+frequency: 95.0
+amplitude: 0.8
+channel: 2
+phase: 171.7
+profile: 2

@@ -29,7 +29,7 @@ async def send_freq_chan_ampl_phase_to_dds_zmq(channel_layer, FreqAmplChanPhaseV
 
     # Connect to the port where the server is listening
     socket = context.socket(zmq.REQ)
-    socket.connect("tcp://localhost:5557")
+    socket.connect("tcp://localhost:5559")
 
     message_set = json.dumps({ "jsonrpc": "2.0", "method": "set_output", "params":{"freq": frequency,"ampl": amplitude, "channel": channel, "phase": phase, "profile": profile}, "id": 1})
     
@@ -48,7 +48,7 @@ async def send_chan_read_temp_to_dds_zmq(channel_layer, ChanVal):
 
     # Connect to the port where the server is listening
     socket = context.socket(zmq.REQ)
-    socket.connect("tcp://localhost:5557")
+    socket.connect("tcp://localhost:5559")
 
     message_read = json.dumps({ "jsonrpc": "2.0", "method": "read_temperature", "params":{"channel": channel}, "id": 2})
     

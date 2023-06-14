@@ -106,6 +106,8 @@
             var highEnd = 0;    //upper x-value for line graph
             var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
             var lineVals = [];  //stores y-coordinates of line plot
+            var minlineVal = false; //y-min line graph
+            var maxlineVal = false; //y-max line graph
             var started = true;
             
             //Voltage values
@@ -797,6 +799,24 @@
                     
                     //⌄⌄⌄ parsing data
                     Data = data.event["text"][1].replaceAll('[','').replaceAll(']','').split(',').map(Number)
+                    
+                    
+                    if (!minlineVal && !maxlineVal)
+                    {
+                        minlineVal = Data[0] - 10;
+                        maxlineVal = Data[0] + 10;
+                    }
+                    else
+                    {
+                        if (minlineVal > Data[0])
+                        {
+                            minlineVal = Data[0];
+                        }
+                        if (maxlineVal < Data[0])
+                        {
+                            maxlineVal = Data[0];
+                        }
+                    }
                     lineVals.push(Data[0]); //y-axis line graph values
                     if (lineVals.length > interval)
                     {
@@ -841,7 +861,7 @@
                         //sets the y axis of the line graph subplot
                         //can change the range from what it is now (0,100.7) to something
                         //else if you like ⌄⌄⌄
-                        yaxis2: {anchor: 'x2', range: [ 36, 62]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv", see docstring in "views.py" for other files min and max values
+                        yaxis2: {anchor: 'x2', range: [ minlineVal, maxlineVal]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv", see docstring in "views.py" for other files min and max values
                         
                         xaxis2: {domain: [0.35, 1], range: list}, //how much of screen the line graph subplot takes up, here it takes up 65%
                         

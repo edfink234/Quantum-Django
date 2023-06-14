@@ -5,7 +5,7 @@ from RPC_server.backend.zmq_server import zmq_server
 #initialize the rpc server
 
 api = zmq_server()
-api.init("tcp://127.0.0.1:5557")
+api.init("tcp://127.0.0.1:5559")
 
 print('started rpc server...')
 

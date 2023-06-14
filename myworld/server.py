@@ -6,6 +6,7 @@ import asyncio
 import zmq
 import sys
 import signal
+import struct
 from asgiref.sync import async_to_sync
 from multiprocessing import Process
 from shared_memory_dict import SharedMemoryDict
@@ -74,8 +75,12 @@ async def TrueServerZMQ(socket, channel_layer):
     """
     while True:
         try:
-            message = socket.recv_multipart(flags=zmq.NOBLOCK)
-            await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [i.decode() for i in message]})
+            [topic, message, time] = socket.recv_multipart()
+            if topic.decode() in ["MAXBOX", "CAMERA"]:
+                num_floats = len(message) // struct.calcsize('f')
+                data = list(struct.unpack('f' * num_floats, message))
+                message = [topic.decode(), data, time.decode()]
+                await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [str(i) for i in message]})
         except zmq.Again:
             continue
 
@@ -83,9 +88,9 @@ if __name__ == '__main__':
     ZMQ_server_context = zmq.Context()
     socket = ZMQ_server_context.socket(zmq.SUB) #subscriber
     socket.setsockopt(zmq.RCVHWM, 1000000)
-    socket.connect("tcp://127.0.0.1:5555")
+    socket.connect("tcp://127.0.0.1:5558")
     ZMQ_server_loaded = True
-    socket.setsockopt(zmq.SUBSCRIBE, b"CAMERA")
+    socket.setsockopt_string(zmq.SUBSCRIBE, "CAMERA")
     channel_layer = get_channel_layer()
     print("Here is the ",channel_layer)
 

@@ -130,9 +130,10 @@ class ZMQChannels(AsyncWebsocketConsumer):
                                 
                 user = str(self.scope["user"]) #self.scope["user"] is of type <class 'channels.auth.UserLazyObject'>
                 
-                
+                #if the user exists
                 if db.posts.find_one({"user": user}):
                     db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "activatedChannels":activatedChannels}})
+                #else create the user
                 else: #if user is not registered in the mongdb database
                     #add the user with the user's data
                     db.posts.insert_one({"user": user, "activatedChannels": activatedChannels})
@@ -176,11 +177,11 @@ class ZMQChannels(AsyncWebsocketConsumer):
 #pprint.pprint(posts.find({"author": "Mike"}))
 #posts.find_one_and_delete({"author": "Mike"}) #https://www.geeksforgeeks.org/python-mongodb-find_one_and_update-query/
 #
-#from pymongo import MongoClient
-#client = MongoClient()
-#db = client.test_database #test_database is the database we store everything in
-#db.posts.find_one({"author": "Mike"})
-#db.posts.find_one_and_delete({"author": "Mike"})
-#db.posts.insert_one({"author": "Mike", "data": "some html code"})
-#db.posts.find_one_and_update({"author": "Mike"}, { '$set': {"author":"ed", "data":"some other html code"}})
-#db.posts.find_one_and_update({"author": "ed"}, { '$set': {"data":"some new html code"}})
+from pymongo import MongoClient
+client = MongoClient()
+db = client.test_database #test_database is the database we store everything in
+db.posts.find_one({"author": "Mike"})
+db.posts.find_one_and_delete({"author": "Mike"})
+db.posts.insert_one({"author": "Mike", "data": "some html code"})
+db.posts.find_one_and_update({"author": "Mike"}, { '$set': {"author":"ed", "data":"some other html code"}})
+db.posts.find_one_and_update({"author": "ed"}, { '$set': {"data":"some new html code"}})

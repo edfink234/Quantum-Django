@@ -61,7 +61,9 @@ def blocking_rpc(dev:ClientDevice, target:bytes, method:str, params:Optional[Uni
             return result["error"]
 
 # KEYPATH
-path = "C:/Users/wpauline/switchkey/env-network-transport-layer-both.txt"
+path = "../../ExecConClient.txt"
+#"C:/Users/wpauline/switchkey/env-network-transport-layer-both.txt"
+    
 
 pub_key, _ = get_keys(pathlib.PurePath(path))
 client_auth = ClientAuthentication(pub_key)

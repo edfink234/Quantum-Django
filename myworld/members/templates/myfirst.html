@@ -9,7 +9,7 @@
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
                 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" ></script>
                 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.min.js" integrity="sha384-Atwg2Pkwv9vp0ygtn1JAojH0nYbwNJLPhwyoVbhoPwBhjQPR5VtM2+xf0Uwh9KtT" crossorigin="anonymous"></script>
-                    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
                     <title>Red Trap</title>
                 
             </head>
@@ -88,7 +88,8 @@
         </script>
         
         <script>
-        
+            //Connection starts here!
+            
             let isMouseHover = false;
             let voltageMenuNumber = 0;
             
@@ -619,7 +620,7 @@
                     console.log(specificStatusCodeMappings[e.code]); //reports closure status
                 };
             
-                //⌄⌄⌄ Fires when camera data is received
+                //⌄⌄⌄ Fires when data is received
                 chatSocket.onmessage = function(e) {
                     const data = JSON.parse(e.data);
 
@@ -803,8 +804,8 @@
                     
                     if (!minlineVal && !maxlineVal)
                     {
-                        minlineVal = Data[0] - 10;
-                        maxlineVal = Data[0] + 10;
+                        minlineVal = Data[0];
+                        maxlineVal = Data[0];
                     }
                     else
                     {
@@ -937,6 +938,7 @@
                 }
             }
             
+            //TODO: Send back a list of the mode (direct or experiment), function name, and a dictionary of parameter names and values
             function SendFreqAmplChanPhase()
             {
                 var freqVal = document.getElementById("myFrequencyRange").value;

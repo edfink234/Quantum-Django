@@ -16,7 +16,6 @@ from threading import Thread
 #Receives data from the consumer class function 'receive' which received data from the Raman.html
 smd_config = SharedMemoryDict(name='config', size=1024)
 
-
 async def func_receive(channel_layer):
     """
     Receives data from consumers.py ZMQChannels.receive(), i.e., the frontend
@@ -45,9 +44,9 @@ async def func_receive(channel_layer):
         print("Break it out")
         raise(e)
 
-def between_callback(args):
+def between_callback(args, func):
     """
-    Executed in a subprocess, stably calls func_receive 
+    Executed in a subprocess, stably calls func_receive
 
     Parameters
     ----------
@@ -57,22 +56,26 @@ def between_callback(args):
     """
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(asyncio.gather(func_receive(args)))
+    loop.run_until_complete(asyncio.gather(func(args)))
     loop.close()
 
 
 #Receiving data from the camera and sending it to the group
-async def TrueServerZMQ(socket, channel_layer):
+async def CameraSubscriber(channel_layer):
     """
-    Receives data from client.py, then sends it to the channel layer
+    Receives data from HardwareDummy.py, then sends it to the channel layer
 
     Parameters
     ----------
-    socket: zmq.sugar.context.Context
-        returned by zmq.Context()
     channel_layer: channels_redis.core.RedisChannelLayer
         returned by channels.layers.get_channel_layer()
     """
+    ZMQ_server_context = zmq.Context()
+    socket = ZMQ_server_context.socket(zmq.SUB) #subscriber
+    socket.setsockopt(zmq.RCVHWM, 1000000)
+    socket.connect("tcp://127.0.0.1:5558")
+    ZMQ_server_loaded = True
+    socket.setsockopt_string(zmq.SUBSCRIBE, "CAMERA")
     while True:
         try:
             [topic, message, time] = socket.recv_multipart()
@@ -84,20 +87,61 @@ async def TrueServerZMQ(socket, channel_layer):
         except zmq.Again:
             continue
 
-if __name__ == '__main__':
-    ZMQ_server_context = zmq.Context()
-    socket = ZMQ_server_context.socket(zmq.SUB) #subscriber
+#Receiving data from the maxbox dummy and sending it to the group
+async def MaxBoxSubscriber(channel_layer):
+    """
+    Receives data from HardwareDummy.py, then sends it to the channel layer
+
+    Parameters
+    ----------
+    channel_layer: channels_redis.core.RedisChannelLayer
+        returned by channels.layers.get_channel_layer()
+    """
+    context = zmq.Context()
+
+    # Connect to the port where the server is listening
+    socket = context.socket(zmq.SUB)
+
     socket.setsockopt(zmq.RCVHWM, 1000000)
-    socket.connect("tcp://127.0.0.1:5558")
-    ZMQ_server_loaded = True
-    socket.setsockopt_string(zmq.SUBSCRIBE, "CAMERA")
+    socket.connect("tcp://127.0.0.1:5556")
+    socket.setsockopt(zmq.SUBSCRIBE, b"MAXBOX")
+    while True :
+        try:
+            message = socket.recv_multipart(flags=zmq.NOBLOCK)
+            message = socket.recv()
+            name = message.decode()
+            message = socket.recv()
+            values = struct.unpack('f' * (len(message) // 4), message)
+            message = socket.recv()
+            timestamp = float(message)
+            
+            
+            await channel_layer.group_send("ZMQ",{"type": "chat.message", "maxbox_channels": values})
+
+        except zmq.Again:
+            continue
+
+if __name__ == '__main__':
     channel_layer = get_channel_layer()
     print("Here is the ",channel_layer)
 
     # listening in when the front end sends data back to us (subscriber)
-    p = Process(target=between_callback, args=(channel_layer,))
-    p.start()
+    p = Process(target=between_callback, args=(channel_layer, func_receive))
+    
+    #MaxBoxSubscriber: get's data from HardwareDummy.py and sends it to myfirst.html
+    p1 = Process(target=between_callback, args=(channel_layer, MaxBoxSubscriber))
+    
+    #CameraSubscriber: get's data from HardwareDummy.py and sends it to myfirst.html
+    p2 = Process(target=between_callback, args=(channel_layer, CameraSubscriber))
 
-    asyncio.run(TrueServerZMQ(socket, channel_layer))
+    p.start()
+    p1.start()
+    p2.start()
+    
+    #If you want to run something in the "main process" instead, you'd do the following:
+    #asyncio.run(CameraSubscriber(channel_layer))
+
+    
 
         
+

@@ -93,8 +93,10 @@
             let isMouseHover = false;
             let voltageMenuNumber = 0;
             
-            let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by Raman function in views.py
+            let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by index function in views.py
             
+            let ExperimentDict = JSON.parse('{{functionDict | safe}}'); //third variable returned by index function in views.py
+
             console.log("{{ user.get_username }}"); //logging the user's username to console
             console.log("connected!");
             chatSocket = new WebSocket(     //creating new WebSocket instance
@@ -294,6 +296,73 @@
                 }
             }
             
+            function describeExperiment(Experiment)
+            {
+                
+                ExperimentInfo = ExperimentDict[Experiment];
+                var ExperimentElement = document.getElementById(Experiment);
+                if (ExperimentElement.getAttribute("expanded") === null)
+                {
+                    document.getElementById(Experiment).setAttribute("expanded", true);
+                    ExperimentElement.innerHTML += '\n' + '<form>';
+                    let count = 0;
+                    for (param in ExperimentInfo["params"])
+                    {
+                        let ExperimentInfoParamId = param + count;
+                        ExperimentElement.innerHTML += '\n' + String.raw`<div class="form-group">`;
+                        ExperimentElement.innerHTML += '\n' + String.raw`<label for="` + ExperimentInfoParamId + String.raw`">` + param + String.raw`label</label>`;
+                        ExperimentElement.innerHTML += '\n' + String.raw`<input type="text" class="form-control" id="` + ExperimentInfoParamId + String.raw`" placeholder="` + ExperimentInfo["params"][param]["default"]  + String.raw`">`;
+                        ExperimentElement.innerHTML += String.raw`</div>`;
+                        
+                                        
+                        count++;
+                    }
+                    ExperimentElement.innerHTML += '\n' + '</form>';
+                }
+            }
+            
+            function AddExperiment()
+            {
+                console.log(window.ExperimentAdded);
+                if (window.ExperimentAdded === undefined)
+                {
+                    window.ExperimentAdded = true;
+                    var jsonPretty = JSON.stringify(ExperimentDict, null, 2);
+                    //console.log(jsonPretty);
+                    
+                    let ExperimentMenu = document.createElement("div"); //create a 'div' element for ExperimentMenu
+                    ExperimentMenu.id = "ExperimentMenu"; //set id of menu
+                    for (Experiment in ExperimentDict)
+                    {
+                        let describeExperimentStr = "describeExperiment('" + Experiment + "')";
+                        ExperimentMenu.innerHTML += '<p onclick = "' + describeExperimentStr + '" id = "' + Experiment + '">' + Experiment
+                        + '</p>' + '\n';
+                    }
+                    
+                    document.body.appendChild(ExperimentMenu);
+                }
+                
+                /*
+                 Structure of ExperimentDict:
+                 {
+                     "Experiment": {
+                         "params": {
+                           "param1": {
+                             "type": "the type of param1",
+                             "default": "the default value of param1",
+                             "info": "the description of param1"
+                           },
+                            ...
+                         },
+                         "description": "This Experiment does a 729 Shelving Test.",
+                         "other_metadata": []
+                       },
+                     ...
+                }
+                */
+                
+            }
+            
             /// Gets the `number` checkbox (e.g. 0, 1, 2, ..., or 15) and checks or unchecks all of them
             /// for each voltage channel window on the DOM. `checked` is either true (check) or false (uncheck)
             function checkVoltageChannelBoxes(number, checked)
@@ -319,7 +388,7 @@
             
             function SetVoltageChannels(top, left)
             {
-                let menu = document.createElement("div"); //create a 'mydiv' element for menu
+                let menu = document.createElement("div"); //create a 'div' element for menu
                 menu.id = "ctxmenu_voltage"; //set id of menu
                 menu.name = "menu_" + voltageMenuNumber++;
                 menu.style.top = (top)+"px";    //y-position of menu
@@ -553,6 +622,7 @@
                 <p onclick = "SendBack()">Signal</p>
                 <p onclick = "PauseAnimations()">Pause Animations</p>
                 <p onclick = "ResumeAnimations()">Resume Animations</p>
+                <p onclick = "AddExperiment()"> Add Experiment</p>
                 `;
                 
                 let setVoltageChannelsButton = document.createElement("p"); //creating a separate element for setting voltages
@@ -899,7 +969,6 @@
                 console.log(lowEnd, highEnd);
                 chatSocket.close();
                 started = false;
-                PauseAnimations()
             }
             
             //Send a message back to subscriber, called when user clicks 'Signal' ⌄⌄⌄

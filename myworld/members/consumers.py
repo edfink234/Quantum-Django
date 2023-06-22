@@ -149,20 +149,20 @@ class ZMQChannels(AsyncWebsocketConsumer):
 
 
 #https://pymongo.readthedocs.io/en/stable/tutorial.html
-#from pymongo import MongoClient
-#client = MongoClient()
-#db = client.test_database
-#db.posts
-#import datetime
-#post = {"author": "Mike", "text": "My first blog post!", "tags": ["mongodb", "python", "pymongo"], "date": datetime.datetime.utcnow()}
-#posts = db.posts
-#post_id = posts.insert_one(post).inserted_id
-#db.list_collection_names()
-#import pprint
-#pprint.pprint(posts.find_one())
-#pprint.pprint(posts.find_one({"author": "Mike"}))
-#posts.find_one({"author": "Eliot"})
-#pprint.pprint(posts.find_one({"_id": post_id}))
+from pymongo import MongoClient
+client = MongoClient()
+db = client.test_database
+db.posts
+import datetime
+post = {"author": "Mike", "text": "My first blog post!", "tags": ["mongodb", "python", "pymongo"], "date": datetime.datetime.utcnow()}
+posts = db.posts
+post_id = posts.insert_one(post).inserted_id
+db.list_collection_names()
+import pprint
+pprint.pprint(posts.find_one())
+pprint.pprint(posts.find_one({"author": "Mike"}))
+posts.find_one({"author": "Eliot"})
+pprint.pprint(posts.find_one({"_id": post_id}))
 
 
 #from pymongo import MongoClient
@@ -177,11 +177,11 @@ class ZMQChannels(AsyncWebsocketConsumer):
 #pprint.pprint(posts.find({"author": "Mike"}))
 #posts.find_one_and_delete({"author": "Mike"}) #https://www.geeksforgeeks.org/python-mongodb-find_one_and_update-query/
 #
-from pymongo import MongoClient
-client = MongoClient()
-db = client.test_database #test_database is the database we store everything in
-db.posts.find_one({"author": "Mike"})
-db.posts.find_one_and_delete({"author": "Mike"})
-db.posts.insert_one({"author": "Mike", "data": "some html code"})
-db.posts.find_one_and_update({"author": "Mike"}, { '$set': {"author":"ed", "data":"some other html code"}})
-db.posts.find_one_and_update({"author": "ed"}, { '$set': {"data":"some new html code"}})
+#from pymongo import MongoClient
+#client = MongoClient()
+#db = client.test_database #test_database is the database we store everything in
+#db.posts.find_one({"author": "Mike"})
+#db.posts.find_one_and_delete({"author": "Mike"})
+#db.posts.insert_one({"author": "Mike", "data": "some html code"})
+#db.posts.find_one_and_update({"author": "Mike"}, { '$set': {"author":"ed", "data":"some other html code"}})
+#db.posts.find_one_and_update({"author": "ed"}, { '$set': {"data":"some new html code"}})

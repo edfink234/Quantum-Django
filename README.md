@@ -1,17 +1,20 @@
 # Quantum-Django
 Website in-development for a Quantum Computer
 
-1. git clone thisrepo
-2. virtualenv TestQuantumDjangoEnv -p python3.10
-3. source TestQuantumDjangoEnv/bin/activate
-4. cd TestWebGui
-5. pip3 install -r requirements.txt
+1. `git clone thisrepo`
+2. `virtualenv TestQuantumDjangoEnv -p python3.10`
+3. `source TestQuantumDjangoEnv/bin/activate`
+4. `cd TestWebGui`
+5. `pip3 install -r requirements.txt`
 6. Install redis and mongodb dockers
+```
     a. docker run -p 6379:6379 -d redis:5
     b. docker run -p 27017:27017 --name mymongo -d mongo
-7. cd myworld 
-8. python manage.py collectstatic
+```
+7. `cd myworld`
+8. `python manage.py collectstatic`
 9. Run seperate processes starting from TestWebGui/myworld:
+```
     Terminal 1
 	a. source TestQuantumDjangoEnv/bin/activate
 	b. python3 manage.py shell
@@ -29,7 +32,7 @@ Website in-development for a Quantum Computer
 	a. source mydjangoenv/bin/activate
 	b. cd ../Dummies/
 	c. python3 HardwareDummy.py
-	
+```	
 
 Note: In file `TestQuantumDjangoEnv/lib/python3.10/site-packages/redis/client.py`, change the function `def parse_zadd(response, **options):` to the following:
 

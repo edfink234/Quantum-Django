@@ -330,15 +330,15 @@
                     var jsonPretty = JSON.stringify(ExperimentDict, null, 2);
                     //console.log(jsonPretty);
                     
-                    let ExperimentMenu = document.createElement("div"); //create a 'div' element for ExperimentMenu
-                    ExperimentMenu.id = "ExperimentMenu"; //set id of menu
+                    let ExperimentMenu = document.createElement("ul"); //create a 'div' element for ExperimentMenu
+                    ExperimentMenu.class = "ExperimentMenu"; //set id of menu
                     for (Experiment in ExperimentDict)
                     {
                         let describeExperimentStr = "describeExperiment('" + Experiment + "')";
-                        ExperimentMenu.innerHTML += '<p onclick = "' + describeExperimentStr + '" id = "' + Experiment + '">' + Experiment
-                        + '</p>' + '\n';
+                        ExperimentMenu.innerHTML += '<button type="button" class="list-group-item list-group-item-action" onclick = "' + describeExperimentStr + '" id = "' + Experiment + '">' + Experiment
+                        + '</button>' + '\n';
                     }
-                    
+                    ExperimentMenu.innerHTML += "</ul>";
                     document.body.appendChild(ExperimentMenu);
                 }
                 

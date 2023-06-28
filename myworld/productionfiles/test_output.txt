@@ -1,0 +1,5 @@
+frequency: 50.0
+amplitude: 0.5
+channel: 0
+phase: 0.0
+profile: 0

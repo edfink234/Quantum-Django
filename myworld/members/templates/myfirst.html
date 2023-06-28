@@ -692,18 +692,19 @@
             
                 //⌄⌄⌄ Fires when data is received
                 chatSocket.onmessage = function(e) {
-                    const data = JSON.parse(e.data);
+                    var data = JSON.parse(e.data);
 
-                    if (typeof data.event.text === "undefined" && typeof data.event.maxbox_channels !== "undefined")
+                    data = data.event.text;
+                                        
+                    if (data[0] == 'MAXBOX')
                     {
-                        
                         var voltage_x_vals = []; //line-graph x-coordinates
                         for (let i = lowVoltageBin; i <= highVoltageBin; i++)
                         {
                             voltage_x_vals.push(i);
                         }
                         
-                        var curr_data = data.event.maxbox_channels;
+                        var curr_data = data[1];
                         var max_length = 100; //change this to make x-range larger for voltage channels
                         var voltage_channel_data = [];
                         
@@ -791,7 +792,7 @@
                         return;
                     }
                     //else, this could be the result of "Set Output"
-                    else if (typeof data.event.text === "undefined" && typeof data.event.send_freq_chan_ampl_phase_to_dds_zmq !== "undefined")
+                    /*else if (typeof data.event.text === "undefined" && typeof data.event.send_freq_chan_ampl_phase_to_dds_zmq !== "undefined")
                     {
                         var result = data.event.send_freq_chan_ampl_phase_to_dds_zmq;
                         console.log(result);
@@ -830,133 +831,120 @@
                         setTimeout(() => {  document.getElementById("dropdownMenuButtonChanOutput").innerHTML = "Read Temperature"; }, 2000);
                         
                         return;
-                    }
+                    }*/
                     
                     //⌄⌄⌄ else it's the heat-map-line-graph data, handled below ⌄⌄⌄
-                    var startTime = parseFloat(data.event.text[2])*1000;
                     
-                    var endTime = new Date().getTime();
-                    
-                    
-                    var timeDiff = (endTime-startTime)/1000;
-                    
-                    //how often to update the 'Time Difference (seconds):' text box, here it updates it every time a new time difference value is calculated. You can change '1' to a different number, e.g., 5, to make the time difference value displayed update only after 5 such values are calculated.
-                    //  ⌄⌄⌄
-                    if (numLines++ < 1)
-                    {
-                        document.querySelector('#timediff').value += timeDiff; //append to value displayed in text box
-                    }
-                    else
-                    {
-                        document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
-                    }
-                    
-                    //TODO: In production, delete following 'if' and 'else if' statements. Only implemented to sync tabs/windows, but in production, the publishing rate will not be infinite
-                    //Increase sleep time of publisher if time difference between
-                    //when data is sent to when it's received here is greater than 1
-                    //second ⌄⌄⌄
-                    if (timeDiff > 1)
-                    {
-                        chatSocket.send("increase!");
-                    }
-                    
-                    //Decrease sleep time of publisher if time difference between
-                    //when data is sent to when it's received here is greater than 1
-                    //second ⌄⌄⌄
-                    else if (timeDiff < 1)
-                    {
-                        chatSocket.send("decrease!");
-                    }
-                    
-                    //⌄⌄⌄ parsing data
-                    Data = data.event["text"][1].replaceAll('[','').replaceAll(']','').split(',').map(Number)
-                    
-                    
-                    if (!minlineVal && !maxlineVal)
-                    {
-                        minlineVal = Data[0];
-                        maxlineVal = Data[0];
-                    }
-                    else
-                    {
-                        if (minlineVal > Data[0])
+                    else if (data[0] == 'CAMERA'){
+                        var startTime = parseFloat(data[2])*1000;
+                                                
+                        var endTime = new Date().getTime();
+                        
+                        
+                        var timeDiff = (endTime-startTime)/1000;
+                        
+                        //how often to update the 'Time Difference (seconds):' text box, here it updates it every time a new time difference value is calculated. You can change '1' to a different number, e.g., 5, to make the time difference value displayed update only after 5 such values are calculated.
+                        //  ⌄⌄⌄
+                        if (numLines++ < 1)
+                        {
+                            document.querySelector('#timediff').value += timeDiff; //append to value displayed in text box
+                        }
+                        else
+                        {
+                            document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
+                        }
+                        
+                        //TODO: In production, delete following 'if' and 'else if' statements. Only implemented to sync tabs/windows, but in production, the publishing rate will not be infinite
+                        
+                        //⌄⌄⌄ parsing data
+                        Data = data[1];
+                        
+                        if (!minlineVal && !maxlineVal)
                         {
                             minlineVal = Data[0];
-                        }
-                        if (maxlineVal < Data[0])
-                        {
                             maxlineVal = Data[0];
                         }
-                    }
-                    lineVals.push(Data[0]); //y-axis line graph values
-                    if (lineVals.length > interval)
-                    {
-                        lineVals.splice(0,1);
-                    }
-                    newArr = [];
-                    Data.splice(0,1);
-                    while(Data.length) newArr.push(Data.splice(0,11));
-                    var my_plot = //heatmap plot
-                    {
-                        z : newArr,
-                        type: 'heatmap',
-                        // opacity: 0.8,
-                        zmin: 407,
-                        zmax: 1518,
-                        showlegend: false,
-                        showlegend: false,
-                        xaxis: {visible: false},
-                        showscale: false,
-                        //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
-                    };
-                    
-                    var list = []; //line-graph x-coordinates
-                    for (var i = lowEnd; i <= highEnd; i++) {
-                        list.push(i);
-                    }
-                    
-                    var next_plot = //line graph
-                    {
-                        x: list,
-                        y: lineVals,
-                        type: 'scatter',
-                        xaxis: 'x2',
-                        yaxis: 'y2',
-                    };
-                    
-                    var layout = {
-                        //⌄⌄⌄ heat-map subplot
-                        xaxis: {domain: [0, 0.3], "visible": false}, //heat map takes up 30% of screen
-                        yaxis: {"visible": false},
-                        
-                        //sets the y axis of the line graph subplot
-                        //can change the range from what it is now (0,100.7) to something
-                        //else if you like ⌄⌄⌄
-                        yaxis2: {anchor: 'x2', range: [ minlineVal, maxlineVal]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv", see docstring in "views.py" for other files min and max values
-                        
-                        xaxis2: {domain: [0.35, 1], range: list}, //how much of screen the line graph subplot takes up, here it takes up 65%
-                        
-                        //⌄⌄⌄ 1 row with 1 column for heat map and 1 column for line graph
-                        grid: {rows: 1, columns: 2, pattern: 'independent'},
-                        
-                        margin: {
-                            l: 40,
-                            r: 40,
-                            b: -10,
-                            t: 50,
-                            pad: 4
+                        else
+                        {
+                            if (minlineVal > Data[0])
+                            {
+                                minlineVal = Data[0];
+                            }
+                            if (maxlineVal < Data[0])
+                            {
+                                maxlineVal = Data[0];
+                            }
                         }
-                    };
-                    
-                    Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
-                    if (highEnd < 99) //increase x-axis upper bound by 1 if it's less than 99, can change '99' to whatever you like
-                    {
-                        highEnd++;
-                    }
-                    else    //else increase the x-axis lower and upper bounds by 1
-                    {
-                        lowEnd++;
-                        highEnd++;
+                        lineVals.push(Data[0]); //y-axis line graph values
+                        if (lineVals.length > interval)
+                        {
+                            lineVals.splice(0,1);
+                        }
+                        newArr = [];
+                        Data.splice(0,1);
+                        while(Data.length) newArr.push(Data.splice(0,11));
+                        var my_plot = //heatmap plot
+                        {
+                            z : newArr,
+                            type: 'heatmap',
+                            // opacity: 0.8,
+                            zmin: 407,
+                            zmax: 1518,
+                            showlegend: false,
+                            showlegend: false,
+                            xaxis: {visible: false},
+                            showscale: false,
+                            //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
+                        };
+                        
+                        var list = []; //line-graph x-coordinates
+                        for (var i = lowEnd; i <= highEnd; i++) {
+                            list.push(i);
+                        }
+                        
+                        var next_plot = //line graph
+                        {
+                            x: list,
+                            y: lineVals,
+                            type: 'scatter',
+                            xaxis: 'x2',
+                            yaxis: 'y2',
+                        };
+                        
+                        var layout = {
+                            //⌄⌄⌄ heat-map subplot
+                            xaxis: {domain: [0, 0.3], "visible": false}, //heat map takes up 30% of screen
+                            yaxis: {"visible": false},
+                            
+                            //sets the y axis of the line graph subplot
+                            //can change the range from what it is now (0,100.7) to something
+                            //else if you like ⌄⌄⌄
+                            yaxis2: {anchor: 'x2', range: [ minlineVal, maxlineVal]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv", see docstring in "views.py" for other files min and max values
+                            
+                            xaxis2: {domain: [0.35, 1], range: list}, //how much of screen the line graph subplot takes up, here it takes up 65%
+                            
+                            //⌄⌄⌄ 1 row with 1 column for heat map and 1 column for line graph
+                            grid: {rows: 1, columns: 2, pattern: 'independent'},
+                            
+                            margin: {
+                                l: 40,
+                                r: 40,
+                                b: -10,
+                                t: 50,
+                                pad: 4
+                            }
+                        };
+                        
+                        Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
+                        if (highEnd < 99) //increase x-axis upper bound by 1 if it's less than 99, can change '99' to whatever you like
+                        {
+                            highEnd++;
+                        }
+                        else    //else increase the x-axis lower and upper bounds by 1
+                        {
+                            lowEnd++;
+                            highEnd++;
+                        }
                     }
                 };
             }

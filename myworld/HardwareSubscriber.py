@@ -1,147 +1,121 @@
-#subscriber
-
 from channels.layers import get_channel_layer
-from time import sleep
-import asyncio
 import zmq
-import sys
-import signal
 import struct
-from asgiref.sync import async_to_sync
+import asyncio
 from multiprocessing import Process
-from shared_memory_dict import SharedMemoryDict
 
-from threading import Thread
 
-#Receives data from the consumer class function 'receive' which received data from the Raman.html
-smd_config = SharedMemoryDict(name='config', size=1024)
-
-async def func_receive(channel_layer):
+class HardwareSubscriber:
     """
-    Receives data from consumers.py ZMQChannels.receive(), i.e., the frontend
-
-    Parameters
-    ----------
-    channel_layer: channels_redis.core.RedisChannelLayer
-        returned by channels.layers.get_channel_layer()
-
+    The Hardware Subscriber handles the subscriptions to the hardware publishers.
+    Examples for hardware publishers are the camera, PMT count, photodiodes, etc.
+    They publish their data via ZMQ PUB sockets, the data is received with ZMQ SUB sockets.
+    It is then sent to the channel layer to be displayed on the GUI.
     """
-    global smd_config
-    try:
+
+    def __init__(self, sub_socket, channel_layer, address, names, return_types):
+
+        # get address
+        self.address = address
+
+        # get names
+        self.names = names
+
+        # get return types
+        self.return_types = return_types
+
+        # get SUB socket
+        self.sub_socket = sub_socket
+
+        # get channel layer for communication with GUI
+        self.channel_layer = channel_layer
+
+        # connect the Hardware Subscriber to the PUB sockets
+        self.sub_socket.connect(address)
+        # subscribe to all names of this socket
+        for name in self.names:
+            self.sub_socket.setsockopt_string(zmq.SUBSCRIBE, name)
+
+
+    async def listen(self):
+        """
+        Receive and process data from the publishers, then send it to channel layer.
+        """
+
+        # listen continuously
         while True:
-            x = await channel_layer.receive("ZMQ") #Waits until a message is received from the channel layer
-            if smd_config.get("status"):
-                if x.get('text_data')=='"increase!"':
-                    smd_config["status"]+=1e-5 #increase time delay for publisher in client.py
-                elif x.get('text_data')=='"decrease!"':
-                    smd_config["status"]-=1e-6 #decrease time delay for publisher in client.py
+            try:
+                # TODO: is it fast enough to do it all in one thread or should this be multithreaded/multiprocessed?
+                
+                # receive topic, message and time from the socket
+                [topic, message, time] = self.sub_socket.recv_multipart()
+
+                topic = topic.decode()
+                time = time.decode()
+                return_type = self.return_types[topic]
+
+                # depending on which return type the data has, it needs to be decoded in a different way
+                if return_type == 'float':
+                    decoded_message = struct.unpack('!f', message)[0]
+
+                elif return_type == 'list':
+                    num_floats = len(message) // struct.calcsize('f')
+                    decoded_message = list(struct.unpack('f' * num_floats, message))
+
+                elif return_type == 'int':
+                    decoded_message = struct.unpack('!i', message)[0]
+
+                elif return_type == 'string' or return_type == 'str':
+                    decoded_message = message.decode('utf-8')
+
+                else:
+                    print('WARNING: UNKNOWN RETURN TYPE')
+                    try: 
+                        decoded_message = message.decode('utf-8')
+                    except:
+                        print('MESSAGE CANNOT BE DECODED')
+                # send data to channel layer
+                data = [topic, decoded_message, time]
+                await self.channel_layer.group_send("ZMQ",{"type": "chat.message", "text": data}) # TODO: is it possible to send the messages without converting to string?
             
-            #via the Javascript 'signal' button
-            if x.get('text_data')=='"hi friend"':
-                print("🥳"*1000,end="\n\n")
-            print(smd_config.get("status"), flush = True, end = "\r")
-    except asyncio.CancelledError as e:
-        print("Break it out")
-        raise(e)
+            # zmq.Again is typically raised when a non-blocking operation cannot be completed immediately and needs to be retried later
+            except zmq.Again:
+                continue
 
-def between_callback(args, func):
-    """
-    Executed in a subprocess, stably calls func_receive
+async def main(task_list):
+    await asyncio.gather(*task_list)
 
-    Parameters
-    ----------
-    channel_layer: channels_redis.core.RedisChannelLayer
-        returned by channels.layers.get_channel_layer()
-
-    """
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(asyncio.gather(func(args)))
-    loop.close()
-
-
-#Receiving data from the camera and sending it to the group
-async def CameraSubscriber(channel_layer):
-    """
-    Receives data from HardwareDummy.py, then sends it to the channel layer
-
-    Parameters
-    ----------
-    channel_layer: channels_redis.core.RedisChannelLayer
-        returned by channels.layers.get_channel_layer()
-    """
-    ZMQ_server_context = zmq.Context()
-    socket = ZMQ_server_context.socket(zmq.SUB) #subscriber
-    socket.setsockopt(zmq.RCVHWM, 1000000)
-    socket.connect("tcp://127.0.0.1:5558")
-    ZMQ_server_loaded = True
-    socket.setsockopt_string(zmq.SUBSCRIBE, "CAMERA")
-    while True:
-        try:
-            [topic, message, time] = socket.recv_multipart()
-            if topic.decode() in ["MAXBOX", "CAMERA"]:
-                num_floats = len(message) // struct.calcsize('f')
-                data = list(struct.unpack('f' * num_floats, message))
-                message = [topic.decode(), data, time.decode()]
-                await channel_layer.group_send("ZMQ",{"type": "chat.message", "text": [str(i) for i in message]})
-        except zmq.Again:
-            continue
-
-#Receiving data from the maxbox dummy and sending it to the group
-async def MaxBoxSubscriber(channel_layer):
-    """
-    Receives data from HardwareDummy.py, then sends it to the channel layer
-
-    Parameters
-    ----------
-    channel_layer: channels_redis.core.RedisChannelLayer
-        returned by channels.layers.get_channel_layer()
-    """
-    context = zmq.Context()
-
-    # Connect to the port where the server is listening
-    socket = context.socket(zmq.SUB)
-
-    socket.setsockopt(zmq.RCVHWM, 1000000)
-    socket.connect("tcp://127.0.0.1:5556")
-    socket.setsockopt(zmq.SUBSCRIBE, b"MAXBOX")
-    while True :
-        try:
-            message = socket.recv_multipart(flags=zmq.NOBLOCK)
-            message = socket.recv()
-            name = message.decode()
-            message = socket.recv()
-            values = struct.unpack('f' * (len(message) // 4), message)
-            message = socket.recv()
-            timestamp = float(message)
-            
-            
-            await channel_layer.group_send("ZMQ",{"type": "chat.message", "maxbox_channels": values})
-
-        except zmq.Again:
-            continue
 
 if __name__ == '__main__':
+
+    print('Started Hardware Subscriber...')
+    # Subscription list: list with dictionary containing name, address, return type of subscription
+    subs = [
+            {'name':'MAXBOX',       'address':'tcp://localhost:5556', 'return type': 'list'},
+            {'name':'TEMPERATURE',  'address':'tcp://localhost:5557', 'return type': 'float'},
+            {'name':'PRESSURE',     'address':'tcp://localhost:5557', 'return type': 'float'},
+            {'name':'CAMERA',       'address':'tcp://localhost:5558', 'return type': 'list'}]
+    
+    # get list of addresses (duplicates are allowed but should only appear once in this list)
+    addresses = list(set(sub['address'] for sub in subs))
+
+    # get dictionary with address as key and list of names as value
+    names = {sub['address']: [] for sub in subs}
+    for sub in subs:
+        names[sub['address']].append(sub['name'])
+
+    # get dictionary with name as key and return type as value
+    return_types = {sub['name']: sub['return type'] for sub in subs}
+    
+    # Create a SUB socket
+    context = zmq.Context()
+    sub_socket = context.socket(zmq.SUB)
+
+    # get channel layer for communication with GUI
     channel_layer = get_channel_layer()
-    print("Here is the ",channel_layer)
 
-    # listening in when the front end sends data back to us (subscriber)
-    p = Process(target=between_callback, args=(channel_layer, func_receive))
+    # create instances for each subscription
+    HaSubs = [HardwareSubscriber(sub_socket, channel_layer, address, names[address], return_types) for address in addresses]
     
-    #MaxBoxSubscriber: get's data from HardwareDummy.py and sends it to myfirst.html
-    p1 = Process(target=between_callback, args=(channel_layer, MaxBoxSubscriber))
-    
-    #CameraSubscriber: get's data from HardwareDummy.py and sends it to myfirst.html
-    p2 = Process(target=between_callback, args=(channel_layer, CameraSubscriber))
-
-    p.start()
-    p1.start()
-    p2.start()
-    
-    #If you want to run something in the "main process" instead, you'd do the following:
-    #asyncio.run(CameraSubscriber(channel_layer))
-
-    
-
-        
-
+    # run all subscriptions with asyncio
+    asyncio.run(main([HaSub.listen() for HaSub in HaSubs]))

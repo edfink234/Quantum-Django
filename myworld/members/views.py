@@ -73,7 +73,6 @@ def index(request): #Corresponds to myfirst.html
 #    db.posts.find_one_and_delete({"user": username})
 #    user_db = db.posts.find_one({"user": username})
     
-    print("user_db =",user_db)
     if user_db == None:
         db.posts.insert_one({"user": username})
         user_db = db.posts.find_one({"user": username})

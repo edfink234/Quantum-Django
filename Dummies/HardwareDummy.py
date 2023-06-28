@@ -66,7 +66,7 @@ def pressure():
 class Camera:
     def __init__(self):
 
-        self.path = '../myworld/members/'
+        self.path = ''
         self.files = ['0_data_decrystallized_noIon.csv', '1_data_crystallized_oneIon.csv', '2_data_crystallized_two_ions.csv','3_data_decrystallized_hot.csv', '4_data_decrystallized_cloud.csv']
         self.count = 0
         self.choice = random.randint(0,4)
@@ -97,12 +97,12 @@ Cam_Dummy = Camera()
 while True:
 
     publish(maxbox_socket, 'MAXBOX', maxbox_read())
-
+#
     publish(weather_socket, 'TEMPERATURE', temperature())
     publish(weather_socket, 'PRESSURE', pressure())
 
     publish(camera_socket, 'CAMERA', Cam_Dummy.camera_output())
 
 
-    # sleep for one second
+    # sleep 
     time.sleep(0.1)

@@ -1,0 +1,5 @@
+metadata
+
+curve
+
+    public-key = "env-network-transport-layer-both.txt"

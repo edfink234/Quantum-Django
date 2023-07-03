@@ -588,8 +588,10 @@
                         voltage_channel_menus[j].parentNode.removeChild(voltage_channel_menus[j]);
                     }
                 }
-                            
-                SendBack(activatedChannels); //store the updated activatedChannels in the user's mongodb
+                
+                SetVoltageDict = {"function": "exec_exp", "instructions": ["SetVoltageChannels", activatedChannels]}
+                
+                SendBack(JSON.stringify(SetVoltageDict)); //store the updated activatedChannels in the user's mongodb
                 
             }
                         

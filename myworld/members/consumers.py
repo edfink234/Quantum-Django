@@ -44,8 +44,7 @@ class ZMQChannels(AsyncWebsocketConsumer):
     
     #Receives data from myfirst.html and sends it to server.py, called by chatsocket.send
     async def receive(self, text_data):
-        text_data = str(json.loads(text_data)) #has to be converted to a python string for ast.literal_eval to work
-        to_do = ast.literal_eval(text_data)
+        to_do = json.loads(text_data)
         print('function:', to_do['function'])
         print('instructions:' , to_do['instructions'])
         try:

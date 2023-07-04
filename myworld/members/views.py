@@ -114,7 +114,7 @@ def index(request): #Corresponds to myfirst.html
     user_db = db.posts.find_one({"user": username})
 
     #return the users html (stored in html_string) as a django variable that can be rendered at the bottom of Raman.html
-    return render(request, r"myfirst.html", context = {'gui_elements' : user_db.get('index_data'), 'channelsActivated' : user_db.get('activatedChannels'), 'functionDict' : json.dumps(user_db.get("functionDict"))})
+    return render(request, r"myfirst.html", context = {'gui_elements' : user_db.get('index_data'), 'channelsActivated' : json.dumps(user_db.get('activatedChannels')), 'functionDict' : json.dumps(user_db.get("functionDict"))})
 
 def Detection(request):
     return render(request, r"Detection.html")

@@ -89,10 +89,6 @@
         
         <script>
             //Connection starts here!
-            
-            let isMouseHover = false;
-            let voltageMenuNumber = 0;
-            
             let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by index function in views.py
             
             let ExperimentDict = JSON.parse('{{functionDict | safe}}'); //third variable returned by index function in views.py
@@ -105,21 +101,10 @@
                        + '/ws/members/'
                     );
                     
-            var lowEnd = 0;     //lower x-value for line graph
-            var highEnd = 0;    //upper x-value for line graph
-            var numLines = 0;   //variable that controls how often 'Time Difference (seconds)' is updated, see below
-            var lineVals = [];  //stores y-coordinates of line plot
-            var minlineVal = false; //y-min line graph
-            var maxlineVal = false; //y-max line graph
             var started = true;
-            
-            //Voltage values
-            var lowVoltageBin = 0;  //lower x-value for voltage line graph
-            var highVoltageBin = 0; //upper x-value for voltage line graph
             var activatedChannels = Array(16).fill(true); //by default all channels are activated
-            
             {
-                var channelsActivated = "{{channelsActivated}}".replaceAll('[','').replaceAll(']','').split(', ');
+                var channelsActivated = "{{channelsActivated}}";
                 if (channelsActivated.length == 16)
                 {
                     for (let i = 0; i < 16; i++)
@@ -178,6 +163,7 @@
             let startDrag = function(event)
             {
                 event.dataTransfer.effectAllowed = "move"; //allows element to drag
+                event.dataTransfer.setData("text/plain", "");
                 console.log(event.clientX + "px", event.clientY + "px"); //log coordinates
             }
             
@@ -228,9 +214,7 @@
                 fullHtml = htmlstringlist.join(' '); //converting html list to one html string
 
                 SendBack(fullHtml); //send back to subscriber to update user's mongodb. First, sends it to the ZMQChannels receive method (where arg = fullHtml) and then from there to the server.py func_receive function
-                        
-                isMouseHover = false; //so that right-click menu disappears
-                
+                                        
                 document.getElementById('ctxmenu').remove(); //removes right-click menu from document
             };
             
@@ -264,7 +248,6 @@
                     SendBack(fullHtml); //sending updated html to the subscriber in server.py
                     ctxMenu.parentNode.removeChild(ctxMenu);
                 }
-                isMouseHover = false; //right-click menu disappears
                 document.getElementById('ctxmenu').remove(); //removes right-click menu from document
             };
             
@@ -298,12 +281,12 @@
             
             function describeExperiment(Experiment)
             {
-                
                 ExperimentInfo = ExperimentDict[Experiment];
                 var ExperimentElement = document.getElementById(Experiment);
                 if (ExperimentElement.getAttribute("expanded") === null)
                 {
-                    document.getElementById(Experiment).setAttribute("expanded", true);
+                    ExperimentElement.setAttribute("expanded", true);
+                    
                     ExperimentElement.innerHTML += '\n' + '<form>';
                     let count = 0;
                     for (param in ExperimentInfo["params"])
@@ -313,17 +296,20 @@
                         ExperimentElement.innerHTML += '\n' + String.raw`<label for="` + ExperimentInfoParamId + String.raw`">` + param + String.raw`label</label>`;
                         ExperimentElement.innerHTML += '\n' + String.raw`<input type="text" class="form-control" id="` + ExperimentInfoParamId + String.raw`" placeholder="` + ExperimentInfo["params"][param]["default"]  + String.raw`">`;
                         ExperimentElement.innerHTML += String.raw`</div>`;
-                        
                                         
                         count++;
                     }
                     ExperimentElement.innerHTML += '\n' + '</form>';
                 }
+                else
+                {
+                    ExperimentElement.innerHTML = Experiment;
+                    ExperimentElement.removeAttribute("expanded");
+                }
             }
             
             function AddExperiment()
             {
-                console.log(window.ExperimentAdded);
                 if (window.ExperimentAdded === undefined)
                 {
                     window.ExperimentAdded = true;
@@ -390,7 +376,7 @@
             {
                 let menu = document.createElement("div"); //create a 'div' element for menu
                 menu.id = "ctxmenu_voltage"; //set id of menu
-                menu.name = "menu_" + voltageMenuNumber++;
+                menu.name = "menu";
                 menu.style.top = (top)+"px";    //y-position of menu
                 menu.style.left = (left)+"px";   //x-position of menu
                 
@@ -580,8 +566,7 @@
                 var voltage_channel_menus = document.querySelectorAll(voltage_channel_menu_id); //gets ALL voltage channel menus
  
                 //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
-                //and the user's not hovering over one of them (!isMouseHover)
-                if (!isMouseHover && voltage_channel_menus)
+                if (voltage_channel_menus)
                 {
                     for (var j = 0; j < voltage_channel_menus.length; j++)
                     {
@@ -618,7 +603,6 @@
                 String.raw`
                 <p onclick = "basicAnimation()">Add Basic Animation</p>
                 <p onclick = "removeBasicAnimation()">Remove Basic Animation</p>
-                <p onclick='alert("Thank you!"); isMouseHover = false;'>Upvote</p>
                 <p onclick = "Start()">Start</p>
                 <p onclick = "Stop()">Stop</p>
                 <p onclick = "SendBack()">Signal</p>
@@ -645,8 +629,7 @@
                 
                 var ctxMenu = document.getElementById("ctxmenu"); //true if a menu is on the webpage, false if not
                 //remove right-click menu if there's one or more menu windows on the webpage (ctxMenu)
-                //and the user's not hovering over one of them (!isMouseHover)
-                if (!isMouseHover && ctxMenu)
+                if (ctxMenu)
                 {
                     ctxMenu.parentNode.removeChild(ctxMenu); //remove 1 menu from webpage
                     return;
@@ -701,7 +684,18 @@
                     if (data[0] == 'MAXBOX')
                     {
                         var voltage_x_vals = []; //line-graph x-coordinates
-                        for (let i = lowVoltageBin; i <= highVoltageBin; i++)
+                        
+                        if (!window.hasOwnProperty('lowVoltageBin'))
+                        {
+                            window.lowVoltageBin = 0; //lower x-value for voltage line graph
+                        }
+                        
+                        if (!window.hasOwnProperty('highVoltageBin'))
+                        {
+                            window.highVoltageBin = 0; //upper x-value for voltage line graph
+                        }
+                        
+                        for (let i = window.lowVoltageBin; i <= window.highVoltageBin; i++)
                         {
                             voltage_x_vals.push(i);
                         }
@@ -710,16 +704,16 @@
                         var max_length = 100; //change this to make x-range larger for voltage channels
                         var voltage_channel_data = [];
                         
-                        if (highVoltageBin > max_length - 1)
+                        if (window.highVoltageBin > max_length - 1)
                         {
                             //move graphs to right
-                            highVoltageBin++;
-                            lowVoltageBin++;
+                            window.highVoltageBin++;
+                            window.lowVoltageBin++;
                         }
                         else
                         {
                             //increase upper limit until the x-range has reached max_length
-                            highVoltageBin++;
+                            window.highVoltageBin++;
                         }
                         
                         //first check if there are any activated channels:
@@ -845,42 +839,46 @@
                         
                         var timeDiff = (endTime-startTime)/1000;
                         
-                        //how often to update the 'Time Difference (seconds):' text box, here it updates it every time a new time difference value is calculated. You can change '1' to a different number, e.g., 5, to make the time difference value displayed update only after 5 such values are calculated.
-                        //  ⌄⌄⌄
-                        if (numLines++ < 1)
-                        {
-                            document.querySelector('#timediff').value += timeDiff; //append to value displayed in text box
-                        }
-                        else
-                        {
-                            document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
-                        }
+                        // ⌄⌄⌄ Update the 'Time Difference (seconds):' text box
+                        document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
                         
                         //TODO: In production, delete following 'if' and 'else if' statements. Only implemented to sync tabs/windows, but in production, the publishing rate will not be infinite
                         
                         //⌄⌄⌄ parsing data
                         Data = data[1];
                         
-                        if (!minlineVal && !maxlineVal)
+                        if (!window.hasOwnProperty('minlineVal'))
                         {
-                            minlineVal = Data[0];
-                            maxlineVal = Data[0];
+                            window.minlineVal = false; //y-min line graph
                         }
-                        else
+                        
+                        if (!window.hasOwnProperty('maxlineVal'))
                         {
-                            if (minlineVal > Data[0])
-                            {
-                                minlineVal = Data[0];
-                            }
-                            if (maxlineVal < Data[0])
-                            {
-                                maxlineVal = Data[0];
-                            }
+                            window.maxlineVal = false; //y-max line graph
                         }
-                        lineVals.push(Data[0]); //y-axis line graph values
-                        if (lineVals.length > interval)
+                        
+                        if (!window.minlineVal && !window.maxlineVal)
                         {
-                            lineVals.splice(0,1);
+                            window.minlineVal = Data[0];
+                            window.maxlineVal = Data[0];
+                        }
+                        else if (window.minlineVal > Data[0])
+                        {
+                            window.minlineVal = Data[0];
+                        }
+                        else if (window.maxlineVal < Data[0])
+                        {
+                            window.maxlineVal = Data[0];
+                        }
+                        
+                        if (!window.hasOwnProperty('lineVals')) //stores y-coordinates of line plot
+                        {
+                            window.lineVals = [];
+                        }
+                        window.lineVals.push(Data[0]); //y-axis line graph values
+                        if (window.lineVals.length > interval)
+                        {
+                            window.lineVals.splice(0,1);
                         }
                         newArr = [];
                         Data.splice(0,1);
@@ -899,15 +897,24 @@
                             //colorbar: {showlegend: false, xaxis: {visible: false},showscale: false, orientation: 'h', ticklabelposition: "right"}
                         };
                         
+                        if (!window.hasOwnProperty('lowEnd'))
+                        {
+                            window.lowEnd = 0; //lower x-value for line graph
+                        }
+                        if (!window.hasOwnProperty('highEnd'))
+                        {
+                            window.highEnd = 0; //upper x-value for line graph
+                        }
+                        
                         var list = []; //line-graph x-coordinates
-                        for (var i = lowEnd; i <= highEnd; i++) {
+                        for (var i = window.lowEnd; i <= window.highEnd; i++) {
                             list.push(i);
                         }
                         
                         var next_plot = //line graph
                         {
                             x: list,
-                            y: lineVals,
+                            y: window.lineVals,
                             type: 'scatter',
                             xaxis: 'x2',
                             yaxis: 'y2',
@@ -921,7 +928,7 @@
                             //sets the y axis of the line graph subplot
                             //can change the range from what it is now (0,100.7) to something
                             //else if you like ⌄⌄⌄
-                            yaxis2: {anchor: 'x2', range: [ minlineVal, maxlineVal]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv", see docstring in "views.py" for other files min and max values
+                            yaxis2: {anchor: 'x2', range: [ window.minlineVal, window.maxlineVal]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv", see docstring in "views.py" for other files min and max values
                             
                             xaxis2: {domain: [0.35, 1], range: list}, //how much of screen the line graph subplot takes up, here it takes up 65%
                             
@@ -938,14 +945,14 @@
                         };
                         
                         Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
-                        if (highEnd < 99) //increase x-axis upper bound by 1 if it's less than 99, can change '99' to whatever you like
+                        if (window.highEnd < 99) //increase x-axis upper bound by 1 if it's less than 99, can change '99' to whatever you like
                         {
-                            highEnd++;
+                            window.highEnd++;
                         }
                         else    //else increase the x-axis lower and upper bounds by 1
                         {
-                            lowEnd++;
-                            highEnd++;
+                            window.lowEnd++;
+                            window.highEnd++;
                         }
                     }
                 };
@@ -956,7 +963,6 @@
             //Stop data streaming, called when user clicks 'Stop' ⌄⌄⌄
             function Stop()
             {
-                console.log(lowEnd, highEnd);
                 chatSocket.close();
                 started = false;
             }
@@ -998,7 +1004,6 @@
                 }
             }
             
-            //TODO: Send back a list of the mode (direct or experiment), function name, and a dictionary of parameter names and values
             function SendFreqAmplChanPhase()
             {
                 var freqVal = document.getElementById("myFrequencyRange").value;
@@ -1217,23 +1222,25 @@
         </script>
         
         <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
+            <br/>
+            <br/>
+            
             <!--⌄⌄⌄ heat-map and line graph ⌄⌄⌄-->
-            <br/>
-            <br/>
-            <div class="row" id="heat-map-line-graph-show"  align = "center">
+            <div class="row">
+                <div class="col-sm" id="heat-map-line-graph-show" align = "center" draggable="true">
+                </div>
             </div>
             <br/>
             <br/>
             <div class="row">
-                <div class="col-sm" id="voltages" align = "center">
-                    
+                <div class="col-sm" id="voltages" align = "center" draggable="true">
                 </div>
             </div>
             <br/>
             <div class="row">
                 <div class="col-sm" align = "center">
                     <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>
-                    <input type = "text" id="timediff" name = "timediff" size="50" readonly>
+                    <input type = "text" id="timediff" name = "timediff" readonly>
                 </div>
             </div>
             <br/>
@@ -1284,18 +1291,31 @@
             </div>
         </div>
 
-            <br/><br/><br/> <!--new lines-->
+        <br/><br/><br/> <!--new lines-->
         
-            <script>
-                //responsible for loading elements' addEventListeners that sit in the
-                //django variable called 'gui_elements'
-                const collection = document.getElementsByClassName("outer_square");
-                for (let i = 0; i < collection.length; i++)
-                {
-                    collection[i].addEventListener('dragstart', startDrag, true);
-                    collection[i].addEventListener('dragend', endDrag, true);
-                }
-            </script>
+        <script>
+            //responsible for loading elements' addEventListeners that sit in the
+            //django variable called 'gui_elements'
+            const collection = document.getElementsByClassName("outer_square");
+            for (let i = 0; i < collection.length; i++)
+            {
+                collection[i].addEventListener('dragstart', startDrag, true);
+                collection[i].addEventListener('dragend', endDrag, true);
+            }
+            
+            const heat_map_line_graph = document.getElementById("heat-map-line-graph-show");
+            heat_map_line_graph.addEventListener('dragstart', startDrag, true);
+            heat_map_line_graph.addEventListener("drag", (event) => {
+                event.preventDefault();
+                heat_map_line_graph.style.left = event.clientX;
+                heat_map_line_graph.style.top = event.clientY;
+              });
+            heat_map_line_graph.addEventListener('dragend', endDrag, true);
+            
+            const voltages = document.getElementById("voltages");
+            voltages.addEventListener('dragstart', startDrag, true);
+            voltages.addEventListener('dragend', endDrag, true);
+        </script>
             
        
     </body>

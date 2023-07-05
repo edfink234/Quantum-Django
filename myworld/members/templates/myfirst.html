@@ -2,13 +2,15 @@
 <!DOCTYPE html>
 <html>
     <link rel="stylesheet" href="{% static 'myfirst.css' %}">
-        <script>
-            var username = "{{ user.get_username }}";
-            var gui_elements = String.raw`{{ gui_elements | safe }}`;
-            var channelsActivated = "{{channelsActivated}}";
-            channelsActivated = JSON.parse(channelsActivated);
-        </script>
-    <script src="{% static 'myfirst.js' %}"></script> 
+    <script>
+        //Django variables that we want to be accessible in myfirst.js
+        var username = "{{ user.get_username }}";
+        var gui_elements = String.raw`{{ gui_elements | safe }}`;
+        var channelsActivated = "{{ channelsActivated }}";
+        channelsActivated = JSON.parse(channelsActivated);
+        var functionDict = String.raw`{{ functionDict | safe }}`;
+        functionDict = JSON.parse(functionDict);
+    </script>
     <head>
         <meta charset="utf-8">
             <link rel="shortcut icon" href="#" />
@@ -107,7 +109,6 @@
             <br/>
             <br/>
 
-            
             <!--Buttons on document to Start data streaming (Start()), Stop data streaming (Stop()), and send a signal back to the subscriber in server.py (SendBack()) respectively ⌄⌄⌄-->
             <div class = "row">
                 <div class="col-sm" align = "center">
@@ -154,26 +155,7 @@
 
         <br/><br/><br/> <!--new lines-->
         
-        <script>
-            //responsible for loading elements' addEventListeners that sit in the
-            //django variable called 'gui_elements'
-            const collection = document.getElementsByClassName("outer_square");
-            for (let i = 0; i < collection.length; i++)
-            {
-                collection[i].addEventListener('dragstart', startDrag, true);
-                collection[i].addEventListener('dragend', endDrag, true);
-            }
-            
-            const heat_map_line_graph = document.getElementById("heat-map-line-graph-show");
-            heat_map_line_graph.addEventListener('dragstart', startDrag, true);
-            heat_map_line_graph.addEventListener('dragend', endDrag, true);
-            
-            const voltages = document.getElementById("voltages");
-            voltages.addEventListener('dragstart', startDrag, true);
-            voltages.addEventListener('dragend', endDrag, true);
-        </script>
-            
-       
+        <script src="{% static 'myfirst.js' %}"></script>
     </body>
 </html>
 

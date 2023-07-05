@@ -2,7 +2,7 @@
 Website in-development for a Quantum Computer
 
 1. `git clone thisrepo`
-2. `virtualenv TestQuantumDjangoEnv -p python3.10`
+2. `virtualenv TestQuantumDjangoEnv -p python3.9`
 3. `source TestQuantumDjangoEnv/bin/activate`
 4. `cd TestWebGui`
 5. `pip3 install -r requirements.txt`
@@ -29,12 +29,12 @@ Website in-development for a Quantum Computer
 	c. import os
 	d. os.system("python3 dummy\_dds\_zmq.py")
     Terminal 4
-	a. source mydjangoenv/bin/activate
+	a. source TestQuantumDjangoEnv/bin/activate
 	b. cd ../Dummies/
 	c. python3 HardwareDummy.py
 ```	
 
-Note: In file `TestQuantumDjangoEnv/lib/python3.10/site-packages/redis/client.py`, change the function `def parse_zadd(response, **options):` to the following:
+Note: In file `TestQuantumDjangoEnv/lib/python3.9/site-packages/redis/client.py`, change the function `def parse_zadd(response, **options):` to the following:
 
 ```python
 def parse_zadd(response, **options):

@@ -8,16 +8,6 @@ function closeNav()
     document.getElementById("mySidenav").style.width = "0";
 }
 
-console.log(username); //logging the user's username to console
-console.log("connected!");
-chatSocket = new WebSocket(     //creating new WebSocket instance
-            'ws://'
-            + window.location.host
-           + '/ws/members/'
-        );
-console.log("hi");
-Start(); //start data streaming
-
 //⌄⌄⌄ fired when you drag something over the document
 document.addEventListener('dragover', function(event)
 {
@@ -188,7 +178,7 @@ function describeExperiment(Experiment)
 {
     if (!window.hasOwnProperty('ExperimentDict'))
     {
-        window.ExperimentDict = JSON.parse('{{functionDict | safe}}'); //third variable returned by index function in views.py
+        window.ExperimentDict = functionDict; //third variable returned by index function in views.py
     }
     ExperimentInfo = window.ExperimentDict[Experiment];
     var ExperimentElement = document.getElementById(Experiment);
@@ -224,7 +214,7 @@ function AddExperiment()
         window.ExperimentAdded = true;
         if (!window.hasOwnProperty('ExperimentDict'))
         {
-            window.ExperimentDict = JSON.parse('{{functionDict | safe}}'); //third variable returned by index function in views.py
+            window.ExperimentDict = functionDict; //third variable returned by index function in views.py
         }
         var jsonPretty = JSON.stringify(window.ExperimentDict, null, 2);
         //console.log(jsonPretty);
@@ -1151,3 +1141,40 @@ function FreqAmplChanPhaseSetter()
         window.phaseValue = this.value;
     }
 }
+
+//                *******************
+//                *      "Main"     *
+//                *******************
+
+console.log(username); //logging the user's username to console
+console.log("connected!");
+chatSocket = new WebSocket(     //creating new WebSocket instance
+            'ws://'
+            + window.location.host
+           + '/ws/members/'
+        );
+
+//responsible for loading elements' addEventListeners that sit in the
+//django variable called 'gui_elements'
+const collection = document.getElementsByClassName("outer_square");
+for (let i = 0; i < collection.length; i++)
+{
+    collection[i].addEventListener('dragstart', startDrag, true);
+    collection[i].addEventListener('dragend', endDrag, true);
+}
+
+const heat_map_line_graph = document.getElementById("heat-map-line-graph-show");
+if (heat_map_line_graph !== null)
+{
+    heat_map_line_graph.addEventListener('dragstart', startDrag, true);
+    heat_map_line_graph.addEventListener('dragend', endDrag, true);
+}
+
+const voltages = document.getElementById("voltages");
+if (voltages !== null)
+{
+    voltages.addEventListener('dragstart', startDrag, true);
+    voltages.addEventListener('dragend', endDrag, true);
+}
+
+Start(); //start data streaming

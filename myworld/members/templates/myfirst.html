@@ -6,10 +6,9 @@
         //Django variables that we want to be accessible in myfirst.js
         var username = "{{ user.get_username }}";
         var gui_elements = String.raw`{{ gui_elements | safe }}`;
-        var channelsActivated = "{{ channelsActivated }}";
-        channelsActivated = JSON.parse(channelsActivated);
-        var functionDict = String.raw`{{ functionDict | safe }}`;
-        functionDict = JSON.parse(functionDict);
+        var channelsActivated = JSON.parse("{{ channelsActivated }}");
+        var functionDict = JSON.parse(String.raw`{{ functionDict | safe }}`);
+        var possibleHTMLelements = JSON.parse(String.raw`{{ possibleHTMLelements | safe }}`);
     </script>
     <head>
         <meta charset="utf-8">
@@ -84,9 +83,22 @@
         <nobr><a href="{% url 'logout' %}" onclick="Stop()">Log Out</a></nobr>
         </div>
         
+        <br/><br/>
+        
+        <div class="container-fluid pt-1 pl-1" id = "ListHTMLElements" expanded = "false">
+            <div class="row">
+                <div class="col-sm" align = "right" id = "ListHTMLElementsButton" onclick = "ListHTMLElements()">
+                        &#43;
+                </div>
+                <div class="col-sm-11" align = "left">
+                    Add HTML Elements
+                </div>
+            </div>
+        </div>
+        
         <div class="container-fluid pt-1 pl-1" id = 'whole_html'>
-            <br/>
-            <br/>
+            
+            <br/><br/>
             
             <!--⌄⌄⌄ heat-map and line graph ⌄⌄⌄-->
             <div class="row">
@@ -101,8 +113,8 @@
             </div>
             <br/>
             <div class="row">
-                <div class="col-sm" align = "center">
-                    <label for="timediff" class = "foo">&nbsp Time Difference (seconds):&nbsp</label>
+                <div class="col-sm" align = "center" draggable = "true" id = "time_diff" draggable = "true">
+                    <label for="timediff" class = "foo">&nbsp Time Difference for Camera Data (seconds):&nbsp</label>
                     <input type = "text" id="timediff" name = "timediff" readonly>
                 </div>
             </div>
@@ -112,13 +124,13 @@
             <!--Buttons on document to Start data streaming (Start()), Stop data streaming (Stop()), and send a signal back to the subscriber in server.py (SendBack()) respectively ⌄⌄⌄-->
             <div class = "row">
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-success" onclick="Start(); ResumeAnimations();">Start!</button>
+                    <button type="button" class="btn btn-success" onclick="Start(); ResumeAnimations();" draggable = "true" id = "Start">Start!</button>
                 </div>
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-danger" onclick="Stop(); PauseAnimations();">Stop!</button>
+                    <button type="button" class="btn btn-danger" onclick="Stop(); PauseAnimations();" draggable = "true" id = "Stop">Stop!</button>
                 </div>
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-warning" onclick="SendBack('{&quot;function&quot;: &quot;signal&quot;, &quot;instructions&quot;: &quot;Hi friend!!&quot;}')">Signal!</button>
+                    <button type="button" class="btn btn-warning" onclick="SendBack('{&quot;function&quot;: &quot;signal&quot;, &quot;instructions&quot;: &quot;Hi friend!!&quot;}')" draggable = "true" id = "Signal">Signal!</button>
                 </div>
             </div>
             
@@ -127,14 +139,13 @@
             
             <div class = "row">
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-info" id="dropdownMenuButtonSetFreqAmplChanPhaseOutput" onclick="FreqAmplChanPhaseSetter();" clicked="true">
+                    <button type="button" class="btn btn-info" id="dropdownMenuButtonSetFreqAmplChanPhaseOutput" onclick="FreqAmplChanPhaseSetter();" clicked="true" draggable = "true">
                         Set Output
                     </button>
-
                 </div>
                 
                 <div class="col-sm" align = "center">
-                    <button type="button" class="btn btn-info" id="dropdownMenuButtonChanOutput" onclick="ChannelSetter();" clicked="true">
+                    <button type="button" class="btn btn-info" id="dropdownMenuButtonChanOutput" onclick="ChannelSetter();" clicked="true" draggable = "true">
                         Read Temperature
                     </button>
 
@@ -146,9 +157,8 @@
             
             <div class="row">
                 <!--load user's gui elements at the end of the document in the django variable 'gui_elements' -->
-                <div class="col-sm" id = 'users_html'>
+                <div class="col-sm" id = "users_html">
                     {{ gui_elements | safe }}
-                    
                 </div>
             </div>
         </div>
@@ -156,6 +166,10 @@
         <br/><br/><br/> <!--new lines-->
         
         <script src="{% static 'myfirst.js' %}"></script>
+        
+        <script>
+            UpdateElementsOnPage();
+        </script>
     </body>
 </html>
 

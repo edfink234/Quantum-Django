@@ -1,0 +1,14 @@
+asgiref==3.7.2
+channels==4.0.0
+Django==4.2.2
+matplotlib==3.7.1
+numpy==1.25.0
+plotly==5.15.0
+pymongo==4.4.0
+shared_memory_dict==0.7.2
+daphne==4.0.0
+pandas==1.5.2
+pyzmq==25.0.0
+whitenoise==6.5.0
+redis==4.5.5
+channels_redis==4.0.0

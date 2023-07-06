@@ -110,11 +110,14 @@ def index(request): #Corresponds to myfirst.html
     
     if user_db.get("functionDict") == None:
         db.posts.find_one_and_update({"user": username}, { '$set': {"functionDict": functionDict}})
-    print("hi")
-    user_db = db.posts.find_one({"user": username})
-
+    
+    
+        
+        
+    possibleHTMLelements = {"users_html": {"status":False, "html": r'<div class="col-sm" id = "users_html"> gui_elements </div>'}, "dropdownMenuButtonChanOutput": {"status":True, "html": r'<button type="button" class="btn btn-info" id="dropdownMenuButtonChanOutput" onclick="ChannelSetter();" clicked="true" draggable = "true"> Read Temperature </button>'}, "dropdownMenuButtonSetFreqAmplChanPhaseOutput": {"status":True, "html": r'<button type="button" class="btn btn-info" id="dropdownMenuButtonSetFreqAmplChanPhaseOutput" onclick="FreqAmplChanPhaseSetter();" clicked="true" draggable = "true"> Set Output </button>'}, "Signal": {"status":True, "html": r'<button type="button" class="btn btn-warning" draggable = "true" id = "Signal">Signal!</button>'}, "Stop": {"status":True}, "Start": {"status":True}, "time_diff": {"status":True}, "voltages": {"status":True}, "heat-map-line-graph-show": {"status":True, "html": r'<div class="col-sm" id="heat-map-line-graph-show" align = "center" draggable="true"></div>'}}
+    
     #return the users html (stored in html_string) as a django variable that can be rendered at the bottom of Raman.html
-    return render(request, r"myfirst.html", context = {'gui_elements' : user_db.get('index_data'), 'channelsActivated' : json.dumps(user_db.get('activatedChannels')), 'functionDict' : json.dumps(user_db.get("functionDict"))})
+    return render(request, r"myfirst.html", context = {'gui_elements' : user_db.get('index_data'), 'channelsActivated' : json.dumps(user_db.get('activatedChannels')), 'functionDict' : json.dumps(user_db.get("functionDict")), 'possibleHTMLelements': json.dumps(possibleHTMLelements)})
 
 def Detection(request):
     return render(request, r"Detection.html")

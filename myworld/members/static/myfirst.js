@@ -176,11 +176,7 @@ function ResumeAnimations()
 
 function describeExperiment(Experiment)
 {
-    if (!window.hasOwnProperty('ExperimentDict'))
-    {
-        window.ExperimentDict = functionDict; //third variable returned by index function in views.py
-    }
-    ExperimentInfo = window.ExperimentDict[Experiment];
+    ExperimentInfo = functionDict[Experiment];
     var ExperimentElement = document.getElementById(Experiment);
     if (ExperimentElement.getAttribute("expanded") === null)
     {
@@ -212,16 +208,12 @@ function AddExperiment()
     if (window.ExperimentAdded === undefined)
     {
         window.ExperimentAdded = true;
-        if (!window.hasOwnProperty('ExperimentDict'))
-        {
-            window.ExperimentDict = functionDict; //third variable returned by index function in views.py
-        }
-        var jsonPretty = JSON.stringify(window.ExperimentDict, null, 2);
+        //var jsonPretty = JSON.stringify(functionDict, null, 2);
         //console.log(jsonPretty);
         
-        let ExperimentMenu = document.createElement("ul"); //create a 'div' element for ExperimentMenu
-        ExperimentMenu.class = "ExperimentMenu"; //set id of menu
-        for (Experiment in window.ExperimentDict)
+        let ExperimentMenu = document.createElement("ul"); //create a 'ul' element for ExperimentMenu
+        ExperimentMenu.class = "ExperimentMenu"; //set class of menu
+        for (Experiment in functionDict)
         {
             let describeExperimentStr = "describeExperiment('" + Experiment + "')";
             ExperimentMenu.innerHTML += '<button type="button" class="list-group-item list-group-item-action" onclick = "' + describeExperimentStr + '" id = "' + Experiment + '">' + Experiment
@@ -231,7 +223,7 @@ function AddExperiment()
         document.body.appendChild(ExperimentMenu);
     }
     
-    //Structure of ExperimentDict:
+    //Structure of functionDict:
     //{
     //    "Experiment": {
     //        "params": {
@@ -586,7 +578,7 @@ function Start()
 
         data = data.event.text;
                             
-        if (data[0] == 'MAXBOX')
+        if (data[0] == 'MAXBOX' && document.getElementById("voltages") !== null)
         {
             var voltage_x_vals = []; //line-graph x-coordinates
             
@@ -749,7 +741,8 @@ function Start()
 
         //⌄⌄⌄ else it's the heat-map-line-graph data, handled below ⌄⌄⌄
         
-        else if (data[0] == 'CAMERA'){
+        else if (data[0] == 'CAMERA' && document.getElementById("heat-map-line-graph-show") !== null)
+        {
             var startTime = parseFloat(data[2])*1000;
                                     
             var endTime = new Date().getTime();
@@ -758,8 +751,11 @@ function Start()
             var timeDiff = (endTime-startTime)/1000;
             
             // ⌄⌄⌄ Update the 'Time Difference (seconds):' text box
-            document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
-            
+            if (document.querySelector('#timediff'))
+            {
+                document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
+            }
+
             //TODO: In production, delete following 'if' and 'else if' statements. Only implemented to sync tabs/windows, but in production, the publishing rate will not be infinite
             
             //⌄⌄⌄ parsing data
@@ -861,7 +857,6 @@ function Start()
                     pad: 4
                 }
             };
-            
             Plotly.newPlot('heat-map-line-graph-show', [my_plot, next_plot], layout);
             if (window.highEnd < 99) //increase x-axis upper bound by 1 if it's less than 99, can change '99' to whatever you like
             {
@@ -1139,6 +1134,93 @@ function FreqAmplChanPhaseSetter()
     {
         phaseOutput.innerHTML = this.value + "&deg";
         window.phaseValue = this.value;
+    }
+}
+
+function SetElements()
+{
+    for (element in possibleHTMLelements)
+    {
+        let HTMLElement = document.getElementById(element + "checkbox");
+        possibleHTMLelements[element]["status"] = HTMLElement.checked;
+    }
+    UpdateElementsOnPage();
+}
+
+function ListHTMLElements()
+{
+    HTMLElementsList = document.getElementById("ListHTMLElements");
+    if (HTMLElementsList.getAttribute("expanded") === "false")
+    {
+        HTMLElementsList.innerHTML += "<br/>";
+        for (element in possibleHTMLelements)
+        {
+            var tempString =
+            String.raw
+            `
+            <div class="row">
+                <div class="col-sm" align = "left">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
+                        <label class="form-check-label" for="flexCheckDefault">
+                            Default checkbox
+                        </label>
+                    </div>
+                </div>
+            </div>
+            `
+            tempString = tempString.replace("flexCheckDefault", element+"checkbox"); //1st instance
+            tempString = tempString.replace("flexCheckDefault", element+"checkbox"); //2nd instance
+            tempString = tempString.replace("Default checkbox", element);
+            if (!possibleHTMLelements[element]["status"])
+            {
+                tempString = tempString.replace("checked", "");
+            }
+            HTMLElementsList.innerHTML += tempString + "\n";
+        }
+        HTMLElementsList.setAttribute("expanded", "true");
+        HTMLElementsList.innerHTML += "\n" +
+        String.raw
+        `
+            <br/>
+            <button type="button" class="btn btn-success" onclick="SetElements()">Submit</button>
+        `;
+    }
+    else
+    {
+        HTMLElementsList.innerHTML =
+        String.raw
+        `
+            <div class="row">
+                <div class="col-sm" align = "right" id = "ListHTMLElementsButton" onclick = "ListHTMLElements()">
+                        &#43;
+                </div>
+                <div class="col-sm-11" align = "left">
+                    Add HTML Elements
+                </div>
+            </div>
+        `;
+        HTMLElementsList.setAttribute("expanded", "false");
+    }
+    
+}
+
+function UpdateElementsOnPage()
+{
+    for (elem in possibleHTMLelements)
+    {
+        let element = document.getElementById(elem);
+        if (!possibleHTMLelements[elem]["status"] && element) //if the user doesn't want this element but it's still on the html
+        {
+            document.getElementById(elem).parentNode.removeChild(element);
+        }
+        else if (possibleHTMLelements[elem]["status"] && !element) //if the user wants this element but it's not on the html
+        {
+            var temp = document.createElement('row'); //create a row element
+            temp.innerHTML = possibleHTMLelements[elem]["html"];
+            temp.innerHTML = temp.innerHTML.replace("gui_elements", gui_elements); //you'll have to do this for all elements with django variables inside
+            document.body.appendChild(temp);
+        }
     }
 }
 

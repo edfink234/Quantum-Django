@@ -30,15 +30,20 @@ function endDrag(event)
 {
 //    https://stackoverflow.com/a/6239882/18255427
     var offset = window.offset.split(',');
-    console.log(this, this.style.left, this.style.top, 22);
     this.style.left = (parseInt(offset[0],10) ? (event.clientX + parseInt(offset[0],10)) : event.clientX) + 'px';
     this.style.top =  (parseInt(offset[1],10) ? (event.clientY + parseInt(offset[1],10)) : event.clientY) + 'px';
+    
+    if (possibleHTMLelements[this.getAttribute("id")]["coordinates"] !== undefined)
+    {
+        possibleHTMLelements[this.getAttribute("id")]["coordinates"] = [this.style.left, this.style.top];
+    }
     event.preventDefault();
     return false;
 };
 
 //⌄⌄⌄ fired when you click "Add Basic Animation"
-function basicAnimation(){
+function basicAnimation()
+{
     var border = document.createElement('mydiv'); //create a mydiv element
     border.id = "border_id"; //assign an id
     border.className = 'outer_square'; //the animation takes place in the border element
@@ -73,7 +78,8 @@ function basicAnimation(){
     document.getElementById('ctxmenu').remove(); //removes right-click menu from document
 };
 
-function removeBasicAnimation(){
+function removeBasicAnimation()
+{
     var ctxMenu = document.getElementById("border_id"); //get animation html element
     if (ctxMenu) //if an animation is on the webpage, delete it
     {
@@ -1138,6 +1144,7 @@ function SetElements()
         possibleHTMLelements[element]["status"] = HTMLElement.checked;
     }
     UpdateElementsOnPage();
+    SendBack(JSON.stringify({"function": "gui_change", "instructions": ["update_gui", possibleHTMLelements]}));
 }
 
 function ListHTMLElements()
@@ -1189,7 +1196,7 @@ function ListHTMLElements()
                         &#43;
                 </div>
                 <div class="col-sm-11" align = "left">
-                    Add HTML Elements
+                    Add or Remove HTML Elements
                 </div>
             </div>
         `;
@@ -1216,7 +1223,13 @@ function UpdateElementsOnPage()
             let tempElem = "#"+elem;
             temp.querySelector(tempElem).addEventListener('dragstart', startDrag, true);
             temp.querySelector(tempElem).addEventListener('dragend', endDrag, true);
-            console.log(temp.querySelector(tempElem));
+            
+//            if (possibleHTMLelements[elem]["coordinates"] !== undefined)
+//            {
+//                temp.querySelector(tempElem).style.left = possibleHTMLelements[elem]["coordinates"][0] + "px";
+//                temp.querySelector(tempElem).style.top = possibleHTMLelements[elem]["coordinates"][1] + "px";
+//            }
+//            console.log(temp.querySelector(tempElem).style.left, temp.querySelector(tempElem).style.top);
             document.body.appendChild(temp);
         }
     }

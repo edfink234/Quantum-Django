@@ -1,12 +1,10 @@
 import json
-from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.layers import get_channel_layer
 import asyncio
 from channels.exceptions import ChannelFull
 from pymongo import MongoClient
 import re
-import ast
 from ExecCommunication import ExecCommunication
 
 class ZMQChannels(AsyncWebsocketConsumer):
@@ -92,9 +90,8 @@ class ZMQChannels(AsyncWebsocketConsumer):
                     
                     return #if there was a match, then we're done here: we just needed to store some data in mongodb for this case
                 elif instr_string[0] == "changeVoltageChannels":  #then text_data corresponds to the voltage data, i.e., the 16 line graphs
-                    activatedChannels = instr_string[1] #now it's a list of 'true' or 'false' strings
+                    activatedChannels = instr_string[1]
                     print("activatedChannels =",activatedChannels)
-#                    activatedChannels = [False if i == 'false' else True for i in activatedChannels] #now it's a list of booleans
                     #Now, add/update the user with the corresponding html string
                                     
                     user = str(self.scope["user"]) #self.scope["user"] is of type <class 'channels.auth.UserLazyObject'>
@@ -106,6 +103,18 @@ class ZMQChannels(AsyncWebsocketConsumer):
                     else: #if user is not registered in the mongdb database
                         #add the user with the user's data
                         db.posts.insert_one({"user": user, "activatedChannels": activatedChannels})
+                    return
+                elif instr_string[0] == "update_gui":  #then text_data corresponds to the user's gui
+                    #Now we have to update the possibleHTMLelements dict
+                    possibleHTMLelements = instr_string[1]
+                    user = str(self.scope["user"]) #self.scope["user"] is of type <class 'channels.auth.UserLazyObject'>
+                    #if the user exists
+                    if db.posts.find_one({"user": user}):
+                        db.posts.find_one_and_update({"user": user}, { '$set': {"user": user, "possibleHTMLelements":possibleHTMLelements}})
+                    #else create the user
+                    else: #if user is not registered in the mongdb database
+                        #add the user with the user's data
+                        db.posts.insert_one({"user": user, "possibleHTMLelements": possibleHTMLelements})
                     return
                 else:
                     print('received to do:', to_do)

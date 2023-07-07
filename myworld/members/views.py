@@ -21,6 +21,7 @@ import sys
 import os
 import asyncio
 from pymongo import MongoClient
+from pprint import pprint
 
 #views.py: responsible for rendering the html web pages
 
@@ -69,7 +70,7 @@ def index(request): #Corresponds to myfirst.html
     
     user_db = db.posts.find_one({"user": username})
     
-#    Uncomment the following two lines to delete the current user and test it again
+#    MARK: - Uncomment the following two lines to delete the current user and test it again -
 #    db.posts.find_one_and_delete({"user": username})
 #    user_db = db.posts.find_one({"user": username})
     
@@ -111,10 +112,17 @@ def index(request): #Corresponds to myfirst.html
     if user_db.get("functionDict") == None:
         db.posts.find_one_and_update({"user": username}, { '$set': {"functionDict": functionDict}})
     
-    possibleHTMLelements = {"users_html": {"status":True, "html": r'<div class="col-sm" id = "users_html"> gui_elements </div>'}, "dropdownMenuButtonChanOutput": {"status":True, "html": r'<div class="col-sm" align = "center" id="dropdownMenuButtonChanOutput" draggable = "true"><button type="button" class="btn btn-info" onclick="ChannelSetter();" clicked="true">Read Temperature</button></div>'}, "dropdownMenuButtonSetFreqAmplChanPhaseOutput": {"status":True, "html": '<div class="col-sm" align = "center" id="dropdownMenuButtonSetFreqAmplChanPhaseOutput" draggable = "true"><button type="button" class="btn btn-info" onclick="FreqAmplChanPhaseSetter();" clicked="true">Set Output</button></div>'}, "Signal": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "Signal"><button type="button" class="btn btn-warning" onclick="SendBack(\'{&quot;function&quot;: &quot;signal&quot;, &quot;instructions&quot;: &quot;Hi friend!!&quot;}\')">Signal!</button></div>'}, "Stop": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "Stop"><button type="button" class="btn btn-danger" onclick="Stop(); PauseAnimations();">Stop!</button></div>'}, "Start": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "Start"><button type="button" class="btn btn-success" onclick="Start(); ResumeAnimations();">Start!</button></div>'}, "time_diff": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "time_diff" draggable = "true"><label for="timediff" class = "foo">&nbsp Time Difference for Camera Data (seconds):&nbsp</label><input type = "text" id="timediff" name = "timediff" readonly></div>'}, "voltages": {"status":True, "html": '<div class="col-sm" id="voltages" align = "center" draggable="true"></div>'}, "heat-map-line-graph-show": {"status":True, "html": r'<div class="col-sm" id="heat-map-line-graph-show" align = "center" draggable="true"></div>'}}
+    possibleHTMLelements = {"users_html": {"status":True, "html": r'<div class="col-sm" id = "users_html"> gui_elements </div>'}, "dropdownMenuButtonChanOutput": {"status":True, "html": r'<div class="col-sm" align = "center" id="dropdownMenuButtonChanOutput" draggable = "true"><button type="button" class="btn btn-info" onclick="ChannelSetter();" clicked="true">Read Temperature</button></div>'}, "dropdownMenuButtonSetFreqAmplChanPhaseOutput": {"status":True, "html": '<div class="col-sm" align = "center" id="dropdownMenuButtonSetFreqAmplChanPhaseOutput" draggable = "true"><button type="button" class="btn btn-info" onclick="FreqAmplChanPhaseSetter();" clicked="true">Set Output</button></div>'}, "Signal": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "Signal"><button type="button" class="btn btn-warning" onclick="SendBack(\'{&quot;function&quot;: &quot;signal&quot;, &quot;instructions&quot;: &quot;Hi friend!!&quot;}\')">Signal!</button></div>'}, "Stop": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "Stop"><button type="button" class="btn btn-danger" onclick="Stop(); PauseAnimations();">Stop!</button></div>'}, "Start": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "Start"><button type="button" class="btn btn-success" onclick="Start(); ResumeAnimations();">Start!</button></div>'}, "time_diff": {"status":True, "html": '<div class="col-sm" align = "center" draggable = "true" id = "time_diff" draggable = "true"><label for="timediff" class = "foo">&nbsp Time Difference for Camera Data (seconds):&nbsp</label><input type = "text" id="timediff" name = "timediff" readonly></div>'}, "voltages": {"status":True, "html": '<div class="col-sm" id="voltages" align = "center" draggable="true"></div>'}, "heat-map-line-graph-show": {"status":True, "html": r'<div class="col-sm" id="heat-map-line-graph-show" align = "center" draggable="true"></div>', "coordinates": ""}}
+    
+    
+    
+    if user_db.get("possibleHTMLelements") == None:
+        db.posts.find_one_and_update({"user": username}, { '$set': {"possibleHTMLelements": possibleHTMLelements}})
+    
+    user_db = db.posts.find_one({"user": username}) #Update the user's mongodb
     
     #return the users html (stored in html_string) as a django variable that can be rendered at the bottom of Raman.html
-    return render(request, r"myfirst.html", context = {'gui_elements' : user_db.get('index_data'), 'channelsActivated' : json.dumps(user_db.get('activatedChannels')), 'functionDict' : json.dumps(user_db.get("functionDict")), 'possibleHTMLelements': json.dumps(possibleHTMLelements)})
+    return render(request, r"myfirst.html", context = {'gui_elements' : user_db.get('index_data'), 'channelsActivated' : json.dumps(user_db.get('activatedChannels')), 'functionDict' : json.dumps(user_db.get("functionDict")), 'possibleHTMLelements': json.dumps(user_db.get("possibleHTMLelements"))})
 
 def Detection(request):
     return render(request, r"Detection.html")

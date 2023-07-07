@@ -11,7 +11,7 @@ function closeNav()
 }
 
 //⌄⌄⌄ fired when you drag something over the document
-document.addEventListener('dragover', function(event)
+document.body.addEventListener('dragover', function(event)
 {
     event.preventDefault(); //prevents default behaviour
     return false; //prevents the default action
@@ -30,8 +30,9 @@ function endDrag(event)
 {
 //    https://stackoverflow.com/a/6239882/18255427
     var offset = window.offset.split(',');
-    this.style.left = (event.clientX + parseInt(offset[0],10)) + 'px';
-    this.style.top = (event.clientY + parseInt(offset[1],10)) + 'px';
+    console.log(this, this.style.left, this.style.top, 22);
+    this.style.left = (parseInt(offset[0],10) ? (event.clientX + parseInt(offset[0],10)) : event.clientX) + 'px';
+    this.style.top =  (parseInt(offset[1],10) ? (event.clientY + parseInt(offset[1],10)) : event.clientY) + 'px';
     event.preventDefault();
     return false;
 };
@@ -162,7 +163,17 @@ function describeExperiment(Experiment)
     }
     else
     {
-        ExperimentElement.innerHTML = Experiment;
+        let describeExperimentStr = "describeExperiment('" + Experiment + "')";
+        let temp = String.raw
+        `
+        <span onclick = "describeExperimentStr">
+            &#43;
+        </span>
+        `;
+        temp = temp.replaceAll("ExperimentName", Experiment); //replace all instances of ExperimentName w/ Experiment variable
+        temp = temp.replace("describeExperimentStr", describeExperimentStr);
+        
+        ExperimentElement.innerHTML = temp;
         ExperimentElement.removeAttribute("expanded");
     }
 }
@@ -175,15 +186,34 @@ function AddExperiment()
         //var jsonPretty = JSON.stringify(functionDict, null, 2);
         //console.log(jsonPretty);
         
-        let ExperimentMenu = document.createElement("ul"); //create a 'ul' element for ExperimentMenu
-        ExperimentMenu.class = "ExperimentMenu"; //set class of menu
+        let ExperimentMenu = document.createElement("div"); //create a 'ul' element for ExperimentMenu
+        ExperimentMenu.setAttribute("class", "col-sm"); // MARK: - Dragging only seems to work with col-sm elements -
+        ExperimentMenu.setAttribute("draggable", true);
         for (Experiment in functionDict)
         {
             let describeExperimentStr = "describeExperiment('" + Experiment + "')";
-            ExperimentMenu.innerHTML += '<button type="button" class="list-group-item list-group-item-action" onclick = "' + describeExperimentStr + '" id = "' + Experiment + '">' + Experiment
-            + '</button>' + '\n';
+            let temp = String.raw
+            `
+            <div class="row">
+                <div class="col-sm" align = "right">
+                    ExperimentName
+                </div>
+                <div class="col-sm" align = "left" id = ExperimentName>
+                    <span onclick = "describeExperimentStr">
+                        &#43;
+                    </span>
+                </div>
+            </div>
+            `;
+            
+            temp = temp.replaceAll("ExperimentName", Experiment); //replace all instances of ExperimentName w/ Experiment variable
+            temp = temp.replace("describeExperimentStr", describeExperimentStr);
+            
+            ExperimentMenu.innerHTML += temp;
         }
-        ExperimentMenu.innerHTML += "</ul>";
+        ExperimentMenu.addEventListener('dragstart', startDrag, true);
+        ExperimentMenu.addEventListener('dragend', endDrag, true);
+        console.log("ExperimentMenuTest112");
         document.body.appendChild(ExperimentMenu);
     }
     
@@ -1204,8 +1234,9 @@ chatSocket = new WebSocket(     //creating new WebSocket instance
            + '/ws/members/'
         );
 
-//responsible for loading elements' addEventListeners that sit in the
-//django variable called 'gui_elements'
+//Adding dragging event listeners for all elements
+//------------------------------------------------
+
 const collection = document.getElementsByClassName("outer_square");
 for (let i = 0; i < collection.length; i++)
 {
@@ -1213,18 +1244,60 @@ for (let i = 0; i < collection.length; i++)
     collection[i].addEventListener('dragend', endDrag, true);
 }
 
-const heat_map_line_graph = document.getElementById("heat-map-line-graph-show");
-if (heat_map_line_graph !== null)
+const heat_map_line_graph_elem = document.getElementById("heat-map-line-graph-show");
+if (heat_map_line_graph_elem !== null)
 {
-    heat_map_line_graph.addEventListener('dragstart', startDrag, true);
-    heat_map_line_graph.addEventListener('dragend', endDrag, true);
+    heat_map_line_graph_elem.addEventListener('dragstart', startDrag, true);
+    heat_map_line_graph_elem.addEventListener('dragend', endDrag, true);
 }
 
-const voltages = document.getElementById("voltages");
-if (voltages !== null)
+const voltages_elem = document.getElementById("voltages");
+if (voltages_elem !== null)
 {
-    voltages.addEventListener('dragstart', startDrag, true);
-    voltages.addEventListener('dragend', endDrag, true);
+    voltages_elem.addEventListener('dragstart', startDrag, true);
+    voltages_elem.addEventListener('dragend', endDrag, true);
+}
+
+const time_diff_elem = document.getElementById("time_diff");
+if (time_diff_elem !== null)
+{
+    time_diff_elem.addEventListener('dragstart', startDrag, true);
+    time_diff_elem.addEventListener('dragend', endDrag, true);
+}
+
+const Start_elem = document.getElementById("Start");
+if (Start_elem !== null)
+{
+    Start_elem.addEventListener('dragstart', startDrag, true);
+    Start_elem.addEventListener('dragend', endDrag, true);
+}
+
+const Stop_elem = document.getElementById("Stop");
+if (Stop_elem !== null)
+{
+    Stop_elem.addEventListener('dragstart', startDrag, true);
+    Stop_elem.addEventListener('dragend', endDrag, true);
+}
+
+const Signal_elem = document.getElementById("Signal");
+if (Signal_elem !== null)
+{
+    Signal_elem.addEventListener('dragstart', startDrag, true);
+    Signal_elem.addEventListener('dragend', endDrag, true);
+}
+
+const dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem = document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput");
+if (dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem !== null)
+{
+    dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.addEventListener('dragstart', startDrag, true);
+    dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.addEventListener('dragend', endDrag, true);
+}
+
+const dropdownMenuButtonChanOutput_elem = document.getElementById("dropdownMenuButtonChanOutput");
+if (dropdownMenuButtonChanOutput_elem !== null)
+{
+    dropdownMenuButtonChanOutput_elem.addEventListener('dragstart', startDrag, true);
+    dropdownMenuButtonChanOutput_elem.addEventListener('dragend', endDrag, true);
 }
 
 Start(); //start data streaming

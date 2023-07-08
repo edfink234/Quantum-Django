@@ -33,7 +33,7 @@ function endDrag(event)
     this.style.left = (parseInt(offset[0],10) ? (event.clientX + parseInt(offset[0],10)) : event.clientX) + 'px';
     this.style.top =  (parseInt(offset[1],10) ? (event.clientY + parseInt(offset[1],10)) : event.clientY) + 'px';
     
-    if (possibleHTMLelements[this.getAttribute("id")]["coordinates"] !== undefined)
+    if (possibleHTMLelements[this.getAttribute("id")] !== undefined)
     {
         possibleHTMLelements[this.getAttribute("id")]["coordinates"] = [this.style.left, this.style.top];
     }
@@ -1141,7 +1141,10 @@ function SetElements()
     for (element in possibleHTMLelements)
     {
         let HTMLElement = document.getElementById(element + "checkbox");
-        possibleHTMLelements[element]["status"] = HTMLElement.checked;
+        if (HTMLElement !== null)
+        {
+            possibleHTMLelements[element]["status"] = HTMLElement.checked;
+        }
     }
     UpdateElementsOnPage();
     SendBack(JSON.stringify({"function": "gui_change", "instructions": ["update_gui", possibleHTMLelements]}));
@@ -1202,7 +1205,33 @@ function ListHTMLElements()
         `;
         HTMLElementsList.setAttribute("expanded", "false");
     }
-    
+}
+
+function StoreCoordinates(element = "all")
+{
+    if (element == "all")
+    {
+        for (elem in possibleHTMLelements)
+        {
+            let tempElem = document.getElementById(elem);
+            if (tempElem !== null)
+            {
+                let rect = tempElem.getBoundingClientRect();
+                let left = rect.left;
+                let top = rect.top;
+                possibleHTMLelements[elem]["coordinates"] = [left, top];
+            }
+        }
+        return;
+    }
+    let tempElem = document.getElementById(element);
+    if (tempElem !== null)
+    {
+        let rect = tempElem.getBoundingClientRect();
+        let left = rect.left;
+        let top = rect.top;
+        possibleHTMLelements[elem]["coordinates"] = [left, top];
+    }
 }
 
 function UpdateElementsOnPage()
@@ -1224,15 +1253,41 @@ function UpdateElementsOnPage()
             temp.querySelector(tempElem).addEventListener('dragstart', startDrag, true);
             temp.querySelector(tempElem).addEventListener('dragend', endDrag, true);
             
-//            if (possibleHTMLelements[elem]["coordinates"] !== undefined)
-//            {
-//                temp.querySelector(tempElem).style.left = possibleHTMLelements[elem]["coordinates"][0] + "px";
-//                temp.querySelector(tempElem).style.top = possibleHTMLelements[elem]["coordinates"][1] + "px";
-//            }
-//            console.log(temp.querySelector(tempElem).style.left, temp.querySelector(tempElem).style.top);
             document.body.appendChild(temp);
         }
+        else if (element !== null)
+        {
+            console.log(elem, element.getBoundingClientRect().left, element.getBoundingClientRect().top);
+        }
     }
+    
+    StoreCoordinates();
+}
+
+function ResetElements()
+{
+    Object.keys(possibleHTMLelements).forEach(key => {
+        possibleHTMLelements[key].status = true; // set the "status" value to true for each key
+    });
+    for (element in possibleHTMLelements)
+    {
+        let HTMLElement = document.getElementById(element + "checkbox");
+        if (HTMLElement !== null)
+        {
+            HTMLElement.checked = possibleHTMLelements[element]["status"];
+        }
+        HTMLElement = document.getElementById(element);
+        if (HTMLElement !== null)
+        {
+            defaultCoordinates = possibleHTMLelements[element]["defaultCoordinates"];
+            defaultX = defaultCoordinates[0] + "px";
+            defaultY = defaultCoordinates[1] + "px";
+            HTMLElement.style.left = defaultX;
+            HTMLElement.style.top = defaultY;
+        }
+    }
+    UpdateElementsOnPage();
+    SendBack(JSON.stringify({"function": "gui_change", "instructions": ["update_gui", possibleHTMLelements]}));
 }
 
 //                *******************

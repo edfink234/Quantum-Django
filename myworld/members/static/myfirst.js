@@ -175,7 +175,7 @@ function describeExperiment(Experiment)
         let describeExperimentStr = "describeExperiment('" + Experiment + "')";
         let temp = String.raw
         `
-        <span onclick = "describeExperimentStr">
+        <span onclick = "describeExperimentStr" onmouseover="this.style.cursor='pointer'" onmouseleave="this.style.cursor='default'">
             &#43;
         </span>
         `;
@@ -208,7 +208,7 @@ function AddExperiment()
                     ExperimentName
                 </div>
                 <div class="col-sm" align = "left" id = ExperimentName>
-                    <span onclick = "describeExperimentStr">
+                    <span onclick = "describeExperimentStr" onmouseover="this.style.cursor='pointer'" onmouseleave="this.style.cursor='default'">
                         &#43;
                     </span>
                 </div>
@@ -287,9 +287,7 @@ function SetVoltageChannels(top, left)
     <div class="container-fluid pt-1 pl-1">
         <div class="row">
             <div class="col-sm" align = "left">
-                <span class="close-icon" onclick="closeWindow()">
-                    X
-                </span>
+                <a href="javascript:void(0)" class="closebtn" onclick="closeWindow()" style = "color:red;">&times;</a>
             </div>
         </div>
         </br>
@@ -750,7 +748,6 @@ function Start()
                                     
             var endTime = new Date().getTime();
             
-            
             var timeDiff = (endTime-startTime)/1000;
             
             // ⌄⌄⌄ Update the 'Time Difference (seconds):' text box
@@ -758,11 +755,19 @@ function Start()
             {
                 document.querySelector('#timediff').value = timeDiff; //re-assign value displayed in text box
             }
-
-            //TODO: In production, delete following 'if' and 'else if' statements. Only implemented to sync tabs/windows, but in production, the publishing rate will not be infinite
             
-            //⌄⌄⌄ parsing data
+            //⌄⌄⌄ parsing data, first value is line graph value, rest are camera pixel values
             Data = data[1];
+            
+            if (!window.hasOwnProperty('lineVals')) //stores y-coordinates of line plot
+            {
+                window.lineVals = [];
+            }
+            window.lineVals.push(Data[0]); //y-axis line graph values
+            if (window.lineVals.length > interval)
+            {
+                window.lineVals.splice(0,1);
+            }
             
             if (!window.hasOwnProperty('minlineVal'))
             {
@@ -779,25 +784,33 @@ function Start()
                 window.minlineVal = Data[0];
                 window.maxlineVal = Data[0];
             }
-            else if (window.minlineVal > Data[0])
+            
+            //Below denotes the auto adjusting of the line graph y-range
+            //Basically, this makes the y-range the min and max of the last
+            //`interval` numbers, in this case, interval = 100
+            
+            let lineValsMin = Math.min(...window.lineVals);
+            if (window.minlineVal < lineValsMin)
+            {
+                window.minlineVal = lineValsMin;
+            }
+            else if (window.minlineVal > lineValsMin)
             {
                 window.minlineVal = Data[0];
             }
-            else if (window.maxlineVal < Data[0])
+            
+            let lineValsMax = Math.max(...window.lineVals);
+            if (window.maxlineVal > lineValsMax)
+            {
+                window.maxlineVal = lineValsMax;
+            }
+            else if (window.maxlineVal < lineValsMax)
             {
                 window.maxlineVal = Data[0];
             }
+            //auto-adjusting concluded ;-)
             
-            if (!window.hasOwnProperty('lineVals')) //stores y-coordinates of line plot
-            {
-                window.lineVals = [];
-            }
-            window.lineVals.push(Data[0]); //y-axis line graph values
-            if (window.lineVals.length > interval)
-            {
-                window.lineVals.splice(0,1);
-            }
-            newArr = [];
+            newArr = []; //Stores Camera pixels as a 2d array
             Data.splice(0,1);
             while(Data.length) newArr.push(Data.splice(0,11));
             var my_plot = //heatmap plot
@@ -843,9 +856,7 @@ function Start()
                 yaxis: {"visible": false},
                 
                 //sets the y axis of the line graph subplot
-                //can change the range from what it is now (0,100.7) to something
-                //else if you like ⌄⌄⌄
-                yaxis2: {anchor: 'x2', range: [ window.minlineVal, window.maxlineVal]}, //0, 5.7 best for "0_data_decrystallized_noIon.csv", see docstring in "views.py" for other files min and max values
+                yaxis2: {anchor: 'x2', range: [ window.minlineVal, window.maxlineVal]},
                 
                 xaxis2: {domain: [0.35, 1], range: list}, //how much of screen the line graph subplot takes up, here it takes up 65%
                 
@@ -884,7 +895,7 @@ function Stop()
 //Send a message back to subscriber, called when user clicks 'Signal' ⌄⌄⌄
 function SendBack(arg = '{"function": null, "instructions": null}')
 {
-    if (!window.started || window.chatSocket.readyState !== WebSocket.OPEN) //if window.chatSocket is not connected, connect it
+    if (window.chatSocket.readyState !== WebSocket.OPEN) //if window.chatSocket is not connected, connect it
     {
         window.chatSocket = new WebSocket(
                     'ws://'
@@ -892,7 +903,41 @@ function SendBack(arg = '{"function": null, "instructions": null}')
                    + '/ws/members/'
                 ); //first start up the chat socket
         
-        window.chatSocket.onopen = () => {window.chatSocket.send(arg);} //send it
+//        https://dev.to/ndrbrt/wait-for-the-websocket-connection-to-be-open-before-sending-a-message-1h12
+        const waitForOpenConnection = (socket) =>
+        {
+            return new Promise((resolve, reject) => {
+                const maxNumberOfAttempts = 10
+                const intervalTime = 200 //ms
+
+                let currentAttempt = 0
+                const interval = setInterval(() => {
+                    if (currentAttempt > maxNumberOfAttempts - 1) {
+                        clearInterval(interval)
+                        reject(new Error('Maximum number of attempts exceeded'))
+                    } else if (socket.readyState === socket.OPEN) {
+                        clearInterval(interval)
+                        resolve()
+                    }
+                    currentAttempt++
+                }, intervalTime)
+            });
+        };
+        
+        const sendMessage = async (socket, msg) =>
+        {
+            if (socket.readyState !== socket.OPEN) {
+                try {
+                    await waitForOpenConnection(socket)
+                    socket.send(msg)
+                } catch (err) { console.error(err) }
+            } else {
+                socket.send(msg)
+            }
+        };
+        
+        sendMessage(window.chatSocket, arg);
+//        window.chatSocket.onopen = () => {window.chatSocket.send(arg);} //send it
         window.started = true; //flag to denote that chat socket is up and running
     }
     else //if it is, just send back the data stored in the variable 'arg' to the consumers.py ZMQChannels.receive method
@@ -909,10 +954,10 @@ function SendChan()
     var running = window.started;
 
     ReadTemperatureDict = {"function": "exec_exp", "instructions": ["read_temperature", chanVal]}
-    SendBack(JSON.stringify(ReadTemperatureDict));
+    //SendBack(JSON.stringify(ReadTemperatureDict));
     
-    document.getElementById("dropdownMenuButtonChanOutput").innerHTML = "Read Temperature";
-    document.getElementById("dropdownMenuButtonChanOutput").setAttribute("clicked", "false");
+    CloseChanSetter();
+    
     if (!running)
     {
         Start();
@@ -931,25 +976,41 @@ function SendFreqAmplChanPhase()
     var running = window.started;
 
     SetOutputDict = {"function": "set_values", "instructions": ["set_output", freqVal, ampVal, chanVal, phaseVal, profVal]}
-    SendBack(JSON.stringify(SetOutputDict));
+    //SendBack(JSON.stringify(SetOutputDict));
     
-    document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").setAttribute("clicked", "false");
+    CloseFreqAmplChanPhaseSetter();
+    
     if (!running)
     {
         Start();
     }
 }
+
+function CloseChanSetter()
+{
+    let elem = document.getElementById("dropdownMenuButtonChanOutput");
+    elem.innerHTML =
+    String.raw`
+    <button type="button" class="btn btn-info" onclick="ChannelSetter();">
+        Read Temperature
+    </button>
+    `;
+    elem.style.backgroundColor = "white";
+    elem.draggable = true;
+}
             
 function ChannelSetter()
 {
-    if (document.getElementById("dropdownMenuButtonChanOutput").getAttribute("clicked") == "false")
-    {
-        document.getElementById("dropdownMenuButtonChanOutput").setAttribute("clicked", "true");
-        return;
-    }
-    document.getElementById("dropdownMenuButtonChanOutput").innerHTML =
+    const dropdownMenuButtonChanOutput_elem = document.getElementById("dropdownMenuButtonChanOutput")
+    dropdownMenuButtonChanOutput_elem.innerHTML =
     String.raw
     `
+    <div class="row">
+        <div class="col-sm" align = "left">
+            <a href="javascript:void(0)" class="closebtn" onclick="CloseChanSetter()" style = "color:red;">&times;</a>
+        </div>
+    </div>
+    <br/>
     <div class="row">
         <div class="col-sm" align = "center">
             <div class="slidecontainer">
@@ -968,7 +1029,10 @@ function ChannelSetter()
             </button>
         </div>
     </div>
-    `
+    `;
+    
+    dropdownMenuButtonChanOutput_elem.setAttribute("draggable", false);
+    dropdownMenuButtonChanOutput_elem.backgroundColor = "white"; //or whatever color you prefer.
     
     var channelSlider = document.getElementById("myChannelReadTempRange");
     if (!window.hasOwnProperty('channelValue'))
@@ -986,17 +1050,32 @@ function ChannelSetter()
     }
 }
 
+function CloseFreqAmplChanPhaseSetter()
+{
+    let elem = document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput");
+    elem.innerHTML =
+    String.raw`
+    <button type="button" class="btn btn-info" onclick="FreqAmplChanPhaseSetter();">
+        Set Output
+    </button>
+    `;
+    elem.style.backgroundColor = "white";
+    elem.draggable = true;
+}
+
 function FreqAmplChanPhaseSetter()
 {
-    if (document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").getAttribute("clicked") == "false")
-    {
-        document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").setAttribute("clicked", "true");
-        return;
-    }
+    const dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem = document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput");
     
-    document.getElementById("dropdownMenuButtonSetFreqAmplChanPhaseOutput").innerHTML =
+    dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.innerHTML =
     String.raw
     `
+    <div class="row">
+        <div class="col-sm" align = "left">
+            <a href="javascript:void(0)" class="closebtn" onclick="CloseFreqAmplChanPhaseSetter()" style = "color:red;">&times;</a>
+        </div>
+    </div>
+    <br/>
     <div class="row">
         <div class="col-sm" align = "center">
             <div class="slidecontainer">
@@ -1060,8 +1139,11 @@ function FreqAmplChanPhaseSetter()
             <button type="button" class="btn btn-success" onclick="SendFreqAmplChanPhase()">Send All!</button>
         </div>
     </div>
-    `
+    `;
     
+    dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", false);
+    dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.style.backgroundColor = "white"; //or whatever color you prefer.
+
     var amplSlider = document.getElementById("myAmplitudeRange");
     if (!window.hasOwnProperty('amplitudeValue'))
     {
@@ -1197,7 +1279,7 @@ function ListHTMLElements()
         String.raw
         `
             <div class="row">
-                <div class="col-sm" align = "right" id = "ListHTMLElementsButton" onclick = "ListHTMLElements()">
+                <div class="col-sm" align = "right" id = "ListHTMLElementsButton" onclick = "ListHTMLElements()" onmouseover="this.style.cursor='pointer'" onmouseleave="this.style.cursor='default'">
                         &#43;
                 </div>
                 <div class="col-sm-11" align = "left">
@@ -1219,8 +1301,6 @@ function StoreCoordinates(element = "all")
             if (tempElem !== null)
             {
                 let rect = tempElem.getBoundingClientRect();
-//                let left = rect.left;
-//                let top = rect.top;
                 let left = tempElem.style.left || rect.left + "px";
                 let top = tempElem.style.top || rect.top + "px";
 //                console.log(rect.left, rect.top, left, top);
@@ -1234,11 +1314,9 @@ function StoreCoordinates(element = "all")
     let tempElem = document.getElementById(element);
     if (tempElem !== null)
     {
-//        let rect = tempElem.getBoundingClientRect();
-//        let left = rect.left;
-//        let top = rect.top;
-        let left = tempElem.style.left;
-        let top = tempElem.style.top;
+        let rect = tempElem.getBoundingClientRect();
+        let left = tempElem.style.left || rect.left + "px";
+        let top = tempElem.style.top || rect.top + "px";
         possibleHTMLelements[elem]["coordinates"] = [left, top];
     }
     SendBack(JSON.stringify({"function": "gui_change", "instructions": ["update_gui", possibleHTMLelements]}));
@@ -1393,5 +1471,4 @@ if (dropdownMenuButtonChanOutput_elem !== null)
     dropdownMenuButtonChanOutput_elem.addEventListener('dragstart', startDrag, true);
     dropdownMenuButtonChanOutput_elem.addEventListener('dragend', endDrag, true);
 }
-
 Start(); //start data streaming

@@ -187,9 +187,19 @@ function describeExperiment(Experiment)
     }
 }
 
+// this function fires when the user clicks the x on the top-left corner of the voltage menu
+function closeExperimentWindow()
+{
+    var voltageChannelMenu = document.getElementById("ctxmenu_voltage");
+    if (voltageChannelMenu)
+    {
+        voltageChannelMenu.parentNode.removeChild(voltageChannelMenu);
+    }
+}
+
 function AddExperiment()
 {
-    if (window.ExperimentAdded === undefined)
+    if (!window.ExperimentAdded)
     {
         window.ExperimentAdded = true;
         //var jsonPretty = JSON.stringify(functionDict, null, 2);
@@ -197,13 +207,28 @@ function AddExperiment()
         
         let ExperimentMenu = document.createElement("div"); //create a 'ul' element for ExperimentMenu
         ExperimentMenu.setAttribute("class", "col-sm"); // MARK: - Dragging only seems to work with col-sm elements -
+        ExperimentMenu.setAttribute("id", "ExperimentMenu");
         ExperimentMenu.setAttribute("draggable", true);
+//        ExperimentMenu.innerHTML +=
+//        String.raw
+//        `
+//        <div class="row">
+//            <div class="col-sm" align = "left">
+//                <a href="javascript:void(0)" class="closebtn" onclick="closeWindow(); window.ExperimentAdded = false;" style = "color:red;">&times;</a>
+//            </div>
+//        </div>
+//        <br/>
+//        `.replace("closeWindow()", "closeWindow('" + ExperimentMenu.id + "')");
+        
         for (Experiment in functionDict)
         {
             let describeExperimentStr = "describeExperiment('" + Experiment + "')";
             let temp = String.raw
             `
             <div class="row">
+                <div class="col-sm" align = "left">
+                    <a href="javascript:void(0)" class="closebtn" onclick="closeWindow(); window.ExperimentAdded = false;" style = "color:red;">&times;</a>
+                </div>
                 <div class="col-sm" align = "right">
                     ExperimentName
                 </div>
@@ -213,7 +238,7 @@ function AddExperiment()
                     </span>
                 </div>
             </div>
-            `;
+            `.replace("closeWindow()", "closeWindow('" + ExperimentMenu.id + "')");
             
             temp = temp.replaceAll("ExperimentName", Experiment); //replace all instances of ExperimentName w/ Experiment variable
             temp = temp.replace("describeExperimentStr", describeExperimentStr);
@@ -222,7 +247,6 @@ function AddExperiment()
         }
         ExperimentMenu.addEventListener('dragstart', startDrag, true);
         ExperimentMenu.addEventListener('dragend', endDrag, true);
-        console.log("ExperimentMenuTest112");
         document.body.appendChild(ExperimentMenu);
     }
     
@@ -258,13 +282,13 @@ function checkVoltageChannelBoxes(number, checked)
     
 }
 
-/// this function fires when the user clicks
-function closeWindow()
+// this function fires when the user clicks the x on the top-left corner
+function closeWindow(id)
 {
-    var voltageChannelMenu = document.getElementById("ctxmenu_voltage");
-    if (voltageChannelMenu)
+    var element = document.getElementById(id);
+    if (element)
     {
-        voltageChannelMenu.parentNode.removeChild(voltageChannelMenu);
+        element.parentNode.removeChild(element);
     }
 }
 
@@ -431,7 +455,7 @@ function SetVoltageChannels(top, left)
     <br>
     <button type="button" class="btn btn-success" onclick="SubmitVoltages()">Submit</button>
     </div>
-    `;
+    `.replace("closeWindow()", "closeWindow('" + menu.id + "')");
 
     document.body.appendChild(menu); //add menu to document body
     

@@ -117,8 +117,8 @@ def index(request): #Corresponds to myfirst.html
     if user_db.get("possibleHTMLelements") == None:
         db.posts.find_one_and_update({"user": username}, { '$set': {"possibleHTMLelements": possibleHTMLelements}})
     
+    print(user_db.get("possibleHTMLelements"))
     user_db = db.posts.find_one({"user": username}) #Update the user's mongodb
-    print(json.dumps(user_db.get("possibleHTMLelements")))
     #return the users html (stored in html_string) as a django variable that can be rendered at the bottom of Raman.html
     return render(request, r"myfirst.html", context = {'gui_elements' : user_db.get('index_data'), 'channelsActivated' : json.dumps(user_db.get('activatedChannels')), 'functionDict' : json.dumps(user_db.get("functionDict")), 'possibleHTMLelements': json.dumps(user_db.get("possibleHTMLelements"))})
 

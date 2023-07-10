@@ -30,12 +30,15 @@ function endDrag(event)
 {
 //    https://stackoverflow.com/a/6239882/18255427
     var offset = window.offset.split(',');
-    this.style.left = (parseInt(offset[0],10) ? (event.clientX + parseInt(offset[0],10)) : event.clientX) + 'px';
-    this.style.top =  (parseInt(offset[1],10) ? (event.clientY + parseInt(offset[1],10)) : event.clientY) + 'px';
+    let left = (parseInt(offset[0],10) ? (event.clientX + parseInt(offset[0],10)) : event.clientX);
+    let top = (parseInt(offset[1],10) ? (event.clientY + parseInt(offset[1],10)) : event.clientY);
+    this.style.left = left + 'px';
+    this.style.top = top + 'px';
     
     if (possibleHTMLelements[this.getAttribute("id")] !== undefined)
     {
-        possibleHTMLelements[this.getAttribute("id")]["coordinates"] = [this.style.left, this.style.top];
+        possibleHTMLelements[this.getAttribute("id")]["coordinates"] = [left, top];
+        console.log(this.getAttribute("id"), this.style.left, this.style.top);
     }
     event.preventDefault();
     return false;
@@ -540,7 +543,7 @@ function Start()
     }
     if (!window.started)
     {
-        chatSocket = new WebSocket(
+        window.chatSocket = new WebSocket(
                     'ws://'
                     + window.location.host
                    + '/ws/members/'
@@ -548,7 +551,7 @@ function Start()
         window.started = true;
     }
         
-    chatSocket.onclose = function(e) {
+    window.chatSocket.onclose = function(e) {
         //Reference: https://stackoverflow.com/a/61283792/18255427
         let specificStatusCodeMappings = {
             '1000': 'Normal Closure',
@@ -573,7 +576,7 @@ function Start()
     };
 
     //⌄⌄⌄ Fires when data is received
-    chatSocket.onmessage = function(e) {
+    window.chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
 
         data = data.event.text;
@@ -874,28 +877,27 @@ function Start()
 //Stop data streaming, called when user clicks 'Stop' ⌄⌄⌄
 function Stop()
 {
-    chatSocket.close();
+    window.chatSocket.close();
     window.started = false;
 }
 
 //Send a message back to subscriber, called when user clicks 'Signal' ⌄⌄⌄
 function SendBack(arg = '{"function": null, "instructions": null}')
 {
-    if (!window.started) //if chatsocket is not connected, connect it
+    if (!window.started || window.chatSocket.readyState !== WebSocket.OPEN) //if window.chatSocket is not connected, connect it
     {
-        
-        chatSocket = new WebSocket(
+        window.chatSocket = new WebSocket(
                     'ws://'
                     + window.location.host
                    + '/ws/members/'
                 ); //first start up the chat socket
         
-        chatSocket.onopen = () => chatSocket.send(arg); //send it
+        window.chatSocket.onopen = () => {window.chatSocket.send(arg);} //send it
         window.started = true; //flag to denote that chat socket is up and running
     }
     else //if it is, just send back the data stored in the variable 'arg' to the consumers.py ZMQChannels.receive method
     {
-        chatSocket.send(arg);
+        window.chatSocket.send(arg); //send it
     }
 }
 
@@ -1217,31 +1219,39 @@ function StoreCoordinates(element = "all")
             if (tempElem !== null)
             {
                 let rect = tempElem.getBoundingClientRect();
-                let left = rect.left;
-                let top = rect.top;
+//                let left = rect.left;
+//                let top = rect.top;
+                let left = tempElem.style.left || rect.left + "px";
+                let top = tempElem.style.top || rect.top + "px";
+//                console.log(rect.left, rect.top, left, top);
                 possibleHTMLelements[elem]["coordinates"] = [left, top];
+                console.log(elem, possibleHTMLelements[elem]["coordinates"]);
             }
         }
+        SendBack(JSON.stringify({"function": "gui_change", "instructions": ["update_gui", possibleHTMLelements]}));
         return;
     }
     let tempElem = document.getElementById(element);
     if (tempElem !== null)
     {
-        let rect = tempElem.getBoundingClientRect();
-        let left = rect.left;
-        let top = rect.top;
+//        let rect = tempElem.getBoundingClientRect();
+//        let left = rect.left;
+//        let top = rect.top;
+        let left = tempElem.style.left;
+        let top = tempElem.style.top;
         possibleHTMLelements[elem]["coordinates"] = [left, top];
     }
+    SendBack(JSON.stringify({"function": "gui_change", "instructions": ["update_gui", possibleHTMLelements]}));
 }
 
-function UpdateElementsOnPage()
+function UpdateElementsOnPage(save = true)
 {
     for (elem in possibleHTMLelements)
     {
         let element = document.getElementById(elem);
         if (!possibleHTMLelements[elem]["status"] && element) //if the user doesn't want this element but it's still on the html
         {
-            document.getElementById(elem).parentNode.removeChild(element);
+            document.getElementById(elem).parentNode.removeChild(element); //remove element
         }
         else if (possibleHTMLelements[elem]["status"] && !element) //if the user wants this element but it's not on the html
         {
@@ -1250,18 +1260,18 @@ function UpdateElementsOnPage()
             temp.innerHTML = temp.innerHTML.replace("gui_elements", gui_elements); //you'll have to do this for all elements with django variables inside
             // Search for an element within temp by id
             let tempElem = "#"+elem;
+            // All possibleHTMLelements are draggable
             temp.querySelector(tempElem).addEventListener('dragstart', startDrag, true);
             temp.querySelector(tempElem).addEventListener('dragend', endDrag, true);
             
             document.body.appendChild(temp);
         }
-        else if (element !== null)
-        {
-            console.log(elem, element.getBoundingClientRect().left, element.getBoundingClientRect().top);
-        }
     }
     
-    StoreCoordinates();
+    if (save)
+    {
+        StoreCoordinates();
+    }
 }
 
 function ResetElements()
@@ -1287,7 +1297,23 @@ function ResetElements()
         }
     }
     UpdateElementsOnPage();
-    SendBack(JSON.stringify({"function": "gui_change", "instructions": ["update_gui", possibleHTMLelements]}));
+}
+
+function SetElementsToLastSavedCoordinates()
+{
+    for (element in possibleHTMLelements)
+    {
+        let elem = document.getElementById(element);
+        if (elem !== null && possibleHTMLelements[element]["coordinates"] !== undefined)
+        {
+            Coordinates = possibleHTMLelements[element]["coordinates"];
+            X = Coordinates[0];
+            Y = Coordinates[1];
+            console.log(element, X, Y);
+            elem.style.left = X;
+            elem.style.top = Y;
+        }
+    }
 }
 
 //                *******************
@@ -1296,7 +1322,7 @@ function ResetElements()
 
 console.log(username); //logging the user's username to console
 console.log("connected!");
-chatSocket = new WebSocket(     //creating new WebSocket instance
+window.chatSocket = new WebSocket(     //creating new WebSocket instance
             'ws://'
             + window.location.host
            + '/ws/members/'

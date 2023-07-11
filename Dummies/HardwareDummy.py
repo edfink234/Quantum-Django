@@ -97,7 +97,7 @@ Cam_Dummy = Camera()
 while True:
 
     publish(maxbox_socket, 'MAXBOX', maxbox_read())
-#
+
     publish(weather_socket, 'TEMPERATURE', temperature())
     publish(weather_socket, 'PRESSURE', pressure())
 

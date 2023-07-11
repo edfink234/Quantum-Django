@@ -85,9 +85,80 @@
         }
         </script>
         <br/>
-        <br/>
-        <br/>
+        <script>
+        //Connection starts here!
+            let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by index function in views.py
+            
+            let ExperimentDict = JSON.parse('{{functionDict | safe}}'); //third variable returned by index function in views.py
+
+            console.log("{{ user.get_username }}"); //logging the user's username to console
+            console.log("connected!");
+            chatSocket = new WebSocket(     //creating new WebSocket instance
+                        'ws://'
+                        + window.location.host
+                       + '/ws/members/'
+                    );
+                    
+            var started = true;
+
+            //Send a message back to subscriber, called when user clicks 'Signal' ⌄⌄⌄
+            function SendBack(arg = '{"function": null, "instructions": null}')
+            {
+                if (!started) //if chatsocket is not connected, connect it
+                {
+                    
+                    chatSocket = new WebSocket(
+                                'ws://'
+                                + window.location.host
+                               + '/ws/members/'
+                            ); //first start up the chat socket
+                    
+                    chatSocket.onopen = () => chatSocket.send(arg); //send it
+                    started = true; //flag to denote that chat socket is up and running
+                }
+                else //if it is, just send back the data stored in the variable 'arg' to the consumers.py ZMQChannels.receive method
+                {
+                    chatSocket.send(arg);
+                }
+            }
+
+            function BerthaPMTCount()
+            {
+              SetValuesDict = {"function": "set_values", "instructions": ["BerthaPMT"]}
+              SendBack(JSON.stringify(SetValuesDict));
+            }
+
+            function BerthaSetDigital()
+            {
+              var BerthaDigitalValue = document.getElementById("myBerthaDigitalValue").value;
+              SetValuesDict = {"function": "set_values", "instructions": ["BerthaSetDigital", BerthaDigitalValue]}
+              SendBack(JSON.stringify(SetValuesDict));
+            }
+            
+          
+        </script>
+
         <br/><br/><br/>
+        <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-info" id="dropdownMenuButtonChanOutput" onclick="BerthaPMTCount();" clicked="true">
+                        Test
+                    </button>
+        </div>
+
+        <br/>
+        
+        <div class="row">
+    
+          <div class="col-sm" align = "center">
+              Set Bertha Digital Channels:
+              <input type="number" id="myBerthaDigitalValue" name="myBerthaDigitalValue" min="0" max="100" required>
+              <button type="button" class="btn btn-info" id="SubmitBerthaDigitalValue" onclick="BerthaSetDigital();" clicked="true">
+                Submit
+            </button>            
+            </div>
+        </div>
+        <br/>
+        
         
     </body>
 </html>

@@ -81,7 +81,7 @@ class ExecCommunication:
                 return result["error"]
             
     def send_request(self, method, params):
-        with ClientDevice(self.addr, self.client_auth, self.name, self.pw, None) as dev:
+        with ClientDevice(address=self.addr, authentication=self.client_auth, name=self.name, pw=self.pw, auto_request_handling_func=None, router_address="tcp://127.0.0.1:51243") as dev:
 
             reply = self.blocking_rpc(dev, b"ExecConDummy", method, params)
             if reply is None:

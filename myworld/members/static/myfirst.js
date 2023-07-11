@@ -269,6 +269,12 @@ function AddExperiment()
     
 }
 
+function SearchForExperiment()
+{
+    alert(document.querySelector('#SearchForExperimentInput').value);
+    for (Experiment in functionDict)
+}
+
 /// Gets the `number` checkbox (e.g. 0, 1, 2, ..., or 15) and checks or unchecks all of them
 /// for each voltage channel window on the DOM. `checked` is either true (check) or false (uncheck)
 function checkVoltageChannelBoxes(number, checked)
@@ -1055,7 +1061,20 @@ function ChannelSetter()
     </div>
     `;
     
-    dropdownMenuButtonChanOutput_elem.setAttribute("draggable", false);
+    //The following adds event listeners to the slider to make the
+    //`dropdownMenuButtonChanOutput_elem` draggable only when the mouse
+    //is NOT on the slider
+    let myChannelReadTempRange = document.getElementById("myChannelReadTempRange");
+    myChannelReadTempRange.addEventListener("mouseover", () =>
+    {
+        dropdownMenuButtonChanOutput_elem.setAttribute("draggable", false);
+    });
+    myChannelReadTempRange.addEventListener("mouseleave", () =>
+    {
+        dropdownMenuButtonChanOutput_elem.setAttribute("draggable", true);
+    });
+    //end of adding slider event listeners ;-)
+    
     dropdownMenuButtonChanOutput_elem.backgroundColor = "white"; //or whatever color you prefer.
     
     var channelSlider = document.getElementById("myChannelReadTempRange");
@@ -1165,7 +1184,60 @@ function FreqAmplChanPhaseSetter()
     </div>
     `;
     
-    dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", false);
+    //The following adds event listeners to the sliders to make the
+    //`dropdownMenuButtonSetFreqAmplChanPhaseOutput` draggable only when the mouse
+    //is NOT on a slider
+    let myAmplitudeRange = document.getElementById("myAmplitudeRange");
+    myAmplitudeRange.addEventListener("mouseover", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", false);
+    });
+    myAmplitudeRange.addEventListener("mouseleave", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", true);
+    });
+    
+    let myFrequencyRange = document.getElementById("myFrequencyRange");
+    myFrequencyRange.addEventListener("mouseover", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", false);
+    });
+    myFrequencyRange.addEventListener("mouseleave", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", true);
+    });
+    
+    let myChannelRange = document.getElementById("myChannelRange");
+    myChannelRange.addEventListener("mouseover", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", false);
+    });
+    myChannelRange.addEventListener("mouseleave", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", true);
+    });
+    
+    let myPhaseRange = document.getElementById("myPhaseRange");
+    myPhaseRange.addEventListener("mouseover", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", false);
+    });
+    myPhaseRange.addEventListener("mouseleave", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", true);
+    });
+    
+    let myProfileRange = document.getElementById("myProfileRange");
+    myProfileRange.addEventListener("mouseover", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", false);
+    });
+    myProfileRange.addEventListener("mouseleave", () =>
+    {
+        dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.setAttribute("draggable", true);
+    });
+    //end of adding slider event listeners ;-)
+
     dropdownMenuButtonSetFreqAmplChanPhaseOutput_elem.style.backgroundColor = "white"; //or whatever color you prefer.
 
     var amplSlider = document.getElementById("myAmplitudeRange");

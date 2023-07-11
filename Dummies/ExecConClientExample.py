@@ -72,7 +72,7 @@ addr = "tcp://127.0.0.1:52021"
 name = b"ExecConClient"
 pw = b""
 
-with ClientDevice(addr, client_auth, name, pw, None) as dev:
+with ClientDevice(address=addr, authentication=client_auth, name=name, pw=pw, auto_request_handling_func=None, router_address="tcp://127.0.0.1:51249") as dev:
 
     #method, params = 'ExecConD.set_values', ['set_voltage', 'some', 'more', 'parameters']
     method, params = 'ExecConD.exec_exp', {'exp_name':'729spectroscopy', 'step':15}

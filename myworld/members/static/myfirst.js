@@ -22,7 +22,11 @@ function startDrag(event)
 {
 //    https://stackoverflow.com/a/6239882/18255427
     var style = window.getComputedStyle(event.target, null);
-    window.offset = (parseInt(style.getPropertyValue("left"),10) - event.clientX) + ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY)
+    window.offset = (parseInt(style.getPropertyValue("left"),10) - event.clientX) + ',' + (parseInt(style.getPropertyValue("top"),10) - event.clientY);
+    if (window.offset.split(",").some(element => !parseInt(element)))
+    {
+        window.offset = "0,0";
+    }
 }
 
 //⌄⌄⌄ function used for dragend EventListener
@@ -32,13 +36,14 @@ function endDrag(event)
     var offset = window.offset.split(',');
     let left = (parseInt(offset[0],10) ? (event.clientX + parseInt(offset[0],10)) : event.clientX);
     let top = (parseInt(offset[1],10) ? (event.clientY + parseInt(offset[1],10)) : event.clientY);
-    this.style.left = left + 'px';
-    this.style.top = top + 'px';
     
-    if (possibleHTMLelements[this.getAttribute("id")] !== undefined)
+    let rect = event.target.getBoundingClientRect();
+    event.target.style.left = left ? left + 'px' : rect.left + "px";
+    event.target.style.top = top ? top + 'px' : rect.top + "px";
+    
+    if (possibleHTMLelements[event.target.getAttribute("id")] !== undefined)
     {
-        possibleHTMLelements[this.getAttribute("id")]["coordinates"] = [left, top];
-        console.log(this.getAttribute("id"), this.style.left, this.style.top);
+        possibleHTMLelements[event.target.getAttribute("id")]["coordinates"] = [left, top];
     }
     event.preventDefault();
     return false;
@@ -269,13 +274,78 @@ function AddExperiment()
     
 }
 
-function SearchForExperiment()
+function AddSelectedExperiments()
 {
-    alert(document.querySelector('#SearchForExperimentInput').value);
     for (Experiment in functionDict)
     {
-        
+        let ExperimentIdString = "flexCheckDefault" + Experiment;
+        let ExperimentElem = document.getElementById(ExperimentIdString);
+        if (ExperimentElem && ExperimentElem.checked)
+        {
+            let elem = document.createElement("div"); //create a 'div' element for menu
+            elem.innerHTML = Experiment;
+            elem.setAttribute("class", "col-sm-4");
+            elem.setAttribute("name", Experiment);
+            elem.setAttribute("draggable", "true");
+            elem.setAttribute("style", "border:1px solid black; margin:5px;");
+            elem.setAttribute("onmouseover", "this.style.cursor='pointer'");
+            elem.setAttribute("onmouseleave", "this.style.cursor='default'");
+            elem.setAttribute("ondragstart", "startDrag(event)");
+            elem.setAttribute("ondragend", "endDrag(event)");
+            elem.setAttribute("align", "center");
+            console.log(elem);
+            document.getElementById("whole_html").appendChild(elem);
+        }
     }
+    
+}
+
+function SearchForExperiment()
+{
+    let userInput = document.querySelector('#SearchForExperimentInput').value;
+    let ExperimentSearchBar = document.getElementById("add-experiment-search-bar");
+    let SubmitString =
+    String.raw
+    `
+        <button type="button" class="btn btn-success" name = "SubmitExperiments" onclick="AddSelectedExperiments()">Submit</button>
+    `;
+    let checkedElemFound = false;
+    for (Experiment in functionDict)
+    {
+        let NameString = "[name='Experiment']".replace("Experiment", Experiment);
+        if (element = ExperimentSearchBar.querySelector(NameString))
+        {
+            ExperimentSearchBar.removeChild(element);
+        }
+        if (Experiment.includes(userInput))
+        {
+            ExperimentSearchBar.innerHTML +=
+            String.raw
+            `
+            <div class="col-sm" align = "left" name = "Experiment">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="flexCheckDefaultExperiment" onclick = "console.log(this.checked);">
+                    <label class="form-check-label" for="flexCheckDefaultExperiment">
+                        Experiment
+                    </label>
+                </div>
+            </div>
+            `.replaceAll("Experiment", Experiment);
+            checkedElemFound = true;
+        }
+    }
+    
+    let SubmitNameString = "[name='SubmitExperiments']";
+    if (element = ExperimentSearchBar.querySelector(SubmitNameString))
+    {
+        ExperimentSearchBar.removeChild(element);
+    }
+    if (checkedElemFound)
+    {
+        ExperimentSearchBar.innerHTML += SubmitString;
+    }
+
+    document.querySelector('#SearchForExperimentInput').value = userInput;
 }
 
 /// Gets the `number` checkbox (e.g. 0, 1, 2, ..., or 15) and checks or unchecks all of them
@@ -1441,7 +1511,7 @@ function UpdateElementsOnPage(save = true)
             temp.querySelector(tempElem).addEventListener('dragstart', startDrag, true);
             temp.querySelector(tempElem).addEventListener('dragend', endDrag, true);
             
-            document.body.appendChild(temp);
+            document.getElementById("whole_html").appendChild(temp);
         }
     }
     
@@ -1469,7 +1539,16 @@ function ResetElements()
     String.raw
     `
     <br/><br/>
-    
+    <div class="row">
+        <div class="col-sm offset-sm-6" id="add-experiment-search-bar" align="center" draggable="true">
+                            <div class="input-group" align = "center">
+    <!--                            mr-5 means 0.25 rem * 5 = 1.25rem, equal to 5 spaces-->
+                                <input type="text" class="form-control mr-5" id="SearchForExperimentInput" placeholder="Experiment Name" style="display: inline-block;" onkeydown="if(event.keyCode === 13) { SearchForExperiment(); }">
+                                <button class="btn btn-info" type="button" onclick = "SearchForExperiment()">Search For Experiment  &nbsp; &#128269; &#128170; &#128300; &#129515; &#129514;</button>
+                            </div>
+                            
+        </div>
+    </div>
     <!--⌄⌄⌄ heat-map and line graph ⌄⌄⌄-->
     <div class="row">
         <div class="col-sm" id="heat-map-line-graph-show" align = "center" draggable="true">
@@ -1564,6 +1643,13 @@ function AddDragEventListeners()
         collection[i].addEventListener('dragend', endDrag, true);
     }
 
+    const add_experiment_search_bar_elem = document.getElementById("add-experiment-search-bar");
+    if (add_experiment_search_bar_elem !== null)
+    {
+        add_experiment_search_bar_elem.addEventListener('dragstart', startDrag, true);
+        add_experiment_search_bar_elem.addEventListener('dragend', endDrag, true);
+    }
+    
     const heat_map_line_graph_elem = document.getElementById("heat-map-line-graph-show");
     if (heat_map_line_graph_elem !== null)
     {

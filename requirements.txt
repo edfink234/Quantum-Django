@@ -1,6 +1,6 @@
 asgiref==3.7.2
 channels==4.0.0
-Django==4.2.2
+Django==4.2.3
 matplotlib==3.7.1
 numpy==1.25.0
 plotly==5.15.0

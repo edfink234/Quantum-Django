@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    
+    <link rel="stylesheet" href="{% static 'myfirst.css' %}">
+    <head>
+        <meta charset="utf-8">
+            <link rel="shortcut icon" href="" />
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+                <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+                <title>Bertha Channels</title>
+                
+    </head>
+    
+    <body>
+        <div class="container-fluid pt-1 pl-1" style="height:50px">
+          <div class="d-flex align-items-center flex-wrap">
+            <button class="btn btn-primary" onclick="openNav()">
+              &#9776
+            </button>
+
+            <div class="d-flex">
+              <h3 class="pl-1 d-flex px-2">Bertha Channels</h3>
+            </div>
+            <div class="d-flex container justify-content-between">
+              <div class="d-flex align-items-center">
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                      QFDR
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                    Branching
+                    </div>
+                  </div>
+                </div>
+
+                <div class="px-2">
+                  <div class="progress" style="width:100px">
+                    <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                      Autocalibration
+                    </div>
+                  </div>
+                </div>
+              </div>
+            
+
+              <div class="d-flex alert-success p-1 rounded border border-primary">
+                <p class="text-white"></p>Autocalibration</p>
+              </div>
+
+              <div class="d-flex alert-success p-1 rounded border border-primary">
+                Status: Executing Seq1
+              </div>
+            </div>
+
+          </div>
+        </div>
+        
+        <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="{% url 'Detection' %}">Detection</a>
+        <a href="{% url 'Quadrupole' %}">Quadrupole</a>
+        <a href="{% url 'Raman' %}">Raman</a>
+        <nobr><a href="{% url 'Motor_Control' %}">Motor Control</a></nobr>
+        <nobr><a href="{% url 'Static_Control' %}">Static Control</a></nobr>
+        <nobr><a href="{% url 'Bertha_Channels' %}">Bertha Channels</a></nobr>
+        <nobr><a href="{% url 'index' %}">Home</a></nobr>
+        <nobr><a href="{% url 'logout' %}">Log Out</a></nobr>
+        </div>
+        
+        <script>
+        function openNav() {
+          document.getElementById("mySidenav").style.width = "250px";
+        }
+
+        function closeNav() {
+          document.getElementById("mySidenav").style.width = "0";
+        }
+        </script>
+        <br/>
+        <script>
+        //Connection starts here!
+            let htmlstringlist = ["user = {{ user.get_username }};", String.raw`{{ gui_elements | safe }}`]; //second element is being returned by index function in views.py
+            
+            let ExperimentDict = JSON.parse('{{functionDict | safe}}'); //third variable returned by index function in views.py
+
+            console.log("{{ user.get_username }}"); //logging the user's username to console
+            console.log("connected!");
+            chatSocket = new WebSocket(     //creating new WebSocket instance
+                        'ws://'
+                        + window.location.host
+                       + '/ws/members/'
+                    );
+                    
+            var started = true;
+
+            //Send a message back to subscriber, called when user clicks 'Signal' ⌄⌄⌄
+            function SendBack(arg = '{"function": null, "instructions": null}')
+            {
+                if (!started) //if chatsocket is not connected, connect it
+                {
+                    
+                    chatSocket = new WebSocket(
+                                'ws://'
+                                + window.location.host
+                               + '/ws/members/'
+                            ); //first start up the chat socket
+                    
+                    chatSocket.onopen = () => chatSocket.send(arg); //send it
+                    started = true; //flag to denote that chat socket is up and running
+                }
+                else //if it is, just send back the data stored in the variable 'arg' to the consumers.py ZMQChannels.receive method
+                {
+                    chatSocket.send(arg);
+                }
+            }
+
+            function BerthaPMTCount()
+            {
+              SetValuesDict = {"function": "set_values", "instructions": ["BerthaPMT"]}
+              SendBack(JSON.stringify(SetValuesDict));
+            }
+
+            function BerthaSetDigital()
+            {
+              var BerthaDigitalValue = document.getElementById("myBerthaDigitalValue").value;
+              SetValuesDict = {"function": "set_values", "instructions": ["BerthaSetDigital", BerthaDigitalValue]}
+              SendBack(JSON.stringify(SetValuesDict));
+            }
+            
+          
+        </script>
+
+        <br/><br/><br/>
+        <div class="col-sm" align = "center">
+                    <button type="button" class="btn btn-info" id="dropdownMenuButtonChanOutput" onclick="BerthaPMTCount();" clicked="true">
+                        Test
+                    </button>
+        </div>
+
+        <br/>
+        
+        <div class="row">
+    
+          <div class="col-sm" align = "center">
+              Set Bertha Digital Channels:
+              <input type="number" id="myBerthaDigitalValue" name="myBerthaDigitalValue" min="0" max="100" required>
+              <button type="button" class="btn btn-info" id="SubmitBerthaDigitalValue" onclick="BerthaSetDigital();" clicked="true">
+                Submit
+            </button>            
+            </div>
+        </div>
+        <br/>
+        
+        
+    </body>
+</html>
+
